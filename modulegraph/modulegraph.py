@@ -14,18 +14,14 @@ import marshal
 import os
 import sys
 import new
+import struct
+
 from altgraph.Dot import Dot
 from altgraph.ObjectGraph import ObjectGraph
 from altgraph.GraphUtil import filter_stack
 from altgraph.compat import *
 
 READ_MODE = "U"  # universal line endings
-
-LOAD_CONST = dis.opmap['LOAD_CONST']
-IMPORT_NAME = dis.opmap['IMPORT_NAME']
-STORE_NAME = dis.opmap['STORE_NAME']
-STORE_GLOBAL = dis.opmap['STORE_GLOBAL']
-STORE_OPS = [STORE_NAME, STORE_GLOBAL]
 
 # Modulegraph does a good job at simulating Python's, but it can not
 # handle packagepath modifications packages make at runtime.  Therefore there
@@ -430,25 +426,32 @@ class ModuleGraph(ObjectGraph):
                 subs.add(sm)
         return subs
 
-    def scan_code(self, co, m):
+    def scan_code(self, co, m,
+            HAVE_ARGUMENT=chr(dis.HAVE_ARGUMENT),
+            LOAD_CONST=chr(dis.opname.index('LOAD_CONST')),
+            IMPORT_NAME=chr(dis.opname.index('IMPORT_NAME')),
+            STORE_NAME=chr(dis.opname.index('STORE_NAME')),
+            STORE_GLOBAL=chr(dis.opname.index('STORE_GLOBAL')),
+            unpack=struct.unpack):
         code = co.co_code
+        constants = co.co_consts
         n = len(code)
         i = 0
         fromlist = None
         while i < n:
             c = code[i]
-            i = i+1
-            op = ord(c)
-            if op >= dis.HAVE_ARGUMENT:
-                oparg = ord(code[i]) + ord(code[i+1])*256
+            i += 1
+            if c >= HAVE_ARGUMENT:
                 i = i+2
-            if op == LOAD_CONST:
+            if c == LOAD_CONST:
                 # An IMPORT_NAME is always preceded by a LOAD_CONST, it's
                 # a tuple of "from" names, or None for a regular import.
                 # The tuple may contain "*" for "from <mod> import *"
+                oparg = unpack('<H', code[i - 2:i])[0]
                 fromlist = co.co_consts[oparg]
-            elif op == IMPORT_NAME:
+            elif c == IMPORT_NAME:
                 assert fromlist is None or type(fromlist) is tuple
+                oparg = unpack('<H', code[i - 2:i])[0]
                 name = co.co_names[oparg]
                 have_star = False
                 if fromlist is not None:
@@ -476,12 +479,14 @@ class ModuleGraph(ObjectGraph):
                             m.starimports.add(name)
                     else:
                         m.starimports.add(name)
-            elif op in STORE_OPS:
+            elif c == STORE_NAME or c == STORE_GLOBAL:
                 # keep track of all global names that are assigned to
+                oparg = unpack('<H', code[i - 2:i])[0]
                 name = co.co_names[oparg]
                 m.globalnames.add(name)
-        for c in co.co_consts:
-            if isinstance(c, type(co)):
+        cotype = type(co)
+        for c in constants:
+            if isinstance(c, cotype):
                 self.scan_code(c, m)
 
     def load_package(self, fqname, pathname):
