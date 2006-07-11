@@ -5,7 +5,7 @@ ez_setup.use_setuptools()
 
 from setuptools import setup, Extension
 
-VERSION = '0.6'
+VERSION = '0.7'
 DESCRIPTION = "Python module dependency analysis tool"
 LONG_DESCRIPTION = """
 modulegraph determines a dependency graph between Python modules primarily
@@ -37,6 +37,6 @@ setup(
     license="MIT License",
     packages=['modulegraph'],
     platforms=['any'],
-    install_requires=["altgraph>=0.6.6"],
+    install_requires=["altgraph>=0.6.7"],
     zip_safe=True,
 )
