@@ -15,6 +15,7 @@ import os
 import sys
 import new
 import struct
+import urllib
 
 from altgraph.Dot import Dot
 from altgraph.ObjectGraph import ObjectGraph
@@ -528,6 +529,58 @@ class ModuleGraph(ObjectGraph):
         if buf:
             buf = os.path.realpath(buf)
         return (fp, buf, stuff)
+
+    def create_xref(self, out=None):
+        if out is None:
+            out = sys.stdout
+        scripts = []
+        mods = []
+        for mod in self.flatten():
+            name = os.path.basename(mod.identifier)
+            if isinstance(mod, Script):
+                scripts.append((name, mod))
+            else:
+                mods.append((name, mod))
+        scripts.sort()
+        mods.sort()
+        scriptnames = [name for name, m in scripts]
+        scripts.extend(mods)
+        mods = scripts
+
+        title = "modulegraph cross reference for "  + ', '.join(scriptnames)
+        print >>out, """<html><head><title>%s</title></head>
+            <body><h1>%s</h1>""" % (title, title)
+
+        def sorted_namelist(mods):
+            lst = [os.path.basename(mod.identifier) for mod in mods if mod]
+            lst.sort()
+            return lst
+        for name, m in mods:
+            if isinstance(m, BuiltinModule):
+                print >>out, """<a name="%s" /><tt>%s</tt>
+                    <i>(builtin module)</i> <br />""" % (name, name)
+            elif isinstance(m, Extension):
+                print >>out, """<a name="%s" /><tt>%s</tt> <tt>%s</tt></a>
+                    <br />""" % (name, name, m.filename)
+            else:
+                url = urllib.pathname2url(m.filename or "")
+                print >>out, """<a name="%s" />
+                    <a target="code" href="%s" type="text/plain"><tt>%s</tt></a>
+                    <br />""" % (name, url, name)
+            oute, ince = map(sorted_namelist, self.get_edges(m))
+            if oute:
+                print >>out, 'imports:'
+                for n in oute:
+                    print >>out, """<a href="#%s">%s</a>""" % (n, n)
+                print >>out, '<br />'
+            if ince:
+                print >>out, 'imported by:'
+                for n in ince:
+                    print >>out, """<a href="#%s">%s</a>""" % (n, n)
+                print >>out, '<br />'
+            print >>out, '<br/>'
+        print >>out, '</body></html>'
+        
 
     def itergraphreport(self, name='G', flatpackages=()):
         nodes = map(self.graph.describe_node, self.graph.iterdfs(self))
