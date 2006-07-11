@@ -5,7 +5,7 @@ ez_setup.use_setuptools()
 
 from setuptools import setup, Extension
 
-VERSION = '0.7'
+VERSION = '0.7.1'
 DESCRIPTION = "Python module dependency analysis tool"
 LONG_DESCRIPTION = """
 modulegraph determines a dependency graph between Python modules primarily
