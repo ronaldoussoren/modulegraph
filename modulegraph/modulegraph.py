@@ -759,7 +759,7 @@ def main():
     domods = 0
     dodot = False
     addpath = []
-    exclude = []
+    excludes = []
     for o, a in opts:
         if o == '-d':
             debug = debug + 1
@@ -770,13 +770,13 @@ def main():
         if o == '-q':
             debug = 0
         if o == '-x':
-            exclude.append(a)
+            excludes.append(a)
         if o == '-g':
             dodot = True
 
     # Provide default arguments
     if not args:
-        script = "hello.py"
+        script = __file__
     else:
         script = args[0]
 
