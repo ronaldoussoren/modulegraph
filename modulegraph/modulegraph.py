@@ -100,7 +100,7 @@ class Alias(str):
 class AliasNode(Node):
     def __init__(self, name, node):
         super(AliasNode, self).__init__(name)
-        for k in ['identifier', 'packagepath', 'namespace', 'globalnames', 'startimports']:
+        for k in 'identifier', 'packagepath', 'namespace', 'globalnames', 'startimports':
             setattr(self, k, getattr(node, k, None))
 
     def infoTuple(self):
@@ -184,6 +184,9 @@ class ModuleGraph(ObjectGraph):
 
 
     def createReference(self, fromnode, tonode, edge_data='direct'):
+        """
+        Create a reference from fromnode to tonode
+        """
         return super(ModuleGraph, self).createReference(fromnode, tonode, edge_data=edge_data)
 
     def findNode(self, name):
@@ -239,6 +242,8 @@ class ModuleGraph(ObjectGraph):
     def import_hook(self, name, caller=None, fromlist=None):
         """
         Import a module
+
+        Return the set of modules that are imported
         """
         self.msg(3, "import_hook", name, caller, fromlist)
         parent = self.determine_parent(caller)
@@ -400,17 +405,27 @@ class ModuleGraph(ObjectGraph):
 
     def _safe_import_hook(self, name, caller, fromlist):
         # wrapper for self.import_hook() that won't raise ImportError
-        # XXX: This code can't be right!
         try:
-            m = self.import_hook(name, caller).pop()
+            mods = self.import_hook(name, caller)
         except ImportError, msg:
             self.msg(2, "ImportError:", str(msg))
             m = self.createNode(MissingModule, name)
+            self.createReference(caller, m)
+        else:
+            assert len(mods) == 1
+            m = list(mods)[0]
+
         subs = set([m])
-        for sub in set(fromlist or ()):
+        for sub in (fromlist or ()):
+            # If this name is in the module namespace already,
+            # then add the entry to the list of substitutions
             if sub in m:
-                subs.add(m[sub])
+                sm = m[sub]
+                if sm is not None:
+                    subs.add(sm)
                 continue
+
+            # See if we can load it
             fullname = name + '.' + sub
             sm = self.findNode(fullname)
             if sm is None:
