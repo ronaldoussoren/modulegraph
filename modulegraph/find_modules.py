@@ -20,7 +20,7 @@ except NameError:
 #from modulegraph.util import imp_find_module
 import modulegraph
 from modulegraph import Alias
-from util import imp_find_module
+from util import imp_find_module, imp_find_module_or_importer
 
 __all__ = [
     'find_modules', 'parse_mf_results'
@@ -72,7 +72,7 @@ def parse_mf_results(mf):
             elif suffix in C_SUFFIXES:
                 extensions.append(item)
             else:
-                raise RuntimeError("Don't know how to handle '%s'" % repr(src))
+                raise TypeError("Don't know how to handle '%s'" % repr(src))
 
     # sort on the file names, the output is nicer to read
     py_files.sort(lambda a,b:cmp(a.filename, b.filename))
@@ -179,6 +179,7 @@ def find_needed_modules(mf=None, scripts=(), includes=(), packages=(), warn=warn
             path = m.packagepath[0]
         else:
             # Find path of package
+            # TODO: use imp_find_module_or_importer
             try:
                 path = imp_find_module(f)[1]
             except ImportError:

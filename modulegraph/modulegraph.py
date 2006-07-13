@@ -355,7 +355,7 @@ class ModuleGraph(ObjectGraph):
             return None
         try:
             fp, pathname, stuff = self.find_module(partname,
-                                                   parent and parent.packagepath, parent)
+                parent and parent.packagepath, parent)
         except ImportError:
             self.msgout(3, "import_module ->", None)
             return None
@@ -400,6 +400,7 @@ class ModuleGraph(ObjectGraph):
 
     def _safe_import_hook(self, name, caller, fromlist):
         # wrapper for self.import_hook() that won't raise ImportError
+        # XXX: This code can't be right!
         try:
             m = self.import_hook(name, caller).pop()
         except ImportError, msg:
