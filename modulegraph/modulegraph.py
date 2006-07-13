@@ -526,7 +526,7 @@ class ModuleGraph(ObjectGraph):
     def find_module(self, name, path, parent=None):
         if parent is not None:
             # assert path is not None
-            fullname = parent.identifier+'.'+name
+            fullname = parent.identifier + '.' + name
         else:
             fullname = name
 
