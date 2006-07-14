@@ -150,6 +150,9 @@ class FlatPackage(BaseModule):
 class Extension(BaseModule):
     pass
 
+class ArchiveModule(BaseModule):
+    pass
+
 class ModuleGraph(ObjectGraph):
     def __init__(self, path=None, excludes=(), replace_paths=(), implies=(), graph=None, debug=0):
         super(ModuleGraph, self).__init__(graph=graph, debug=debug)
@@ -378,7 +381,7 @@ class ModuleGraph(ObjectGraph):
             self.msgout(2, "load_module ->", m)
             return m
         if typ == imp.PY_SOURCE:
-            co = compile(fp.read()+'\n', pathname, 'exec')
+            co = compile(fp.read() + '\n', pathname, 'exec')
             cls = SourceModule
         elif typ == imp.PY_COMPILED:
             if fp.read(4) != imp.get_magic():

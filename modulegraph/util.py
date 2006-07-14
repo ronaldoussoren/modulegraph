@@ -38,9 +38,10 @@ def imp_find_module_or_importer(name):
         return (None, None, ("", "", imp.C_BUILTIN))
     paths = sys.path
     names = name.split('.')
+    names.reverse()
     res = None
     while names:
-        namepart = names.pop(0)
+        namepart = names.pop()
         for path_item in paths:
             res = _check_importer_for_path(namepart, path_item)
             if res is not None:
