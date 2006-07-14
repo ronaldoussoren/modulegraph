@@ -3,7 +3,9 @@ import imp
 import sys
 
 def imp_find_module(name, path=None):
-    """same as imp.find_module, but handles dotted names"""
+    """
+    same as imp.find_module, but handles dotted names
+    """
     names = name.split('.')
     if path is not None:
         path = [os.path.realpath(path)]
@@ -28,29 +30,33 @@ def _check_importer_for_path(name, path_item):
 
     if importer is None:
         try:
-            return imp.find_module(name, path_item)
+            return imp.find_module(name, [path_item])
         except ImportError:
             return None
     return importer.find_module(name)
 
-def imp_find_module_or_importer(name):
+def imp_walk(name):
+    """
+    yields namepart, tuple_or_importer for each path item
+
+    raise ImportError if a name can not be found.
+    """
     if name in sys.builtin_module_names:
-        return (None, None, ("", "", imp.C_BUILTIN))
+        yield name, (None, None, ("", "", imp.C_BUILTIN))
+        return
     paths = sys.path
-    names = name.split('.')
-    names.reverse()
     res = None
-    while names:
-        namepart = names.pop()
+    for namepart in name.split('.'):
         for path_item in paths:
             res = _check_importer_for_path(namepart, path_item)
             if res is not None:
                 break
         else:
             break
-        if not names:
-            return res
+        yield namepart, res
         paths = [os.path.join(path_item, namepart)]
+    else:
+        return
     raise ImportError('No module named %s' % (name,))
 
 
@@ -59,5 +65,18 @@ def test_imp_find_module():
     fn = imp_find_module('encodings.aliases')[1]
     assert encodings.aliases.__file__.startswith(fn)
 
+def test_imp_walk():
+    import encodings.aliases
+    imps = list(imp_walk('encodings.aliases'))
+    assert len(imps) == 2
+
+    assert imps[0][0] == 'encodings'
+    assert encodings.__file__.startswith(imps[0][1][1])
+
+    assert imps[1][0] == 'aliases'
+    assert encodings.aliases.__file__.startswith(imps[1][1][1])
+        
+
 if __name__ == '__main__':
     test_imp_find_module()
+    test_imp_walk()
