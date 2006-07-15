@@ -22,6 +22,8 @@ from altgraph.ObjectGraph import ObjectGraph
 from altgraph.GraphUtil import filter_stack
 from altgraph.compat import *
 
+import util
+
 READ_MODE = "U"  # universal line endings
 
 # Modulegraph does a good job at simulating Python's, but it can not
@@ -510,6 +512,9 @@ class ModuleGraph(ObjectGraph):
                 self.scan_code(c, m)
 
     def load_package(self, fqname, pathname):
+        """
+        Called only when an imp.PACKAGE_DIRECTORY is found
+        """
         self.msgin(2, "load_package", fqname, pathname)
         newname = replacePackageMap.get(fqname)
         if newname:
