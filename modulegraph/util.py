@@ -49,7 +49,7 @@ def imp_walk(name):
     for namepart in name.split('.'):
         for path_item in paths:
             res = _check_importer_for_path(namepart, path_item)
-            if res is not None:
+            if hasattr(res, 'find_module'):
                 break
         else:
             break
