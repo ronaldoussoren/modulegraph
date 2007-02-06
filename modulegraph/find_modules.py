@@ -27,7 +27,7 @@ __all__ = [
 ]
 
 def get_implies():
-    return {
+    result = {
         # imports done from builtin modules in C code (untrackable by modulegraph)
         "time":         ["_strptime"],
         "datetime":     ["time"],
@@ -47,6 +47,17 @@ def get_implies():
         # package aliases
         "wxPython.wx":  Alias('wx'),
     }
+
+    if sys.version_info[:2] >= (2, 5):
+        result["_elementtree"] = ["pyexpat"]
+
+        import xml.etree
+        files = os.listdir(xml.etree.__path__[0])
+        for fn in files:
+            if fn.endswith('.py') and fn != "__init__.py":
+                result["_elementtree"].append("xml.etree.%s"%(fn[:-3],))
+
+    return result
 
 def parse_mf_results(mf):
     #for name, imports in get_hidden_imports().items():
