@@ -8,6 +8,8 @@ but uses a graph data structure and 2.3 features
 from pkg_resources import require
 require("altgraph")
 
+import pkg_resources
+import StringIO
 import dis
 import imp
 import marshal
@@ -16,6 +18,8 @@ import sys
 import new
 import struct
 import urllib
+import zipfile
+import zipimport
 
 from altgraph.Dot import Dot
 from altgraph.ObjectGraph import ObjectGraph
@@ -33,6 +37,127 @@ READ_MODE = "U"  # universal line endings
 
 # Note this is a mapping is lists of paths.
 packagePathMap = {}
+
+
+def namespace_package_path(fqname, pathname, syspath=None):
+    path = []
+
+    if syspath is None:
+        working_set = pkg_resources.working_set
+    else:
+        working_set = pkg_resources.WorkingSet(syspath)
+
+    for dist in working_set:
+        assert dist in working_set
+
+        if dist.has_metadata('namespace_packages.txt'):
+            namespaces = dist.get_metadata(
+                    'namespace_packages.txt').splitlines()
+            if fqname in namespaces:
+                path.append(os.path.join(dist.location, *fqname.split('.')))
+
+    if not path:
+        return [pathname]
+    
+    else:
+        return path
+
+def os_listdir(path):
+    """
+    os.listdir with support for zipfiles
+    """
+    try:
+        return os.listdir(path)
+    except os.error:
+        info = sys.exc_info()
+
+        rest = ''
+        while not os.path.exists(path):
+            path, r = os.path.split(path)
+            rest = os.path.join(r, rest)
+
+        if not os.path.isfile(path):
+            # Directory really doesn't exist
+            raise info[0], info[1], info[2]
+        
+        try:
+            zf = zipfile.ZipFile(path)
+        except zipfile.BadZipfile:
+            raise info[0], info[1], info[2]
+
+        if rest:
+            rest = rest + '/'
+        result = set()
+        for nm in zf.namelist():
+            if nm.startswith(rest):
+                result.add(nm[len(rest):].split('/')[0])
+        return list(result)
+
+
+def _code_to_file(co):
+    """ Convert code object to a .pyc pseudo-file """
+    return StringIO.StringIO(
+            imp.get_magic() + chr(0)*4 + marshal.dumps(co))
+
+def find_module(name, path=None):
+    """
+    A version of imp.find_module that works with zipped packages.
+    """
+    if path is None:
+        path = sys.path
+
+    for entry in path:
+        importer = pkg_resources.get_importer(entry)
+        loader = importer.find_module(name)
+        if loader is None: continue
+
+        if isinstance(importer, pkg_resources.ImpWrapper):
+            filename = loader.filename
+            if filename.endswith('.pyc') or filename.endswith('.pyo'):
+                fp = open(filename, 'rb')
+                description = ('.pyc', 'rb', imp.PY_COMPILED)
+                return (fp, filename, description)
+
+            elif filename.endswith('.py'):
+                fp = file(filename, READ_MODE)
+                description = ('.py', READ_MODE, imp.PY_SOURCE)
+                return (fp, filename, description)
+
+            else:
+                for _sfx, _mode, _type in imp.get_suffixes():
+                    if _type == imp.C_EXTENSION and filename.endswith(_sfx):
+                        description = (_sfx, 'rb', imp.C_EXTENSION)
+                        break
+                else:
+                    description = ('', '', imp.PKG_DIRECTORY)
+
+                return (None, filename, description)
+
+        elif hasattr(loader, 'get_code'):
+            co = loader.get_code(name)
+            fp = _code_to_file(co)
+
+        pathname = os.path.join(entry, *name.split('.'))
+
+        if isinstance(loader, zipimport.zipimporter):
+            # Check if this happens to be a wrapper module introduced by setuptools,
+            # if it is we return the actual extension.
+            zn = '/'.join(name.split('.'))
+            for _sfx, _mode, _type in imp.get_suffixes():
+                if _type == imp.C_EXTENSION:
+                    p = loader.prefix + zn + _sfx
+                    if p in loader._files:
+                        description = (_sfx, 'rb', imp.C_EXTENSION)
+                        return (None, pathname + _sfx, description)
+
+        if hasattr(loader, 'is_package') and loader.is_package(name):
+            return (None, pathname, ('', '', imp.PKG_DIRECTORY))
+
+        pathname = pathname + '.pyc'
+        description = ('.pyc', 'rb', imp.PY_COMPILED)
+        return (fp, pathname, description)
+
+    raise ImportError(name)
 
 def moduleInfoForPath(path, suffixes=imp.get_suffixes()):
     for (ext, readmode, typ) in imp.get_suffixes():
@@ -344,7 +469,7 @@ class ModuleGraph(ObjectGraph):
         suffixes = [triple[0] for triple in imp.get_suffixes()]
         for path in m.packagepath:
             try:
-                names = os.listdir(path)
+                names = os_listdir(path)
             except os.error:
                 self.msg(2, "can't list directory", path)
                 continue
@@ -369,6 +494,7 @@ class ModuleGraph(ObjectGraph):
         except ImportError:
             self.msgout(3, "import_module ->", None)
             return None
+
         m = self.load_module(fqname, fp, pathname, stuff)
         if parent:
             self.createReference(m, parent)
@@ -390,7 +516,7 @@ class ModuleGraph(ObjectGraph):
                 self.msgout(2, "raise ImportError: Bad magic number", pathname)
                 raise ImportError, "Bad magic number in %s" % pathname
             fp.read(4)
-            co = marshal.load(fp)
+            co = marshal.loads(fp.read())
             cls = CompiledModule
         elif typ == imp.C_BUILTIN:
             cls = BuiltinModule
@@ -521,10 +647,12 @@ class ModuleGraph(ObjectGraph):
             fqname = newname
         m = self.createNode(Package, fqname)
         m.filename = pathname
-        m.packagepath = [pathname]
+        m.packagepath = namespace_package_path(fqname, pathname)
 
         # As per comment at top of file, simulate runtime packagepath additions.
         m.packagepath = m.packagepath + packagePathMap.get(fqname, [])
+
+        
 
         fp, buf, stuff = self.find_module("__init__", m.packagepath)
         self.load_module(fqname, fp, buf, stuff)
@@ -549,7 +677,7 @@ class ModuleGraph(ObjectGraph):
 
             path = self.path
 
-        fp, buf, stuff = imp.find_module(name, path)
+        fp, buf, stuff = find_module(name, path)
         if buf:
             buf = os.path.realpath(buf)
         return (fp, buf, stuff)
