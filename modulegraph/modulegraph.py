@@ -9,6 +9,7 @@ from pkg_resources import require
 require("altgraph")
 
 import pkg_resources
+
 import StringIO
 import dis
 import imp
@@ -111,7 +112,26 @@ def find_module(name, path=None):
         loader = importer.find_module(name)
         if loader is None: continue
 
-        if isinstance(importer, pkg_resources.ImpWrapper):
+
+        # Support for the PEP302 importer for normal imports:
+        # - Python 2.5 has pkgutil.ImpImporter
+        # - In setuptools 0.7 and later there's _pkgutil.ImpImporter
+        # - In earlier setuptools versions you pkg_resources.ImpWrapper
+        #
+        # This is a bit of a hack, should check if we can just rely on
+        # PEP302's get_code() method with all recent versions of pkgutil and/or
+        # setuptools (setuptools 0.6.latest, setuptools trunk and python2.[45])
+        try:
+            from pkgutil import ImpImporter
+        except ImportError:
+            try:
+                from _pkgutil import ImpImporter
+            except ImportError:
+                ImpImporter = pkg_resources.ImpWrapper
+
+
+
+        if isinstance(importer, ImpImporter):
             filename = loader.filename
             if filename.endswith('.pyc') or filename.endswith('.pyo'):
                 fp = open(filename, 'rb')
