@@ -86,8 +86,8 @@ def parse_mf_results(mf):
                 raise TypeError("Don't know how to handle '%s'" % repr(src))
 
     # sort on the file names, the output is nicer to read
-    py_files.sort(lambda a,b:cmp(a.filename, b.filename))
-    extensions.sort(lambda a,b:cmp(a.filename, b.filename))
+    py_files.sort(key=lambda v: v.filename)
+    extensions.sort(key=lambda v: v.filename)
     return py_files, extensions
 
 

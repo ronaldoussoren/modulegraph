@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 
-import ez_setup
-ez_setup.use_setuptools()
+try:
+    import setuptools
 
-from setuptools import setup, Extension
+except ImportError:
+    import distribute_setup
+    distribute_setup.use_setuptools()
 
-VERSION = '0.7.3'
+from setuptools import setup
+import sys
+
+VERSION = '0.8'
 DESCRIPTION = "Python module dependency analysis tool"
 LONG_DESCRIPTION = """
 modulegraph determines a dependency graph between Python modules primarily
@@ -21,9 +26,17 @@ CLASSIFIERS = filter(None, map(str.strip,
 Intended Audience :: Developers
 License :: OSI Approved :: MIT License
 Programming Language :: Python
+Programming Language :: Python :: 3
 Topic :: Software Development :: Libraries :: Python Modules
 Topic :: Software Development :: Build Tools
 """.splitlines()))
+
+if sys.version_info[0] == 3:
+    extra_args = dict(use_2to3=True)
+else:
+    extra_args = dict()
+
+
 
 setup(
     name="modulegraph",
@@ -37,6 +50,7 @@ setup(
     license="MIT License",
     packages=['modulegraph'],
     platforms=['any'],
-    install_requires=["altgraph>=0.6.7"],
+    install_requires=["altgraph>=0.7"],
     zip_safe=True,
+    **extra_args
 )

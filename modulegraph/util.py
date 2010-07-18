@@ -75,6 +75,23 @@ def test_imp_walk():
 
     assert imps[1][0] == 'aliases'
     assert encodings.aliases.__file__.startswith(imps[1][1][1])
+
+if sys.version_info[0] != 2:
+    import re
+    cookie_re = re.compile(b"coding[:=]\s*([-\w.]+)")
+
+    def guess_encoding(fp):
+
+        for i in range(2):
+            ln = fp.readline()
+
+            m = cookie_re.search(ln)
+            if m is not None:
+                return m.group(1).decode('ascii')
+
+        return 'utf-8'
+
+
         
 
 if __name__ == '__main__':

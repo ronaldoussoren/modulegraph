@@ -16,7 +16,8 @@ import imp
 import marshal
 import os
 import sys
-import new
+if sys.version_info[0] == 2:
+    import new
 import struct
 import urllib
 import zipfile
@@ -26,6 +27,8 @@ from altgraph.Dot import Dot
 from altgraph.ObjectGraph import ObjectGraph
 from altgraph.GraphUtil import filter_stack
 from altgraph.compat import *
+
+from compat import Bchr
 
 import util
 
@@ -139,7 +142,10 @@ def find_module(name, path=None):
                 return (fp, filename, description)
 
             elif filename.endswith('.py'):
-                fp = file(filename, READ_MODE)
+                if sys.version_info[0] == 2:
+                    fp = open(filename, READ_MODE)
+                else:
+                    fp = open(filename, READ_MODE, encoding=util.guess_encoding(open(filename, 'rb')))
                 description = ('.py', READ_MODE, imp.PY_SOURCE)
                 return (fp, filename, description)
 
@@ -380,7 +386,13 @@ class ModuleGraph(ObjectGraph):
         if m is not None:
             return m
 
-        co = compile(file(pathname, READ_MODE).read()+'\n', pathname, 'exec')
+        if sys.version_info[0] != 2:
+            encoding = util.guess_encoding(open(pathname, 'rb'))
+            contents = open(pathname, READ_MODE, encoding=encoding).read() + '\n'
+        else:
+            contents = open(pathname, READ_MODE).read() + '\n'
+
+        co = compile(contents, pathname, 'exec')
         if self.replace_paths:
             co = self.replace_paths_in_code(co)
         m = self.createNode(Script, pathname)
@@ -595,11 +607,11 @@ class ModuleGraph(ObjectGraph):
         return subs
 
     def scan_code(self, co, m,
-            HAVE_ARGUMENT=chr(dis.HAVE_ARGUMENT),
-            LOAD_CONST=chr(dis.opname.index('LOAD_CONST')),
-            IMPORT_NAME=chr(dis.opname.index('IMPORT_NAME')),
-            STORE_NAME=chr(dis.opname.index('STORE_NAME')),
-            STORE_GLOBAL=chr(dis.opname.index('STORE_GLOBAL')),
+            HAVE_ARGUMENT=Bchr(dis.HAVE_ARGUMENT),
+            LOAD_CONST=Bchr(dis.opname.index('LOAD_CONST')),
+            IMPORT_NAME=Bchr(dis.opname.index('IMPORT_NAME')),
+            STORE_NAME=Bchr(dis.opname.index('STORE_NAME')),
+            STORE_GLOBAL=Bchr(dis.opname.index('STORE_GLOBAL')),
             unpack=struct.unpack):
         code = co.co_code
         constants = co.co_consts
@@ -911,7 +923,12 @@ class ModuleGraph(ObjectGraph):
             if isinstance(consts[i], type(co)):
                 consts[i] = self.replace_paths_in_code(consts[i])
 
-        return new.code(co.co_argcount, co.co_nlocals, co.co_stacksize,
+        if sys.version_info[0] == 2:
+            code_func = new.code
+        else:
+            code_func = type(co)
+
+        return code_func(co.co_argcount, co.co_nlocals, co.co_stacksize,
                          co.co_flags, co.co_code, tuple(consts), co.co_names,
                          co.co_varnames, new_filename, co.co_name,
                          co.co_firstlineno, co.co_lnotab,
