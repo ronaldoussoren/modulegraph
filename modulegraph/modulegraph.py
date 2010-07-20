@@ -29,6 +29,7 @@ from altgraph.GraphUtil import filter_stack
 from altgraph.compat import *
 
 from compat import Bchr
+from itertools import imap, ifilter, izip
 
 import util
 
