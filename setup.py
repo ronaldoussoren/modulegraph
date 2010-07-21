@@ -52,5 +52,6 @@ setup(
     platforms=['any'],
     install_requires=["altgraph>=0.7"],
     zip_safe=True,
+    test_suite='test',
     **extra_args
 )

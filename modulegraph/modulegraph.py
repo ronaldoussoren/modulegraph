@@ -5,9 +5,6 @@ Based on the stdlib modulefinder by Thomas Heller and Just van Rossum,
 but uses a graph data structure and 2.3 features
 """
 
-from pkg_resources import require
-require("altgraph")
-
 import pkg_resources
 
 import StringIO
@@ -77,7 +74,9 @@ def os_listdir(path):
         info = sys.exc_info()
 
         rest = ''
-        while not os.path.exists(path):
+        prev_rest = None
+        while not os.path.exists(path) and prev_rest != rest:
+            prev_rest = rest
             path, r = os.path.split(path)
             rest = os.path.join(r, rest)
 
