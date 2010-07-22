@@ -29,10 +29,11 @@ def _check_importer_for_path(name, path_item):
             importer = None
         sys.path_importer_cache.setdefault(path_item, importer)
 
+
     if importer is None:
         try:
             return imp.find_module(name, [path_item])
-        except ImportError:
+        except ImportError, e:
             return None
     return importer.find_module(name)
 
@@ -54,28 +55,14 @@ def imp_walk(name):
                 break
         else:
             break
+
         yield namepart, res
         paths = [os.path.join(path_item, namepart)]
     else:
         return
+
     raise ImportError('No module named %s' % (name,))
 
-
-def test_imp_find_module():
-    import encodings.aliases
-    fn = imp_find_module('encodings.aliases')[1]
-    assert encodings.aliases.__file__.startswith(fn)
-
-def test_imp_walk():
-    import encodings.aliases
-    imps = list(imp_walk('encodings.aliases'))
-    assert len(imps) == 2
-
-    assert imps[0][0] == 'encodings'
-    assert encodings.__file__.startswith(imps[0][1][1])
-
-    assert imps[1][0] == 'aliases'
-    assert encodings.aliases.__file__.startswith(imps[1][1][1])
 
 if sys.version_info[0] != 2:
     import re
@@ -91,10 +78,3 @@ if sys.version_info[0] != 2:
                 return m.group(1).decode('ascii')
 
         return 'utf-8'
-
-
-        
-
-if __name__ == '__main__':
-    test_imp_find_module()
-    test_imp_walk()
