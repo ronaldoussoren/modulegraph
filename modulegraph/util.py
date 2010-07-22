@@ -1,6 +1,7 @@
 import os
 import imp
 import sys
+from compat import B
 
 def imp_find_module(name, path=None):
     """
@@ -78,7 +79,7 @@ def test_imp_walk():
 
 if sys.version_info[0] != 2:
     import re
-    cookie_re = re.compile(b"coding[:=]\s*([-\w.]+)")
+    cookie_re = re.compile(B("coding[:=]\s*([-\w.]+)"))
 
     def guess_encoding(fp):
 
