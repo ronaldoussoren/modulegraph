@@ -10,7 +10,7 @@ except ImportError:
 from setuptools import setup
 import sys
 
-VERSION = '0.8'
+VERSION = '0.8.1'
 DESCRIPTION = "Python module dependency analysis tool"
 LONG_DESCRIPTION = """
 modulegraph determines a dependency graph between Python modules primarily
@@ -22,6 +22,18 @@ knowledge of special cases, and is extensible.
 
 NEWS
 ====
+
+0.8.1
+-----
+
+This is a minor feature release
+
+Features:
+
+- ``from __future__ import absolute_import`` is now supported
+
+- Relative imports (``from . import module``) are now supported
+
 
 0.8
 ---

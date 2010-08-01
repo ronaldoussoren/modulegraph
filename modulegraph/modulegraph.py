@@ -401,15 +401,15 @@ class ModuleGraph(ObjectGraph):
         self.scan_code(co, m)
         return m
 
-    def import_hook(self, name, caller=None, fromlist=None):
+    def import_hook(self, name, caller=None, fromlist=None, level=-1):
         """
         Import a module
 
         Return the set of modules that are imported
         """
-        self.msg(3, "import_hook", name, caller, fromlist)
+        self.msg(3, "import_hook", name, caller, fromlist, level)
         parent = self.determine_parent(caller)
-        q, tail = self.find_head_package(parent, name)
+        q, tail = self.find_head_package(parent, name, level)
         m = self.load_tail(q, tail)
         modules = set([m])
         if fromlist and m.packagepath:
@@ -434,7 +434,7 @@ class ModuleGraph(ObjectGraph):
         self.msgout(4, "determine_parent ->", parent)
         return parent
 
-    def find_head_package(self, parent, name):
+    def find_head_package(self, parent, name, level=-1):
         """
         Given a calling parent package and an import name determine the containing
         package for the name
@@ -444,10 +444,24 @@ class ModuleGraph(ObjectGraph):
             head, tail = name.split('.', 1)
         else:
             head, tail = name, ''
-        if parent:
-            qname = parent.identifier + '.' + head
-        else:
+
+        if level == -1:
+            if parent:
+                qname = parent.identifier + '.' + head
+            else:
+                qname = head
+
+        elif level == 0:
             qname = head
+
+        else:
+            for i in xrange(level):
+                parent = self.determine_parent(parent)
+                if parent is None:
+                    self.msg(2, "Relative import outside package")
+
+            qname = parent.identifier + '.' + head
+
         q = self.import_module(head, qname, parent)
         if q:
             self.msgout(4, "find_head_package ->", (q, tail))
@@ -566,10 +580,10 @@ class ModuleGraph(ObjectGraph):
         self.msgout(2, "load_module ->", m)
         return m
 
-    def _safe_import_hook(self, name, caller, fromlist):
+    def _safe_import_hook(self, name, caller, fromlist, level=-1):
         # wrapper for self.import_hook() that won't raise ImportError
         try:
-            mods = self.import_hook(name, caller)
+            mods = self.import_hook(name, caller, level=level)
         except ImportError, msg:
             self.msg(2, "ImportError:", str(msg))
             m = self.createNode(MissingModule, name)
@@ -613,23 +627,39 @@ class ModuleGraph(ObjectGraph):
             STORE_NAME=Bchr(dis.opname.index('STORE_NAME')),
             STORE_GLOBAL=Bchr(dis.opname.index('STORE_GLOBAL')),
             unpack=struct.unpack):
+
+        # Python >=2.5: LOAD_CONST flags, LOAD_CONST names, IMPRT_NAME name
+        # Python < 2.5: LOAD_CONST names, IMPRT_NAME name
+        extended_import = bool(sys.version_info[:2] >= (2,5))
+
         code = co.co_code
         constants = co.co_consts
         n = len(code)
         i = 0
+
+        level = None
         fromlist = None
+
         while i < n:
             c = code[i]
             i += 1
             if c >= HAVE_ARGUMENT:
                 i = i+2
-            if c == LOAD_CONST:
-                # An IMPORT_NAME is always preceded by a LOAD_CONST, it's
-                # a tuple of "from" names, or None for a regular import.
-                # The tuple may contain "*" for "from <mod> import *"
-                oparg = unpack('<H', code[i - 2:i])[0]
-                fromlist = co.co_consts[oparg]
-            elif c == IMPORT_NAME:
+
+            if c == IMPORT_NAME:
+                if extended_import:
+                    assert code[i-9] == LOAD_CONST
+                    assert code[i-6] == LOAD_CONST
+                    arg1, arg2 = unpack('<xHxH', code[i-9:i-3])
+                    level = co.co_consts[arg1]
+                    fromlist = co.co_consts[arg2]
+                else:
+                    assert code[-6] == LOAD_CONST
+                    arg1, = unpack('<xH', code[i-6:i-3])
+                    level = -1
+                    fromlist = co.co_consts[arg1]
+
+
                 assert fromlist is None or type(fromlist) is tuple
                 oparg = unpack('<H', code[i - 2:i])[0]
                 name = co.co_names[oparg]
@@ -639,7 +669,9 @@ class ModuleGraph(ObjectGraph):
                     if '*' in fromlist:
                         fromlist.remove('*')
                         have_star = True
-                self._safe_import_hook(name, m, fromlist)
+
+                self._safe_import_hook(name, m, fromlist, level)
+
                 if have_star:
                     # We've encountered an "import *". If it is a Python module,
                     # the code has already been parsed and we can suck out the

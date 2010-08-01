@@ -1,1 +1,3 @@
-__version__ = '0.7.1'
+import pkg_resources
+__version__ = pkg_resources.require('modulegraph')[0].version
+
