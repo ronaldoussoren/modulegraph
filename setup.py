@@ -34,6 +34,9 @@ Features:
 
 - Relative imports (``from . import module``) are now supported
 
+- Add support for namespace packages when those are installed
+  using option ``--single-version-externally-managed`` (part
+  of setuptools/distribute)
 
 0.8
 ---

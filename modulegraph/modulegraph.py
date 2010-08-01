@@ -19,6 +19,7 @@ import struct
 import urllib
 import zipfile
 import zipimport
+import re
 
 from altgraph.Dot import Dot
 from altgraph.ObjectGraph import ObjectGraph
@@ -39,6 +40,8 @@ READ_MODE = "U"  # universal line endings
 
 # Note this is a mapping is lists of paths.
 packagePathMap = {}
+
+SETUPTOOLS_NAMESPACEPKG_PTH="import sys,types,os; p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('"
 
 
 def namespace_package_path(fqname, pathname, syspath=None):
@@ -110,28 +113,26 @@ def find_module(name, path=None):
     if path is None:
         path = sys.path
 
+    # Support for the PEP302 importer for normal imports:
+    # - Python 2.5 has pkgutil.ImpImporter
+    # - In setuptools 0.7 and later there's _pkgutil.ImpImporter
+    # - In earlier setuptools versions you pkg_resources.ImpWrapper
+    #
+    # This is a bit of a hack, should check if we can just rely on
+    # PEP302's get_code() method with all recent versions of pkgutil and/or
+    # setuptools (setuptools 0.6.latest, setuptools trunk and python2.[45])
+    try:
+        from pkgutil import ImpImporter
+    except ImportError:
+        try:
+            from _pkgutil import ImpImporter
+        except ImportError:
+            ImpImporter = pkg_resources.ImpWrapper
+
     for entry in path:
         importer = pkg_resources.get_importer(entry)
         loader = importer.find_module(name)
         if loader is None: continue
-
-
-        # Support for the PEP302 importer for normal imports:
-        # - Python 2.5 has pkgutil.ImpImporter
-        # - In setuptools 0.7 and later there's _pkgutil.ImpImporter
-        # - In earlier setuptools versions you pkg_resources.ImpWrapper
-        #
-        # This is a bit of a hack, should check if we can just rely on
-        # PEP302's get_code() method with all recent versions of pkgutil and/or
-        # setuptools (setuptools 0.6.latest, setuptools trunk and python2.[45])
-        try:
-            from pkgutil import ImpImporter
-        except ImportError:
-            try:
-                from _pkgutil import ImpImporter
-            except ImportError:
-                ImpImporter = pkg_resources.ImpWrapper
-
 
 
         if isinstance(importer, ImpImporter):
@@ -319,6 +320,60 @@ class ModuleGraph(ObjectGraph):
             self.lazynodes[m] = None
         self.replace_paths = replace_paths
 
+        self.nspackages = self.calc_setuptools_nspackages()
+
+    def calc_setuptools_nspackages(self):
+        # Setuptools has some magic handling for namespace
+        # packages when using 'install --single-version-externally-managed'
+        # (used by system packagers and also by pip)
+        #
+        # When this option is used namespace packages are writting to
+        # disk *without* and __init__.py file, which means the regular
+        # import machinery will not find them.
+        # 
+        # We therefore explicitly look for the hack used by
+        # setuptools to get this kind of namespace packages to work.
+
+        pkgmap = {}
+
+        try:
+            from pkgutil import ImpImporter
+        except ImportError:
+            try:
+                from _pkgutil import ImpImporter
+            except ImportError:
+                ImpImporter = pkg_resources.ImpWrapper
+
+        for entry in self.path:
+            importer = pkg_resources.get_importer(entry)
+
+            if isinstance(importer, ImpImporter):
+                for fn in os.listdir(entry):
+                    if fn.endswith('-nspkg.pth'):
+                        for ln in open(os.path.join(entry, fn), 'rU'):
+                            if ln.startswith(SETUPTOOLS_NAMESPACEPKG_PTH):
+                                try:
+                                    start = len(SETUPTOOLS_NAMESPACEPKG_PTH)-2
+                                    stop = ln.index(')', start)+1
+                                except ValueError:
+                                    continue
+
+                                # XXX: this is unsafe
+                                pkg = eval(ln[start:stop])
+                                identifier = ".".join(pkg)
+                                subdir = os.path.join(entry, *pkg)
+                                if os.path.exists(os.path.join(subdir, '__init__.py')):
+                                    # There is a real __init__.py, ignore the setuptools hack
+                                    continue
+
+                                m = pkgmap[identifier] = Package(identifier)
+                                m.packagepath = namespace_package_path(identifier, subdir)
+
+                                # As per comment at top of file, simulate runtime packagepath additions.
+                                m.packagepath = m.packagepath + packagePathMap.get(identifier, [])
+
+        return pkgmap
+
     def implyNodeReference(self, node, other):
         """
         Imply that one node depends on another.
@@ -373,6 +428,14 @@ class ModuleGraph(ObjectGraph):
                 for dep in deps:
                     self.implyNodeReference(m, dep)
             return m
+
+        if name in self.nspackages:
+            # name is a --single-version-externally-managed
+            # namespace package (setuptools/distribute)
+            m = self.nspackages.pop(name)
+            self.addNode(m)
+            return m
+
         return None
 
     def run_script(self, pathname, caller=None):
