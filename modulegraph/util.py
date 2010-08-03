@@ -53,6 +53,8 @@ def imp_walk(name):
             res = _check_importer_for_path(namepart, path_item)
             if hasattr(res, 'find_module'):
                 break
+            elif isinstance(res, tuple):
+                break
         else:
             break
 
