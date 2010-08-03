@@ -13,7 +13,7 @@ import textwrap
 from modulegraph import modulegraph
 
 gRootDir = os.path.dirname(os.path.abspath(__file__))
-gSrcDir = os.path.join('testpkg-setuptools-namespace')
+gSrcDir = os.path.join(gRootDir, 'testpkg-setuptools-namespace')
 
 def install_testpkg(test_dir):
     p = subprocess.Popen([
