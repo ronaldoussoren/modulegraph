@@ -210,6 +210,7 @@ def ReplacePackage(oldname, newname):
 
 class Node(object):
     def __init__(self, identifier):
+        self.debug = 999
         self.graphident = identifier
         self.identifier = identifier
         self.namespace = {}
@@ -366,11 +367,7 @@ class ModuleGraph(ObjectGraph):
                                     # There is a real __init__.py, ignore the setuptools hack
                                     continue
 
-                                m = pkgmap[identifier] = Package(identifier)
-                                m.packagepath = namespace_package_path(identifier, subdir)
-
-                                # As per comment at top of file, simulate runtime packagepath additions.
-                                m.packagepath = m.packagepath + packagePathMap.get(identifier, [])
+                                m = pkgmap[identifier] = subdir
 
         return pkgmap
 
@@ -432,8 +429,17 @@ class ModuleGraph(ObjectGraph):
         if name in self.nspackages:
             # name is a --single-version-externally-managed
             # namespace package (setuptools/distribute)
-            m = self.nspackages.pop(name)
-            self.addNode(m)
+            pathname = self.nspackages.pop(name)
+            m = self.createNode(Package, name)
+
+            # FIXME: The filename must be set to a string to ensure that py2app
+            # works, it is not clear yet why that is. Setting to None would be
+            # cleaner.
+            m.filename = '-'
+            m.packagepath = namespace_package_path(name, pathname)
+
+            # As per comment at top of file, simulate runtime packagepath additions.
+            m.packagepath = m.packagepath + packagePathMap.get(name, [])
             return m
 
         return None
@@ -613,6 +619,7 @@ class ModuleGraph(ObjectGraph):
 
         m = self.load_module(fqname, fp, pathname, stuff)
         if parent:
+            self.msgout(4, "create reference", m, "->", parent)
             self.createReference(m, parent)
             parent[partname] = m
         self.msgout(3, "import_module ->", m)
