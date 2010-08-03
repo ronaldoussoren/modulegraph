@@ -40,6 +40,9 @@ class TestNativeImport (unittest.TestCase):
         data = data.strip()
 
         sts = p.wait()
+
+        if sts != 0:
+            print data
         self.assertEquals(sts, 0)
         return data
         
@@ -76,6 +79,9 @@ class TestNativeImport (unittest.TestCase):
 
         m = self.importModule('pkg.subpkg.relative.mod')
         self.assertEquals(m, 'pkg.mod')
+
+        m = self.importModule('pkg.subpkg.mod2.mod')
+        self.assertEquals(m, 'pkg.sub2.mod')
 
 
 class TestModuleGraphImport (unittest.TestCase):
@@ -136,13 +142,22 @@ class TestModuleGraphImport (unittest.TestCase):
         self.assertIsInstance(node, modulegraph.SourceModule)
         self.assertEquals(node.identifier, 'pkg.relative')
         sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
-        self.assertEquals(sub.identifier, 'pkg.mod')
+        self.assertIsInstance(sub, modulegraph.Package)
+        self.assertEquals(sub.identifier, 'pkg')
 
         node = self.mf.findNode('pkg.subpkg.relative')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertEquals(node.identifier, 'pkg.relative')
+        self.assertEquals(node.identifier, 'pkg.subpkg.relative')
         sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
-        self.assertEquals(sub.identifier, 'pkg.mod')
+        self.assertIsInstance(sub, modulegraph.Package)
+        self.assertEquals(sub.identifier, 'pkg')
+
+        node = self.mf.findNode('pkg.subpkg.mod2')
+        self.assertIsInstance(node, modulegraph.SourceModule)
+        self.assertEquals(node.identifier, 'pkg.subpkg.mod2')
+        sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
+        self.assertIsInstance(sub, modulegraph.SourceModule)
+        self.assertEquals(sub.identifier, 'pkg.sub2.mod')
 
 if __name__ == "__main__":
     unittest.main()

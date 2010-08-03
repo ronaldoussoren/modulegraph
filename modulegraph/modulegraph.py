@@ -518,12 +518,19 @@ class ModuleGraph(ObjectGraph):
             qname = head
 
         else:
-            for i in xrange(level):
-                parent = self.determine_parent(parent)
-                if parent is None:
+            for i in xrange(level-1):
+                p_fqdn = parent.identifier.rsplit('.', 1)[0]
+                new_parent = self.findNode(p_fqdn)
+                if new_parent is None:
                     self.msg(2, "Relative import outside package")
+                assert new_parent is not parent
+                parent = new_parent
 
-            qname = parent.identifier + '.' + head
+            if head:
+                qname = parent.identifier + '.' + head
+            else:
+                qname = parent.identifier
+
 
         q = self.import_module(head, qname, parent)
         if q:
@@ -687,6 +694,7 @@ class ModuleGraph(ObjectGraph):
             HAVE_ARGUMENT=Bchr(dis.HAVE_ARGUMENT),
             LOAD_CONST=Bchr(dis.opname.index('LOAD_CONST')),
             IMPORT_NAME=Bchr(dis.opname.index('IMPORT_NAME')),
+            IMPORT_FROM=Bchr(dis.opname.index('IMPORT_FROM')),
             STORE_NAME=Bchr(dis.opname.index('STORE_NAME')),
             STORE_GLOBAL=Bchr(dis.opname.index('STORE_GLOBAL')),
             unpack=struct.unpack):
@@ -724,7 +732,7 @@ class ModuleGraph(ObjectGraph):
 
 
                 assert fromlist is None or type(fromlist) is tuple
-                oparg = unpack('<H', code[i - 2:i])[0]
+                oparg, = unpack('<H', code[i - 2:i])
                 name = co.co_names[oparg]
                 have_star = False
                 if fromlist is not None:
@@ -732,6 +740,8 @@ class ModuleGraph(ObjectGraph):
                     if '*' in fromlist:
                         fromlist.remove('*')
                         have_star = True
+
+                self.msgin(2, "Before import hook", repr(name), repr(m), repr(fromlist), repr(level))
 
                 self._safe_import_hook(name, m, fromlist, level)
 
