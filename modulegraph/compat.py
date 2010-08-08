@@ -9,7 +9,7 @@ if sys.version_info[0] == 2:
 
 else:
     def B(value):
-        return value.decode('latin1')
+        return value.encode('latin1')
 
     def Bchr(value):
         return value
