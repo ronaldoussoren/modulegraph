@@ -684,7 +684,7 @@ class ModuleGraph(ObjectGraph):
             sm = self.findNode(fullname)
             if sm is None:
                 try:
-                    sm = self.import_hook(name, caller, [sub])
+                    sm = self.import_hook(name, caller, [sub], level=level)
                 except ImportError, msg:
                     self.msg(2, "ImportError:", str(msg))
                     sm = self.createNode(MissingModule, fullname)

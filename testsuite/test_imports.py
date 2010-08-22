@@ -159,5 +159,25 @@ class TestModuleGraphImport (unittest.TestCase):
         self.assertIsInstance(sub, modulegraph.SourceModule)
         self.assertEquals(sub.identifier, 'pkg.sub2.mod')
 
+
+class TestRegressions (unittest.TestCase):
+    if not hasattr(unittest.TestCase, 'assertIsInstance'):
+        def assertIsInstance(self, value, types):
+            if not isinstance(value, types):
+                self.fail("%r is not an instance of %r", value, types)
+
+    def setUp(self):
+        root = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                'testpkg-regr1')
+        self.mf = modulegraph.ModuleGraph(path=[ root ] + sys.path)
+        self.mf.run_script(os.path.join(root, 'main_script.py'))
+
+    def testRegr1(self):
+        node = self.mf.findNode('pkg.a')
+        self.assertIsInstance(node, modulegraph.SourceModule)
+        node = self.mf.findNode('pkg.b')
+        self.assertIsInstance(node, modulegraph.SourceModule)
+
 if __name__ == "__main__":
     unittest.main()
