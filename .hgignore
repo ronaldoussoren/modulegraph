@@ -1,0 +1,5 @@
+modulegraph.egg-info
+testsuite/testpkg-setuptools-namespace/src/nspkg.egg-info
+
+syntax: glob
+*.pyc
