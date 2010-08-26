@@ -508,7 +508,7 @@ class ModuleGraph(ObjectGraph):
         Given a calling parent package and an import name determine the containing
         package for the name
         """
-        self.msgin(4, "find_head_package", parent, name)
+        self.msgin(4, "find_head_package", parent, name, level)
         if '.' in name:
             head, tail = name.split('.', 1)
         else:
@@ -522,6 +522,9 @@ class ModuleGraph(ObjectGraph):
 
         elif level == 0:
             qname = head
+
+            # Absolute import, ignore the parent
+            parent = None
 
         else:
             for i in xrange(level-1):
@@ -748,7 +751,7 @@ class ModuleGraph(ObjectGraph):
                         fromlist.remove('*')
                         have_star = True
 
-                self.msgin(2, "Before import hook", repr(name), repr(m), repr(fromlist), repr(level))
+                #self.msgin(2, "Before import hook", repr(name), repr(m), repr(fromlist), repr(level))
 
                 self._safe_import_hook(name, m, fromlist, level)
 
