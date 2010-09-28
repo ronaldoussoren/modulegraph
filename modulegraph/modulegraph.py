@@ -461,7 +461,7 @@ class ModuleGraph(ObjectGraph):
         else:
             contents = open(pathname, READ_MODE).read() + '\n'
 
-        co = compile(contents, pathname, 'exec')
+        co = compile(contents, pathname, 'exec', dont_inherit=True)
         if self.replace_paths:
             co = self.replace_paths_in_code(co)
         m = self.createNode(Script, pathname)
@@ -635,7 +635,7 @@ class ModuleGraph(ObjectGraph):
             self.msgout(2, "load_module ->", m)
             return m
         if typ == imp.PY_SOURCE:
-            co = compile(fp.read() + '\n', pathname, 'exec')
+            co = compile(fp.read() + '\n', pathname, 'exec', dont_inherit=True)
             cls = SourceModule
         elif typ == imp.PY_COMPILED:
             if fp.read(4) != imp.get_magic():
@@ -739,7 +739,6 @@ class ModuleGraph(ObjectGraph):
                     arg1, = unpack('<xH', code[i-6:i-3])
                     level = -1
                     fromlist = co.co_consts[arg1]
-
 
                 assert fromlist is None or type(fromlist) is tuple
                 oparg, = unpack('<H', code[i - 2:i])
