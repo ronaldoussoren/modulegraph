@@ -1,7 +1,9 @@
 """
-High-level module dependency finding interface
+modulegraph.find_modules - High-level module dependency finding interface
+=========================================================================
 
-See find_modules(...)
+History
+........ 
 
 Originally (loosely) based on code in py2exe's build_exe.py by Thomas Heller.
 """
@@ -10,14 +12,7 @@ import sys
 import os
 import imp
 import warnings
-try:
-    set
-except NameError:
-    from sets import Set as set
 
-#from modulegraph import modulegraph
-#from modulegraph.modulegraph import Alias
-#from modulegraph.util import imp_find_module
 import modulegraph
 from modulegraph import Alias
 from util import imp_find_module, imp_walk
@@ -60,6 +55,12 @@ def get_implies():
     return result
 
 def parse_mf_results(mf):
+    """
+    Return two lists: the first one contains the python files in the graph,
+    the second the C extensions.
+    
+    :param mf: a :class:`modulegraph.modulegraph.ModuleGraph` instance
+    """
     #for name, imports in get_hidden_imports().items():
     #    if name in mf.modules.keys():
     #        for mod in imports:
@@ -236,7 +237,8 @@ def find_modules(scripts=(), includes=(), packages=(), excludes=(), path=None, d
     High-level interface, takes iterables for:
         scripts, includes, packages, excludes
 
-    And returns a ModuleGraph instance, python_files, and extensions
+    And returns a :class:`modulegraph.modulegraph.ModuleGraph` instance, 
+    python_files, and extensions
 
     python_files is a list of pure python dependencies as modulegraph.Module objects,
     extensions is a list of platform-specific C extension dependencies as modulegraph.Module objects

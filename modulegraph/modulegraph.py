@@ -4,6 +4,7 @@ Find modules used by a script, using bytecode analysis.
 Based on the stdlib modulefinder by Thomas Heller and Just van Rossum,
 but uses a graph data structure and 2.3 features
 """
+from __future__ import absolute_import
 
 import pkg_resources
 
@@ -24,12 +25,11 @@ import re
 from altgraph.Dot import Dot
 from altgraph.ObjectGraph import ObjectGraph
 from altgraph.GraphUtil import filter_stack
-from altgraph.compat import *
 
-from compat import Bchr
+from modulegraph._compat import Bchr
 from itertools import imap, ifilter, izip, count
 
-import util
+from modulegraph import util
 
 READ_MODE = "U"  # universal line endings
 

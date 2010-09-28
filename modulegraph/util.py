@@ -1,7 +1,9 @@
+from __future__ import absolute_import
+
 import os
 import imp
 import sys
-from compat import B
+from modulegraph._compat import B
 
 def imp_find_module(name, path=None):
     """

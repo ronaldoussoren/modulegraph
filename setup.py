@@ -8,9 +8,13 @@ except ImportError:
     distribute_setup.use_setuptools()
 
 from setuptools import setup
+from distutils.core import PyPIRCCommand
+from distutils.errors  import DistutilsError
+from distutils import log
+
 import sys
 
-VERSION = '0.8.1'
+VERSION = '0.8.2'
 DESCRIPTION = "Python module dependency analysis tool"
 LONG_DESCRIPTION = """
 modulegraph determines a dependency graph between Python modules primarily
@@ -20,38 +24,10 @@ modulegraph uses similar methods to modulefinder from the standard library,
 but uses a more flexible internal representation, has more extensive 
 knowledge of special cases, and is extensible.
 
-NEWS
-====
-
-0.8.1
------
-
-This is a minor feature release
-
-Features:
-
-- ``from __future__ import absolute_import`` is now supported
-
-- Relative imports (``from . import module``) are now supported
-
-- Add support for namespace packages when those are installed
-  using option ``--single-version-externally-managed`` (part
-  of setuptools/distribute)
-
-0.8
----
-
-This is a minor feature release
-
-Features:
-
-- Initial support for Python 3.x
-
-- It is now possible to run the test suite
-  using ``python setup.py test``.
-
-  (The actual test suite is still fairly minimal though)
 """
+
+LONG_DESCRIPTION += open('doc/changelog.rst', 'rU').read()
+
 
 CLASSIFIERS = filter(None, map(str.strip,
 """                 
@@ -69,7 +45,145 @@ if sys.version_info[0] == 3:
 else:
     extra_args = dict()
 
+class upload_docs (PyPIRCCommand):
+    description = "upload sphinx documentation"
+    user_options = PyPIRCCommand.user_options
 
+    def initialize_options(self):
+        PyPIRCCommand.initialize_options(self)
+        self.username = ''
+        self.password = ''
+
+
+    def finalize_options(self):
+        PyPIRCCommand.finalize_options(self)
+        config = self._read_pypirc()
+        if config != {}:
+            self.username = config['username']
+            self.password = config['password']
+
+
+    def run(self):
+        import subprocess
+        import shutil
+        import zipfile
+        import os
+        import urllib
+        import StringIO
+        from base64 import standard_b64encode
+        import httplib
+        import urlparse
+
+        # Extract the package name from distutils metadata
+        meta = self.distribution.metadata
+        name = meta.get_name()
+
+        # Run sphinx
+        if os.path.exists('doc/_build'):
+            shutil.rmtree('doc/_build')
+        os.mkdir('doc/_build')
+
+        p = subprocess.Popen(['make', 'html'],
+            cwd='doc')
+        exit = p.wait()
+        if exit != 0:
+            raise DistutilsError("sphinx-build failed")
+
+        # Collect sphinx output
+        if not os.path.exists('dist'):
+            os.mkdir('dist')
+        zf = zipfile.ZipFile('dist/%s-docs.zip'%(name,), 'w', 
+                compression=zipfile.ZIP_DEFLATED)
+
+        for toplevel, dirs, files in os.walk('doc/_build/html'):
+            for fn in files:
+                fullname = os.path.join(toplevel, fn)
+                relname = os.path.relpath(fullname, 'doc/_build/html')
+
+                print ("%s -> %s"%(fullname, relname))
+
+                zf.write(fullname, relname)
+
+        zf.close()
+
+        # Upload the results, this code is based on the distutils
+        # 'upload' command.
+        content = open('dist/%s-docs.zip'%(name,), 'rb').read()
+        
+        data = {
+            ':action': 'doc_upload',
+            'name': name,
+            'content': ('%s-docs.zip'%(name,), content),
+        }
+        auth = "Basic " + standard_b64encode(self.username + ":" +
+             self.password)
+
+
+        boundary = '--------------GHSKFJDLGDS7543FJKLFHRE75642756743254'
+        sep_boundary = '\n--' + boundary
+        end_boundary = sep_boundary + '--'
+        body = StringIO.StringIO()
+        for key, value in data.items():
+            if not isinstance(value, list):
+                value = [value]
+
+            for value in value:
+                if isinstance(value, tuple):
+                    fn = ';filename="%s"'%(value[0])
+                    value = value[1]
+                else:
+                    fn = ''
+
+                body.write(sep_boundary)
+                body.write('\nContent-Disposition: form-data; name="%s"'%key)
+                body.write(fn)
+                body.write("\n\n")
+                body.write(value)
+
+        body.write(end_boundary)
+        body.write('\n')
+        body = body.getvalue()
+
+        self.announce("Uploading documentation to %s"%(self.repository,), log.INFO)
+
+        schema, netloc, url, params, query, fragments = \
+                urlparse.urlparse(self.repository)
+
+
+        if schema == 'http':
+            http = httplib.HTTPConnection(netloc)
+        elif schema == 'https':
+            http = httplib.HTTPSConnection(netloc)
+        else:
+            raise AssertionError("unsupported schema "+schema)
+
+        data = ''
+        loglevel = log.INFO
+        try:
+            http.connect()
+            http.putrequest("POST", url)
+            http.putheader('Content-type',
+                'multipart/form-data; boundary=%s'%boundary)
+            http.putheader('Content-length', str(len(body)))
+            http.putheader('Authorization', auth)
+            http.endheaders()
+            http.send(body)
+        except socket.error:
+            e = socket.exc_info()[1]
+            self.announce(str(e), log.ERROR)
+            return
+
+        r = http.getresponse()
+        if r.status in (200, 301):
+            self.announce('Upload succeeded (%s): %s' % (r.status, r.reason),
+                log.INFO)
+        else:
+            self.announce('Upload failed (%s): %s' % (r.status, r.reason),
+                log.ERROR)
+
+            print ('-'*75) 
+            print (r.read())
+            print ('-'*75)
 
 setup(
     name="modulegraph",
@@ -88,6 +202,9 @@ setup(
     platforms=['any'],
     install_requires=["altgraph>=0.7"],
     zip_safe=True,
-    test_suite='testsuite',
+    test_suite='modulegraph_tests',
+    cmdclass=dict(
+        upload_docs=upload_docs,
+    ),
     **extra_args
 )
