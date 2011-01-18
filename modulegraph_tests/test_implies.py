@@ -12,7 +12,7 @@ class ImpliesTestCase(unittest.TestCase):
 
         # First check that 'syslog' isn't accidently in the graph:
         mg = modulegraph.ModuleGraph(path=[root]+sys.path)
-        mg.run_script('testpkg-relimport/script.py')
+        mg.run_script(os.path.join(root, 'script.py'))
         node = mg.findNode('mod')
         self.assertIsInstance(node, modulegraph.SourceModule)
 
@@ -25,7 +25,7 @@ class ImpliesTestCase(unittest.TestCase):
         mg = modulegraph.ModuleGraph(path=[root]+sys.path, implies={
             'mod': ['syslog']})
         self.assertEqual(node, None)
-        mg.run_script('testpkg-relimport/script.py')
+        mg.run_script(os.path.join(root, 'script.py'))
         node = mg.findNode('mod')
         self.assertIsInstance(node, modulegraph.SourceModule)
 
@@ -43,7 +43,7 @@ class ImpliesTestCase(unittest.TestCase):
 
         # First check that 'syslog' isn't accidently in the graph:
         mg = modulegraph.ModuleGraph(path=[root]+sys.path)
-        mg.run_script('testpkg-relimport/script.py')
+        mg.run_script(os.path.join(root, 'script.py'))
         node = mg.findNode('mod')
         self.assertIsInstance(node, modulegraph.SourceModule)
 
@@ -58,7 +58,7 @@ class ImpliesTestCase(unittest.TestCase):
         node = mg.findNode('syslog')
         self.assertEqual(node, None)
 
-        mg.run_script('testpkg-relimport/script.py')
+        mg.run_script(os.path.join(root, 'script.py'))
         node = mg.findNode('pkg.relative')
         self.assertIsInstance(node, modulegraph.SourceModule)
 
