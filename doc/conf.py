@@ -14,13 +14,13 @@
 import sys, os
 
 def get_version():
-        fn = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            'setup.py')
-        for ln in open(fn):
-            if ln.startswith('VERSION'):
-                version = ln.split('=')[-1].strip()[1:-1]
-                return version
+    fn = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        'setup.py')
+    for ln in open(fn):
+        if ln.startswith('VERSION'):
+            version = ln.split('=')[-1].strip()[1:-1]
+            return version
 
 
 # If extensions (or modules to document with autodoc) are in another directory,

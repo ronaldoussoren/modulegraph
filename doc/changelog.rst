@@ -6,12 +6,19 @@ Release history
 
 This is a minor feature release
 
+
 Features:
 
 - Documentation is now generated using `sphinx <http://pypi.python.org/pypi/sphinx>`_
   and can be viewed at <http://packages.python.org/modulegraph>.
 
 - The repository has moved to bitbucket
+
+
+Bug fixes:
+
+- The ``__cmp__`` method of a Node no longer causes an exception
+  when the compared-to object is not a Node. Patch by Ivan Kozik.
 
 
 0.8.1
