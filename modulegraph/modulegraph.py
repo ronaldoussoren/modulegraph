@@ -353,7 +353,12 @@ class ModuleGraph(ObjectGraph):
             importer = pkg_resources.get_importer(entry)
 
             if isinstance(importer, ImpImporter):
-                for fn in os.listdir(entry):
+                try:
+                    ldir = os.listdir(entry)
+                except os.error:
+                    continue
+
+                for fn in ldir:
                     if fn.endswith('-nspkg.pth'):
                         for ln in open(os.path.join(entry, fn), 'rU'):
                             if ln.startswith(SETUPTOOLS_NAMESPACEPKG_PTH):

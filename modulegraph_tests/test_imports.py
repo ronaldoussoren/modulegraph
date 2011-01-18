@@ -179,5 +179,15 @@ class TestRegressions (unittest.TestCase):
         node = self.mf.findNode('pkg.b')
         self.assertIsInstance(node, modulegraph.SourceModule)
 
+
+    def testMissingPathEntry(self):
+        root = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                'nosuchdirectory')
+        try:
+            mf = modulegraph.ModuleGraph(path=[ root ] + sys.path)
+        except os.error:
+            self.fail('modulegraph initialiser raises os.error')
+
 if __name__ == "__main__":
     unittest.main()

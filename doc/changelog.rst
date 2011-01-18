@@ -20,6 +20,12 @@ Bug fixes:
 - The ``__cmp__`` method of a Node no longer causes an exception
   when the compared-to object is not a Node. Patch by Ivan Kozik.
 
+- Issue #1: The initialiser for ``modulegraph.ModuleGraph`` caused an exception
+  when an entry on the path (``sys.path``) doesn't actually exist.
+
+  Fix by "skurylo", testcase by Ronald.
+
+
 
 0.8.1
 -----
