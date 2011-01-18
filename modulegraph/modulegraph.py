@@ -238,7 +238,11 @@ class Node(object):
         return self.namespace.get(*args)
 
     def __cmp__(self, other):
-        return cmp(self.graphident, other.graphident)
+        try:
+            otherIdent = getattr(other, 'graphident')
+        except AttributeError:
+            return NotImplemented
+        return cmp(self.graphident, otherIdent)
 
     def __hash__(self):
         return hash(self.graphident)
