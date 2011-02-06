@@ -2,7 +2,7 @@ import sys
 
 if sys.version_info[0] == 2:
     def B(value):
-        return B
+        return value
 
     def Bchr(value):
         return chr(value)

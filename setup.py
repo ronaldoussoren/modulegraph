@@ -8,6 +8,7 @@ except ImportError:
     distribute_setup.use_setuptools()
 
 from setuptools import setup
+from setuptools.command import test
 from distutils.core import PyPIRCCommand
 from distutils.errors  import DistutilsError
 from distutils import log
@@ -44,6 +45,39 @@ if sys.version_info[0] == 3:
     extra_args = dict(use_2to3=True)
 else:
     extra_args = dict()
+
+class modulegraph_test (test.test):
+    def run(self):
+        p = list(self.distribution.packages)
+        try:
+            cmd = self.get_finalized_command('build_py')
+            test.test.run(self)
+        finally:
+            self.distribution.packages[:] = p
+
+    def run_tests(self):
+        import sys, os
+
+        if sys.version_info[0] == 3:
+            rootdir =  os.path.dirname(os.path.abspath(__file__))
+            if rootdir in sys.path:
+                sys.path.remove(rootdir)
+
+        ei_cmd = self.get_finalized_command('egg_info')
+        egg_name = ei_cmd.egg_name.replace('-', '_')
+
+        to_remove = []
+        for dirname in sys.path:
+            bn = os.path.basename(dirname)
+            if bn.startswith(egg_name + "-"):
+                to_remove.append(dirname)
+
+        for dirname in to_remove:
+            log.info("removing installed %r from sys.path before testing"%(dirname,))
+            sys.path.remove(dirname)
+
+        test.test.run_tests(self)
+
 
 class upload_docs (PyPIRCCommand):
     description = "upload sphinx documentation"
@@ -205,6 +239,7 @@ setup(
     test_suite='modulegraph_tests',
     cmdclass=dict(
         upload_docs=upload_docs,
+        test=modulegraph_test,
     ),
     **extra_args
 )
