@@ -29,6 +29,9 @@ Bug fixes:
   introduced after python 2.5, which made it impossible to install
   with that version of python.
 
+- Due to the switch to mercurial setuptools will no longer include
+  all required files. Fixed by adding a MANIFEST.in file
+
 
 0.8.1
 -----
