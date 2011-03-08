@@ -25,12 +25,11 @@ Bug fixes:
 
   Fix by "skurylo", testcase by Ronald.
 
-- The ``setup.py`` command relied on distutils functionality that was
-  introduced after python 2.5, which made it impossible to install
-  with that version of python.
+- The code no longer worked with python 2.5, this release fixes that.
 
 - Due to the switch to mercurial setuptools will no longer include
   all required files. Fixed by adding a MANIFEST.in file
+
 
 
 0.8.1

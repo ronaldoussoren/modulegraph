@@ -41,7 +41,11 @@ READ_MODE = "U"  # universal line endings
 # Note this is a mapping is lists of paths.
 packagePathMap = {}
 
-SETUPTOOLS_NAMESPACEPKG_PTH="import sys,types,os; p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('"
+SETUPTOOLS_NAMESPACEPKG_PTHs=(
+    "import sys,types,os; p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('",
+    "import sys,new,os; p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('",
+)
+
 
 
 def namespace_package_path(fqname, pathname, syspath=None):
@@ -361,22 +365,24 @@ class ModuleGraph(ObjectGraph):
                 for fn in ldir:
                     if fn.endswith('-nspkg.pth'):
                         for ln in open(os.path.join(entry, fn), 'rU'):
-                            if ln.startswith(SETUPTOOLS_NAMESPACEPKG_PTH):
-                                try:
-                                    start = len(SETUPTOOLS_NAMESPACEPKG_PTH)-2
-                                    stop = ln.index(')', start)+1
-                                except ValueError:
-                                    continue
+                            for pfx in SETUPTOOLS_NAMESPACEPKG_PTHs:
+                                if ln.startswith(pfx):
+                                    try:
+                                        start = len(pfx)-2
+                                        stop = ln.index(')', start)+1
+                                    except ValueError:
+                                        continue
 
-                                # XXX: this is unsafe
-                                pkg = eval(ln[start:stop])
-                                identifier = ".".join(pkg)
-                                subdir = os.path.join(entry, *pkg)
-                                if os.path.exists(os.path.join(subdir, '__init__.py')):
-                                    # There is a real __init__.py, ignore the setuptools hack
-                                    continue
+                                    # XXX: this is unsafe
+                                    pkg = eval(ln[start:stop])
+                                    identifier = ".".join(pkg)
+                                    subdir = os.path.join(entry, *pkg)
+                                    if os.path.exists(os.path.join(subdir, '__init__.py')):
+                                        # There is a real __init__.py, ignore the setuptools hack
+                                        continue
 
-                                m = pkgmap[identifier] = subdir
+                                    m = pkgmap[identifier] = subdir
+                                    break
 
         return pkgmap
 
@@ -470,7 +476,7 @@ class ModuleGraph(ObjectGraph):
         else:
             contents = open(pathname, READ_MODE).read() + '\n'
 
-        co = compile(contents, pathname, 'exec', dont_inherit=True)
+        co = compile(contents, pathname, 'exec', 0, True)
         if self.replace_paths:
             co = self.replace_paths_in_code(co)
         m = self.createNode(Script, pathname)
@@ -644,7 +650,7 @@ class ModuleGraph(ObjectGraph):
             self.msgout(2, "load_module ->", m)
             return m
         if typ == imp.PY_SOURCE:
-            co = compile(fp.read() + '\n', pathname, 'exec', dont_inherit=True)
+            co = compile(fp.read() + '\n', pathname, 'exec', 0, True)
             cls = SourceModule
         elif typ == imp.PY_COMPILED:
             if fp.read(4) != imp.get_magic():

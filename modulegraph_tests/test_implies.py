@@ -5,6 +5,11 @@ import os, shutil, sys
 from modulegraph import modulegraph
 
 class ImpliesTestCase(unittest.TestCase):
+    if not hasattr(unittest.TestCase, 'assertIsInstance'):
+        def assertIsInstance(self, object, types, message=None):
+            self.assertTrue(isinstance(object, types),
+                    message or '%r is not an instance of %r'%(object, types))
+                
     def testBasicImplies(self):
         root = os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
