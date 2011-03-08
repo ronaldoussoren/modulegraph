@@ -25,6 +25,9 @@ Bug fixes:
 
   Fix by "skurylo", testcase by Ronald.
 
+- The ``setup.py`` command relied on distutils functionality that was
+  introduced after python 2.5, which made it impossible to install
+  with that version of python.
 
 
 0.8.1
