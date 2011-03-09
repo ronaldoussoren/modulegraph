@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import os
 import imp
 import sys
+import re
 from modulegraph._compat import B
 
 def imp_find_module(name, path=None):
@@ -68,17 +69,19 @@ def imp_walk(name):
     raise ImportError('No module named %s' % (name,))
 
 
-if sys.version_info[0] != 2:
-    import re
-    cookie_re = re.compile(B("coding[:=]\s*([-\w.]+)"))
+cookie_re = re.compile(B("coding[:=]\s*([-\w.]+)"))
+if sys.version_info[0] == 2:
+    default_encoding = 'ascii'
+else:
+    default_encoding = 'utf-8'
 
-    def guess_encoding(fp):
+def guess_encoding(fp):
 
-        for i in range(2):
-            ln = fp.readline()
+    for i in range(2):
+        ln = fp.readline()
 
-            m = cookie_re.search(ln)
-            if m is not None:
-                return m.group(1).decode('ascii')
+        m = cookie_re.search(ln)
+        if m is not None:
+            return m.group(1).decode('ascii')
 
-        return 'utf-8'
+    return default_encoding
