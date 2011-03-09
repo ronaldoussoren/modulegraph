@@ -14,6 +14,10 @@ Features:
 
 - The repository has moved to bitbucket
 
+- Renamed ``modulegraph.modulegraph.AddPackagePath`` to ``addPackagePath``,
+  likewise ``ReplacePackage`` is now ``replacePackage``. The old name is still
+  available, but is deprecated and will be removed before the 1.0 release.
+
 
 Bug fixes:
 
