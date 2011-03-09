@@ -41,6 +41,11 @@ READ_MODE = "U"  # universal line endings
 # Note this is a mapping is lists of paths.
 packagePathMap = {}
 
+# Prefix used in magic .pth files used by setuptools to create namespace
+# packages without an __init__.py file. 
+#
+# The value is a list of such prefixes as the prefix varies with versions of 
+# setuptools.
 SETUPTOOLS_NAMESPACEPKG_PTHs=(
     "import sys,types,os; p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('",
     "import sys,new,os; p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('",
@@ -197,7 +202,14 @@ def moduleInfoForPath(path, suffixes=imp.get_suffixes()):
     return None
 
 # A Public interface
+import warnings
 def AddPackagePath(packagename, path):
+    warnings.warn("Use addPackagePath instead of AddPackagePath",
+            DeprecationWarning) 
+
+    addPackagePath(packagename, path)
+
+def addPackagePath(packagename, path):
     paths = packagePathMap.get(packagename, [])
     paths.append(path)
     packagePathMap[packagename] = paths
@@ -208,8 +220,12 @@ replacePackageMap = {}
 # way the _xmlplus package injects itself under the name "xml" into
 # sys.modules at runtime by calling ReplacePackage("_xmlplus", "xml")
 # before running ModuleGraph.
-
 def ReplacePackage(oldname, newname):
+    warnings.warn("use replacePackage instead of ReplacePackage",
+            DeprecationWarning)
+    replacePackage(oldname, newname)
+
+def replacePackage(oldname, newname):
     replacePackageMap[oldname] = newname
 
 class Node(object):
