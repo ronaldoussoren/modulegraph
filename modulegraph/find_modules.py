@@ -122,11 +122,6 @@ def plat_prepare(includes, packages, excludes):
             'macpath',
         ])
 
-    if not sys.platform == 'mac':
-        excludes.update([
-            'mkcwproject',
-        ])
-
     if not sys.platform == 'win32':
         # only win32
         excludes.update([
@@ -234,7 +229,7 @@ def _replacePackages():
         '_xmlplus':     'xml',
     }
     for k,v in REPLACEPACKAGES.iteritems():
-        modulegraph.ReplacePackage(k, v)
+        modulegraph.replacePackage(k, v)
 
 _replacePackages()
 
