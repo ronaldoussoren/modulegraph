@@ -31,13 +31,16 @@ from itertools import imap, ifilter, izip, count
 
 from modulegraph import util
 
-READ_MODE = "U"  # universal line endings
+# File open mode for reading (univeral newlines)
+READ_MODE = "rU"  
+
+
 
 # Modulegraph does a good job at simulating Python's, but it can not
 # handle packagepath modifications packages make at runtime.  Therefore there
 # is a mechanism whereby you can register extra paths in this map for a
 # package, and it will be honored.
-
+#
 # Note this is a mapping is lists of paths.
 packagePathMap = {}
 
@@ -52,8 +55,13 @@ SETUPTOOLS_NAMESPACEPKG_PTHs=(
 )
 
 
-
 def namespace_package_path(fqname, pathname, syspath=None):
+    """
+    Return the __path__ for the python package in *fqname*.
+
+    This function uses setuptools metadata to extract information
+    about namespace packages from installed eggs.
+    """
     path = []
 
     if syspath is None:
@@ -75,6 +83,33 @@ def namespace_package_path(fqname, pathname, syspath=None):
     
     else:
         return path
+
+_strs = re.compile(r'''^\s*["']([A-Za-z0-9_]+)["'],?\s*''')
+def _eval_str_tuple(value):
+    """
+    Input is the repr of a tuple of strings, output
+    is that tuple.
+
+    This only works with a tuple where the members are
+    python identifiers.
+    """
+    if not (value.startswith('(') and value.endswith(')')):
+        raise ValueError(value)
+
+    orig_value = value
+    value = value[1:-1]
+
+    result = []
+    while value:
+        m = _strs.match(value)
+        if m is None:
+            raise ValueError(orig_value)
+
+        result.append(m.group(1))
+        value = value[len(m.group(0)):]
+
+    return tuple(result)
+
 
 def os_listdir(path):
     """
@@ -353,7 +388,7 @@ class ModuleGraph(ObjectGraph):
         # (used by system packagers and also by pip)
         #
         # When this option is used namespace packages are writting to
-        # disk *without* and __init__.py file, which means the regular
+        # disk *without* an __init__.py file, which means the regular
         # import machinery will not find them.
         # 
         # We therefore explicitly look for the hack used by
@@ -389,8 +424,7 @@ class ModuleGraph(ObjectGraph):
                                     except ValueError:
                                         continue
 
-                                    # XXX: this is unsafe
-                                    pkg = eval(ln[start:stop])
+                                    pkg = _eval_str_tuple(ln[start:stop])
                                     identifier = ".".join(pkg)
                                     subdir = os.path.join(entry, *pkg)
                                     if os.path.exists(os.path.join(subdir, '__init__.py')):
