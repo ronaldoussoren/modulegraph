@@ -24,6 +24,9 @@ __all__ = [
 def get_implies():
     result = {
         # imports done from builtin modules in C code (untrackable by modulegraph)
+        "_curses":      ["curses"],
+        "posix":        ["resource"],
+        "gc",           ["time"],
         "time":         ["_strptime"],
         "datetime":     ["time"],
         "MacOS":        ["macresource"],
@@ -51,6 +54,9 @@ def get_implies():
         for fn in files:
             if fn.endswith('.py') and fn != "__init__.py":
                 result["_elementtree"].append("xml.etree.%s"%(fn[:-3],))
+
+    if sys.version_info[:2] >= (2, 6):
+        result['future_builtins'] = ['itertools']
 
     return result
 
