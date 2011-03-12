@@ -26,7 +26,7 @@ def get_implies():
         # imports done from builtin modules in C code (untrackable by modulegraph)
         "_curses":      ["curses"],
         "posix":        ["resource"],
-        "gc",           ["time"],
+        "gc":           ["time"],
         "time":         ["_strptime"],
         "datetime":     ["time"],
         "MacOS":        ["macresource"],

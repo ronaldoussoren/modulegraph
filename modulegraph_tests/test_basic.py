@@ -22,7 +22,8 @@ class OsListDirTestCase(unittest.TestCase):
 
         # defect zip file: raises IOError no such file ...
         fn = self.tmp_dir + "/empty.zip"
-        open(fn, "w")
+        fp = open(fn, "w")
+        fp.close()
         self.assertRaises((IOError, OSError),
                 modulegraph.os_listdir, fn)
 

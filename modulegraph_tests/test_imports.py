@@ -42,46 +42,46 @@ class TestNativeImport (unittest.TestCase):
         sts = p.wait()
 
         if sts != 0:
-            print data
-        self.assertEquals(sts, 0)
+            print (data)
+        self.assertEqual(sts, 0)
         return data
         
 
     def testRootModule(self):
         m = self.importModule('mod')
-        self.assertEquals(m, 'mod')
+        self.assertEqual(m, 'mod')
 
     def testRootPkg(self):
         m = self.importModule('pkg')
-        self.assertEquals(m, 'pkg')
+        self.assertEqual(m, 'pkg')
 
     def testSubModule(self):
         m = self.importModule('pkg.mod')
-        self.assertEquals(m, 'pkg.mod')
+        self.assertEqual(m, 'pkg.mod')
 
     if sys.version_info[0] == 2:
         def testOldStyle(self):
             m = self.importModule('pkg.oldstyle.mod')
-            self.assertEquals(m, 'pkg.mod')
+            self.assertEqual(m, 'pkg.mod')
     else:
         # python3 always has __future__.absolute_import
         def testOldStyle(self):
             m = self.importModule('pkg.oldstyle.mod')
-            self.assertEquals(m, 'mod')
+            self.assertEqual(m, 'mod')
 
     def testNewStyle(self):
         m = self.importModule('pkg.toplevel.mod')
-        self.assertEquals(m, 'mod')
+        self.assertEqual(m, 'mod')
     
     def testRelativeImport(self):
         m = self.importModule('pkg.relative.mod')
-        self.assertEquals(m, 'pkg.mod')
+        self.assertEqual(m, 'pkg.mod')
 
         m = self.importModule('pkg.subpkg.relative.mod')
-        self.assertEquals(m, 'pkg.mod')
+        self.assertEqual(m, 'pkg.mod')
 
         m = self.importModule('pkg.subpkg.mod2.mod')
-        self.assertEquals(m, 'pkg.sub2.mod')
+        self.assertEqual(m, 'pkg.sub2.mod')
 
 
 class TestModuleGraphImport (unittest.TestCase):
@@ -102,62 +102,62 @@ class TestModuleGraphImport (unittest.TestCase):
     def testRootModule(self):
         node = self.mf.findNode('mod')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertEquals(node.identifier, 'mod')
+        self.assertEqual(node.identifier, 'mod')
 
     def testRootPkg(self):
         node = self.mf.findNode('pkg')
         self.assertIsInstance(node, modulegraph.Package)
-        self.assertEquals(node.identifier, 'pkg')
+        self.assertEqual(node.identifier, 'pkg')
 
     def testSubModule(self):
         node = self.mf.findNode('pkg.mod')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertEquals(node.identifier, 'pkg.mod')
+        self.assertEqual(node.identifier, 'pkg.mod')
 
     if sys.version_info[0] == 2:
         def testOldStyle(self):
             node = self.mf.findNode('pkg.oldstyle')
             self.assertIsInstance(node, modulegraph.SourceModule)
-            self.assertEquals(node.identifier, 'pkg.oldstyle')
+            self.assertEqual(node.identifier, 'pkg.oldstyle')
             sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
-            self.assertEquals(sub.identifier, 'pkg.mod')
+            self.assertEqual(sub.identifier, 'pkg.mod')
     else:
         # python3 always has __future__.absolute_import
         def testOldStyle(self):
             node = self.mf.findNode('pkg.oldstyle')
             self.assertIsInstance(node, modulegraph.SourceModule)
-            self.assertEquals(node.identifier, 'pkg.oldstyle')
+            self.assertEqual(node.identifier, 'pkg.oldstyle')
             sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
-            self.assertEquals(sub.identifier, 'mod')
+            self.assertEqual(sub.identifier, 'mod')
 
     def testNewStyle(self):
         node = self.mf.findNode('pkg.toplevel')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertEquals(node.identifier, 'pkg.toplevel')
+        self.assertEqual(node.identifier, 'pkg.toplevel')
         sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
-        self.assertEquals(sub.identifier, 'mod')
+        self.assertEqual(sub.identifier, 'mod')
     
     def testRelativeImport(self):
         node = self.mf.findNode('pkg.relative')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertEquals(node.identifier, 'pkg.relative')
+        self.assertEqual(node.identifier, 'pkg.relative')
         sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
         self.assertIsInstance(sub, modulegraph.Package)
-        self.assertEquals(sub.identifier, 'pkg')
+        self.assertEqual(sub.identifier, 'pkg')
 
         node = self.mf.findNode('pkg.subpkg.relative')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertEquals(node.identifier, 'pkg.subpkg.relative')
+        self.assertEqual(node.identifier, 'pkg.subpkg.relative')
         sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
         self.assertIsInstance(sub, modulegraph.Package)
-        self.assertEquals(sub.identifier, 'pkg')
+        self.assertEqual(sub.identifier, 'pkg')
 
         node = self.mf.findNode('pkg.subpkg.mod2')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertEquals(node.identifier, 'pkg.subpkg.mod2')
+        self.assertEqual(node.identifier, 'pkg.subpkg.mod2')
         sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
         self.assertIsInstance(sub, modulegraph.SourceModule)
-        self.assertEquals(sub.identifier, 'pkg.sub2.mod')
+        self.assertEqual(sub.identifier, 'pkg.sub2.mod')
 
 
 class TestRegressions (unittest.TestCase):

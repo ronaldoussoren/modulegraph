@@ -37,7 +37,7 @@ class TestPythonBehaviour (unittest.TestCase):
 
         os.mkdir(test_dir)
         exit = install_testpkg(test_dir)
-        self.assertEquals(exit, 0)
+        self.assertEqual(exit, 0)
 
     def tearDown(self):
         test_dir = os.path.join(gRootDir, 'test.dir')
@@ -79,18 +79,18 @@ class TestPythonBehaviour (unittest.TestCase):
         sts = p.wait()
 
         if sts != 0:
-            print data
+            print (data)
             self.fail("import of %r failed"%(name,))
 
         return data
 
     def testToplevel(self):
         m = self.importModule('nspkg.module')
-        self.assertEquals(m, 'nspkg.module')
+        self.assertEqual(m, 'nspkg.module')
 
     def testSub(self):
         m = self.importModule('nspkg.nssubpkg.sub')
-        self.assertEquals(m, 'nspkg.nssubpkg.sub')
+        self.assertEqual(m, 'nspkg.nssubpkg.sub')
 
 class TestModuleGraphImport (unittest.TestCase):
     if not hasattr(unittest.TestCase, 'assertIsInstance'):
@@ -105,7 +105,7 @@ class TestModuleGraphImport (unittest.TestCase):
 
         os.mkdir(test_dir)
         exit = install_testpkg(test_dir)
-        self.assertEquals(exit, 0)
+        self.assertEqual(exit, 0)
 
         self.mf = modulegraph.ModuleGraph(path=[ test_dir ] + sys.path)
 
@@ -121,22 +121,22 @@ class TestModuleGraphImport (unittest.TestCase):
 
         node = self.mf.findNode('nspkg')
         self.assertIsInstance(node, modulegraph.Package)
-        self.assertEquals(node.identifier, 'nspkg')
-        self.assertEquals(node.filename, '-')
+        self.assertEqual(node.identifier, 'nspkg')
+        self.assertEqual(node.filename, '-')
 
     def testRootPkgModule(self):
         self.mf.import_hook('nspkg.module')
 
         node = self.mf.findNode('nspkg.module')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertEquals(node.identifier, 'nspkg.module')
+        self.assertEqual(node.identifier, 'nspkg.module')
 
     def testSubRootPkgModule(self):
         self.mf.import_hook('nspkg.nssubpkg.sub')
 
         node = self.mf.findNode('nspkg.nssubpkg.sub')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertEquals(node.identifier, 'nspkg.nssubpkg.sub')
+        self.assertEqual(node.identifier, 'nspkg.nssubpkg.sub')
 
 
         node = self.mf.findNode('nspkg')

@@ -18,6 +18,7 @@ except ImportError:
     from distutils.core import Command
 
 import sys
+import os
 
 VERSION = '0.8.2'
 DESCRIPTION = "Python module dependency analysis tool"
@@ -49,6 +50,26 @@ if sys.version_info[0] == 3:
     extra_args = dict(use_2to3=True)
 else:
     extra_args = dict()
+
+def test_loader():
+    import unittest
+
+    topdir = os.path.dirname(os.path.abspath(__file__))
+    testModules = [ fn[:-3] for fn in os.listdir(os.path.join(topdir, 'modulegraph_tests')) if fn.endswith('.py')]
+    sys.path.insert(0, os.path.join(topdir, 'modulegraph_tests'))
+
+    suites = []
+    for modName in testModules:
+        try:
+            module = __import__(modName)
+        except ImportError:
+            print ("SKIP %s: %s"%(modName, sys.exc_info()[1]))
+            continue
+
+        s = unittest.defaultTestLoader.loadTestsFromModule(module)
+        suites.append(s)
+
+    return unittest.TestSuite(suites)
 
 class modulegraph_test (test.test):
     def run(self):
@@ -255,7 +276,7 @@ setup(
     platforms=['any'],
     install_requires=["altgraph>=0.7"],
     zip_safe=True,
-    test_suite='modulegraph_tests',
+    test_suite='__main__.test_loader',
     cmdclass=dict(
         upload_docs=upload_docs,
         test=modulegraph_test,

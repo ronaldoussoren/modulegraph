@@ -24,7 +24,6 @@ class ImpliesTestCase(unittest.TestCase):
         node = mg.findNode('syslog')
         self.assertEqual(node, None)
 
-
         # Now check that adding an implied dependency actually adds
         # 'syslog' to the graph:
         mg = modulegraph.ModuleGraph(path=[root]+sys.path, implies={

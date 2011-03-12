@@ -190,7 +190,13 @@ def find_module(name, path=None):
                 if sys.version_info[0] == 2:
                     fp = open(filename, READ_MODE)
                 else:
-                    fp = open(filename, READ_MODE, encoding=util.guess_encoding(open(filename, 'rb')))
+                    fp = open(filename, 'rb')
+                    try:
+                        encoding = util.guess_encoding(fp)
+                    finally:
+                        fp.close()
+
+                    fp = open(filename, READ_MODE, encoding=encoding)
                 description = ('.py', READ_MODE, imp.PY_SOURCE)
                 return (fp, filename, description)
 
@@ -207,6 +213,7 @@ def find_module(name, path=None):
         elif hasattr(loader, 'get_code'):
             co = loader.get_code(name)
             fp = _code_to_file(co)
+
 
         pathname = os.path.join(entry, *name.split('.'))
 
@@ -415,24 +422,28 @@ class ModuleGraph(ObjectGraph):
 
                 for fn in ldir:
                     if fn.endswith('-nspkg.pth'):
-                        for ln in open(os.path.join(entry, fn), 'rU'):
-                            for pfx in SETUPTOOLS_NAMESPACEPKG_PTHs:
-                                if ln.startswith(pfx):
-                                    try:
-                                        start = len(pfx)-2
-                                        stop = ln.index(')', start)+1
-                                    except ValueError:
-                                        continue
+                        fp = open(os.path.join(entry, fn), 'rU')
+                        try:
+                            for ln in fp:
+                                for pfx in SETUPTOOLS_NAMESPACEPKG_PTHs:
+                                    if ln.startswith(pfx):
+                                        try:
+                                            start = len(pfx)-2
+                                            stop = ln.index(')', start)+1
+                                        except ValueError:
+                                            continue
 
-                                    pkg = _eval_str_tuple(ln[start:stop])
-                                    identifier = ".".join(pkg)
-                                    subdir = os.path.join(entry, *pkg)
-                                    if os.path.exists(os.path.join(subdir, '__init__.py')):
-                                        # There is a real __init__.py, ignore the setuptools hack
-                                        continue
+                                        pkg = _eval_str_tuple(ln[start:stop])
+                                        identifier = ".".join(pkg)
+                                        subdir = os.path.join(entry, *pkg)
+                                        if os.path.exists(os.path.join(subdir, '__init__.py')):
+                                            # There is a real __init__.py, ignore the setuptools hack
+                                            continue
 
-                                    m = pkgmap[identifier] = subdir
-                                    break
+                                        m = pkgmap[identifier] = subdir
+                                        break
+                        finally:
+                            fp.close()
 
         return pkgmap
 
@@ -521,10 +532,23 @@ class ModuleGraph(ObjectGraph):
             return m
 
         if sys.version_info[0] != 2:
-            encoding = util.guess_encoding(open(pathname, 'rb'))
-            contents = open(pathname, READ_MODE, encoding=encoding).read() + '\n'
+            fp = open(pathname, 'rb')
+            try:
+                encoding = util.guess_encoding(fp)
+            finally:
+                fp.close()
+
+            fp = open(pathname, READ_MODE, encoding=encoding)
+            try:
+                contents = fp.read() + '\n'
+            finally:
+                fp.close()
         else:
-            contents = open(pathname, READ_MODE).read() + '\n'
+            fp = open(pathname, READ_MODE)
+            try:
+                contents = fp.read() + '\n'
+            finally:
+                fp.close()
 
         co = compile(contents, pathname, 'exec', 0, True)
         if self.replace_paths:
@@ -685,7 +709,11 @@ class ModuleGraph(ObjectGraph):
             self.msgout(3, "import_module ->", None)
             return None
 
-        m = self.load_module(fqname, fp, pathname, stuff)
+        try:
+            m = self.load_module(fqname, fp, pathname, stuff)
+        finally:
+            if fp is not None:
+                fp.close()
         if parent:
             self.msgout(4, "create reference", m, "->", parent)
             self.createReference(m, parent)
@@ -700,7 +728,8 @@ class ModuleGraph(ObjectGraph):
             self.msgout(2, "load_module ->", m)
             return m
         if typ == imp.PY_SOURCE:
-            co = compile(fp.read() + '\n', pathname, 'exec', 0, True)
+            contents = fp.read() + '\n'
+            co = compile(contents, pathname, 'exec', 0, True)
             cls = SourceModule
         elif typ == imp.PY_COMPILED:
             if fp.read(4) != imp.get_magic():
@@ -866,7 +895,11 @@ class ModuleGraph(ObjectGraph):
         
 
         fp, buf, stuff = self.find_module("__init__", m.packagepath)
-        self.load_module(fqname, fp, buf, stuff)
+        try:
+            self.load_module(fqname, fp, buf, stuff)
+        finally:
+            if fp is not None:
+                fp.close()
         self.msgout(2, "load_package ->", m)
         return m
 
@@ -891,6 +924,7 @@ class ModuleGraph(ObjectGraph):
         fp, buf, stuff = find_module(name, path)
         if buf:
             buf = os.path.realpath(buf)
+
         return (fp, buf, stuff)
 
     def create_xref(self, out=None):

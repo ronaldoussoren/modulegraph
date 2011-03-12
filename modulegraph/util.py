@@ -15,6 +15,8 @@ def imp_find_module(name, path=None):
         path = [os.path.realpath(path)]
     for name in names:
         result = imp.find_module(name, path)
+        if result[0] is not None:
+            result[0].close()
         path = [result[1]]
     return result
 

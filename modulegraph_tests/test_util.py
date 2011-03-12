@@ -25,6 +25,12 @@ class TestUtil (unittest.TestCase):
         self.assertEqual(imps[1][0], 'aliases')
         self.assertTrue(encodings.aliases.__file__.startswith(imps[1][1][1]))
 
+        # Close all files, avoid warning by unittest
+        for i in imps:
+            if i[1][0] is not None:
+                i[1][0].close()
+
+
     def test_guess_encoding(self):
         fp = BytesIO(B("# coding: utf-8"))
         self.assertEqual(util.guess_encoding(fp), "utf-8")
@@ -46,6 +52,8 @@ class TestUtil (unittest.TestCase):
             self.assertEqual(util.guess_encoding(fp), "ascii")
         else:
             self.assertEqual(util.guess_encoding(fp), "utf-8")
+
+        del fp
             
 
 if __name__ == "__main__":
