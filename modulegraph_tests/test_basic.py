@@ -13,19 +13,19 @@ class OsListDirTestCase(unittest.TestCase):
 
     def testListDir(self):
         # current directory exists
-        self.assertTrue(len(modulegraph.os_listdir(".")) >= 0)
+        self.assertTrue(len(modulegraph._os_listdir(".")) >= 0)
         # maybe use os.tmpnam, but that gives a runtime warning.
         self.assertRaises(OSError,
-                modulegraph.os_listdir, "hopefully/not/existing/dir")
+                modulegraph._os_listdir, "hopefully/not/existing/dir")
         self.assertRaises(OSError,
-                modulegraph.os_listdir, "hopefully-not-existing-dir")
+                modulegraph._os_listdir, "hopefully-not-existing-dir")
 
         # defect zip file: raises IOError no such file ...
         fn = self.tmp_dir + "/empty.zip"
         fp = open(fn, "w")
         fp.close()
         self.assertRaises((IOError, OSError),
-                modulegraph.os_listdir, fn)
+                modulegraph._os_listdir, fn)
 
 class DummyModule(object):
     packagepath = None

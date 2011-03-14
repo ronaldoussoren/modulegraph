@@ -32,7 +32,7 @@ from itertools import imap, ifilter, izip, count
 from modulegraph import util
 
 # File open mode for reading (univeral newlines)
-READ_MODE = "rU"  
+_READ_MODE = "rU"  
 
 
 
@@ -42,20 +42,20 @@ READ_MODE = "rU"
 # package, and it will be honored.
 #
 # Note this is a mapping is lists of paths.
-packagePathMap = {}
+_packagePathMap = {}
 
 # Prefix used in magic .pth files used by setuptools to create namespace
 # packages without an __init__.py file. 
 #
 # The value is a list of such prefixes as the prefix varies with versions of 
 # setuptools.
-SETUPTOOLS_NAMESPACEPKG_PTHs=(
+_SETUPTOOLS_NAMESPACEPKG_PTHs=(
     "import sys,types,os; p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('",
     "import sys,new,os; p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('",
 )
 
 
-def namespace_package_path(fqname, pathname, syspath=None):
+def _namespace_package_path(fqname, pathname): 
     """
     Return the __path__ for the python package in *fqname*.
 
@@ -64,14 +64,9 @@ def namespace_package_path(fqname, pathname, syspath=None):
     """
     path = []
 
-    if syspath is None:
-        working_set = pkg_resources.working_set
-    else:
-        working_set = pkg_resources.WorkingSet(syspath)
+    working_set = pkg_resources.working_set
 
     for dist in working_set:
-        assert dist in working_set
-
         if dist.has_metadata('namespace_packages.txt'):
             namespaces = dist.get_metadata(
                     'namespace_packages.txt').splitlines()
@@ -111,7 +106,7 @@ def _eval_str_tuple(value):
     return tuple(result)
 
 
-def os_listdir(path):
+def _os_listdir(path):
     """
     os.listdir with support for zipfiles
     """
@@ -138,10 +133,17 @@ def os_listdir(path):
 
         if rest:
             rest = rest + '/'
+            while '//' in rest:
+                rest = rest.replace('//', '/')
+
         result = set()
         for nm in zf.namelist():
             if nm.startswith(rest):
-                result.add(nm[len(rest):].split('/')[0])
+                value = nm[len(rest):].split('/')[0]
+                if not value: continue
+                result.add(value)
+        if len(result) == 0:
+            raise info[0], info[1], info[2]
         return list(result)
 
 
@@ -188,7 +190,7 @@ def find_module(name, path=None):
 
             elif filename.endswith('.py'):
                 if sys.version_info[0] == 2:
-                    fp = open(filename, READ_MODE)
+                    fp = open(filename, _READ_MODE)
                 else:
                     fp = open(filename, 'rb')
                     try:
@@ -196,8 +198,8 @@ def find_module(name, path=None):
                     finally:
                         fp.close()
 
-                    fp = open(filename, READ_MODE, encoding=encoding)
-                description = ('.py', READ_MODE, imp.PY_SOURCE)
+                    fp = open(filename, _READ_MODE, encoding=encoding)
+                description = ('.py', _READ_MODE, imp.PY_SOURCE)
                 return (fp, filename, description)
 
             else:
@@ -252,9 +254,9 @@ def AddPackagePath(packagename, path):
     addPackagePath(packagename, path)
 
 def addPackagePath(packagename, path):
-    paths = packagePathMap.get(packagename, [])
+    paths = _packagePathMap.get(packagename, [])
     paths.append(path)
-    packagePathMap[packagename] = paths
+    _packagePathMap[packagename] = paths
 
 replacePackageMap = {}
 
@@ -425,7 +427,7 @@ class ModuleGraph(ObjectGraph):
                         fp = open(os.path.join(entry, fn), 'rU')
                         try:
                             for ln in fp:
-                                for pfx in SETUPTOOLS_NAMESPACEPKG_PTHs:
+                                for pfx in _SETUPTOOLS_NAMESPACEPKG_PTHs:
                                     if ln.startswith(pfx):
                                         try:
                                             start = len(pfx)-2
@@ -512,10 +514,10 @@ class ModuleGraph(ObjectGraph):
             # works, it is not clear yet why that is. Setting to None would be
             # cleaner.
             m.filename = '-'
-            m.packagepath = namespace_package_path(name, pathname)
+            m.packagepath = _namespace_package_path(name, pathname)
 
             # As per comment at top of file, simulate runtime packagepath additions.
-            m.packagepath = m.packagepath + packagePathMap.get(name, [])
+            m.packagepath = m.packagepath + _packagePathMap.get(name, [])
             return m
 
         return None
@@ -538,13 +540,13 @@ class ModuleGraph(ObjectGraph):
             finally:
                 fp.close()
 
-            fp = open(pathname, READ_MODE, encoding=encoding)
+            fp = open(pathname, _READ_MODE, encoding=encoding)
             try:
                 contents = fp.read() + '\n'
             finally:
                 fp.close()
         else:
-            fp = open(pathname, READ_MODE)
+            fp = open(pathname, _READ_MODE)
             try:
                 contents = fp.read() + '\n'
             finally:
@@ -683,7 +685,7 @@ class ModuleGraph(ObjectGraph):
         suffixes = [triple[0] for triple in imp.get_suffixes()]
         for path in m.packagepath:
             try:
-                names = os_listdir(path)
+                names = _os_listdir(path)
             except os.error:
                 self.msg(2, "can't list directory", path)
                 continue
@@ -887,10 +889,10 @@ class ModuleGraph(ObjectGraph):
             fqname = newname
         m = self.createNode(Package, fqname)
         m.filename = pathname
-        m.packagepath = namespace_package_path(fqname, pathname)
+        m.packagepath = _namespace_package_path(fqname, pathname)
 
         # As per comment at top of file, simulate runtime packagepath additions.
-        m.packagepath = m.packagepath + packagePathMap.get(fqname, [])
+        m.packagepath = m.packagepath + _packagePathMap.get(fqname, [])
 
         
 
