@@ -47,11 +47,11 @@ The actual graph
 
    Import a module and analyse its dependencies
 
-   :args name:     The module name
-   :args caller:   The node that caused the import to happen
-   :args fromlist: The list of names to import, this is an empty list for
+   :arg name:     The module name
+   :arg caller:   The node that caused the import to happen
+   :arg fromlist: The list of names to import, this is an empty list for
       ``import name`` and a list of names for ``from name import a, b, c``.
-   :args level:    The import level. The value should be ``0`` for classical Python 2
+   :arg level:    The import level. The value should be ``0`` for classical Python 2
      imports, ``-1`` for absolute imports and a positive number for relative imports (
      where the value is the number of leading dots in the imported name).
 
@@ -111,9 +111,22 @@ made private methods before the 1.0 release.
 
    .. todo:: To be documented
 
-.. method:: load_tail(q, tail)
 
-   .. todo:: To be documented
+.. method:: load_tail(mod, tail)
+
+   This method is called to load the rest of a dotted name after loading the root
+   of a package. This will import all intermediate modules as well (using 
+   :method:`import_module`), and returns the module :class:`node <Node>` for the
+   requested node.
+
+   .. note:: When *tail* is empty this will just return *mod*.
+
+   :arg mod:   A start module (instance of :class:`Node`)
+   :arg tail:  The rest of a dotted name, can be empty
+   :raise ImportError: When the requested (or one of its parents) module cannot be found
+   :returns: the requested module
+
+
 
 .. method:: ensure_fromlist(m, fromlist)
 
@@ -166,15 +179,91 @@ The :class:`ModuleGraph` contains nodes that represent the various types of modu
 
    This is a subclass of string that is used to mark module aliases.
 
+
+
 .. class:: Node(identifier)
 
-   Base class for nodes.
+   Base class for nodes, which provides the common functionality.
 
-   .. todo:: add documentation
+   Nodes can by used as mappings for storing arbitrary data in the node.
+
+   Nodes are compared by comparing their *identifier*.
+
+.. data:: debug
+
+   Debug level (integer)
+
+.. data:: graphident
+
+   The node identifier, this is the value of the *identifier* argument
+   to the constructor.
+
+.. data:: identifier
+
+   The node identifier, this is the value of the *identifier* argument
+   to the constructor.
+
+.. data:: filename
+
+   The filename associated with this node.
+
+.. data:: packagepath
+
+   The value of ``__path__`` for this node.
+
+.. data:: code
+
+   The :class:`code object <types.CodeObject>` associated with this node
+
+.. data:: globalnames
+
+   The set of global names that are assigned to in this module. This
+   includes those names imported through startimports of Python modules.
+
+.. data:: startimports
+
+   The set of startimports this module did that could not be resolved,
+   ie. a startimport from a non-Python module.
+
+
+.. method:: __contains__(name)
+
+   Return if there is a value associated with *name*.
+
+   This method is usually accessed as ``name in aNode``.
+
+.. method:: __setitem__(name, value)
+
+   Set the value of *name* to *value*. 
+   
+   This method is usually accessed as ``aNode[name] = value``.
+
+.. method:: __getitem__(name)
+
+   Returns the value of *name*, raises :exc:`KeyError` when
+   it cannot be found.
+
+   This method is usually accessed as ``value = aNode[name]``.
+
+.. method:: get(name[, default])
+
+   Returns the value of *name*, or the default value when it
+   cannot be found. The *default* is :data:`None` when not specified.
+
+.. method:: infoTuple()
+
+   Returns a tuple with information used in the :func:`repr` 
+   output for the node. Subclasses can add additional informations
+   to the result.
+
 
 .. class:: AliasNode (name, node)
 
    A node that represents an alias from a name to another node.
+
+   The value of attribute *graphident* for this node will be the
+   value of *name*, the other :class:`Node` attributed are
+   references to those attributed in *node*.
 
 .. class:: BadModule(identifier)
 
@@ -187,6 +276,8 @@ The :class:`ModuleGraph` contains nodes that represent the various types of modu
 .. class:: MissingModule(identifier)
 
    A module that is imported but cannot be located.
+
+
 
 .. class:: Script(filename)
 
@@ -203,17 +294,17 @@ The :class:`ModuleGraph` contains nodes that represent the various types of modu
     filesystem path to the module and *path* is the
     value of ``__path__`` for the module.
 
-    .. data:: identifier
+.. data:: graphident
 
-       The name of the module
+   The name of the module
 
-    .. data:: filename
+.. data:: filename
 
-       The filesystem path to the module.
+   The filesystem path to the module.
 
-    .. data:: path
+.. data:: path
 
-       The value of ``__path__`` for this module.
+   The value of ``__path__`` for this module.
 
 .. class:: BuiltinModule(name)
 

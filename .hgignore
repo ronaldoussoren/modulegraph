@@ -7,5 +7,6 @@ dist
 .DS_Store
 
 syntax: glob
+*.swp
 *.pyc
 *.dSYM

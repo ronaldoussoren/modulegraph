@@ -258,7 +258,7 @@ def addPackagePath(packagename, path):
     paths.append(path)
     _packagePathMap[packagename] = paths
 
-replacePackageMap = {}
+_replacePackageMap = {}
 
 # This ReplacePackage mechanism allows modulefinder to work around the
 # way the _xmlplus package injects itself under the name "xml" into
@@ -270,14 +270,14 @@ def ReplacePackage(oldname, newname):
     replacePackage(oldname, newname)
 
 def replacePackage(oldname, newname):
-    replacePackageMap[oldname] = newname
+    _replacePackageMap[oldname] = newname
 
 class Node(object):
     def __init__(self, identifier):
-        self.debug = 999
+        self.debug = 0
         self.graphident = identifier
         self.identifier = identifier
-        self.namespace = {}
+        self._namespace = {}
         self.filename = None
         self.packagepath = None
         self.code = None
@@ -290,23 +290,73 @@ class Node(object):
         self.starimports = set()
 
     def __contains__(self, name):
-        return name in self.namespace
+        return name in self._namespace
 
     def __getitem__(self, name):
-        return self.namespace[name]
+        return self._namespace[name]
 
     def __setitem__(self, name, value):
-        self.namespace[name] = value
+        self._namespace[name] = value
 
     def get(self, *args):
-        return self.namespace.get(*args)
+        return self._namespace.get(*args)
 
     def __cmp__(self, other):
         try:
             otherIdent = getattr(other, 'graphident')
         except AttributeError:
             return NotImplemented
+
         return cmp(self.graphident, otherIdent)
+
+    def __eq__(self, other):
+        try:
+            otherIdent = getattr(other, 'graphident')
+        except AttributeError:
+            return False
+
+        return self.graphident == otherIdent
+
+    def __ne__(self, other):
+        try:
+            otherIdent = getattr(other, 'graphident')
+        except AttributeError:
+            return True
+
+        return self.graphident != otherIdent
+
+    def __lt__(self, other):
+        try:
+            otherIdent = getattr(other, 'graphident')
+        except AttributeError:
+            return NotImplemented
+
+        return self.graphident < otherIdent
+
+    def __le__(self, other):
+        try:
+            otherIdent = getattr(other, 'graphident')
+        except AttributeError:
+            return NotImplemented
+
+        return self.graphident <= otherIdent
+
+    def __gt__(self, other):
+        try:
+            otherIdent = getattr(other, 'graphident')
+        except AttributeError:
+            return NotImplemented
+
+        return self.graphident > otherIdent
+
+    def __ge__(self, other):
+        try:
+            otherIdent = getattr(other, 'graphident')
+        except AttributeError:
+            return NotImplemented
+
+        return self.graphident >= otherIdent
+
 
     def __hash__(self):
         return hash(self.graphident)
@@ -323,7 +373,7 @@ class Alias(str):
 class AliasNode(Node):
     def __init__(self, name, node):
         super(AliasNode, self).__init__(name)
-        for k in 'identifier', 'packagepath', 'namespace', 'globalnames', 'startimports':
+        for k in 'identifier', 'packagepath', '_namespace', 'globalnames', 'starimports':
             setattr(self, k, getattr(node, k, None))
 
     def infoTuple(self):
@@ -367,14 +417,20 @@ class CompiledModule(BaseModule):
 class Package(BaseModule):
     pass
 
-class FlatPackage(BaseModule):
-    pass
-
 class Extension(BaseModule):
     pass
 
-class ArchiveModule(BaseModule):
-    pass
+class FlatPackage(BaseModule): # nocoverage
+    def __init__(self, *args, **kwds):
+        warnings.warn("This class will be removed in a future version of modulegraph",
+            DeprecationWarning)
+        super(FlatPackage, *args, **kwds)
+
+class ArchiveModule(BaseModule): # nocoverage
+    def __init__(self, *args, **kwds):
+        warnings.warn("This class will be removed in a future version of modulegraph",
+            DeprecationWarning)
+        super(FlatPackage, *args, **kwds)
 
 class ModuleGraph(ObjectGraph):
     def __init__(self, path=None, excludes=(), replace_paths=(), implies=(), graph=None, debug=0):
@@ -464,7 +520,7 @@ class ModuleGraph(ObjectGraph):
                 self.createReference(node, other)
         elif isinstance(other, AliasNode):
             self.addNode(other)
-            other.connectTo(node)
+            other.connectTo(node)  # XXX: method doesn't exist
         else:
             self.createReference(node, other)
 
@@ -646,20 +702,20 @@ class ModuleGraph(ObjectGraph):
         self.msgout(4, "raise ImportError: No module named", qname)
         raise ImportError, "No module named " + qname
 
-    def load_tail(self, q, tail):
-        self.msgin(4, "load_tail", q, tail)
-        m = q
+    def load_tail(self, mod, tail):
+        self.msgin(4, "load_tail", mod, tail)
+        result = mod
         while tail:
             i = tail.find('.')
             if i < 0: i = len(tail)
             head, tail = tail[:i], tail[i+1:]
-            mname = "%s.%s" % (m.identifier, head)
-            m = self.import_module(head, mname, m)
-            if not m:
+            mname = "%s.%s" % (result.identifier, head)
+            result = self.import_module(head, mname, result)
+            if not result:
                 self.msgout(4, "raise ImportError: No module named", mname)
                 raise ImportError, "No module named " + mname
-        self.msgout(4, "load_tail ->", m)
-        return m
+        self.msgout(4, "load_tail ->", result)
+        return result
 
     def ensure_fromlist(self, m, fromlist):
         fromlist = set(fromlist)
@@ -884,7 +940,7 @@ class ModuleGraph(ObjectGraph):
         Called only when an imp.PACKAGE_DIRECTORY is found
         """
         self.msgin(2, "load_package", fqname, pathname)
-        newname = replacePackageMap.get(fqname)
+        newname = _replacePackageMap.get(fqname)
         if newname:
             fqname = newname
         m = self.createNode(Package, fqname)
@@ -982,6 +1038,7 @@ class ModuleGraph(ObjectGraph):
         
 
     def itergraphreport(self, name='G', flatpackages=()):
+        # XXX: Can this be implemented using Dot()
         nodes = map(self.graph.describe_node, self.graph.iterdfs(self))
         describe_edge = self.graph.describe_edge
         edges = deque()
@@ -1149,7 +1206,7 @@ class ModuleGraph(ObjectGraph):
                          co.co_firstlineno, co.co_lnotab,
                          co.co_freevars, co.co_cellvars)
 
-def main():
+def _debug():
     # Parse command line
     import getopt
     try:
@@ -1216,6 +1273,6 @@ def main():
 
 if __name__ == '__main__':
     try:
-        mf = main()
+        mf = _debug()
     except KeyboardInterrupt:
         print "\n[interrupt]"
