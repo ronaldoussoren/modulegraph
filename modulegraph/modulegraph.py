@@ -239,7 +239,7 @@ def find_module(name, path=None):
 
     raise ImportError(name)
 
-def moduleInfoForPath(path, suffixes=imp.get_suffixes()):
+def moduleInfoForPath(path):
     for (ext, readmode, typ) in imp.get_suffixes():
         if path.endswith(ext):
             return os.path.basename(path)[:-len(ext)], readmode, typ
@@ -389,9 +389,9 @@ class ModuleGraph(ObjectGraph):
             self.lazynodes[m] = None
         self.replace_paths = replace_paths
 
-        self.nspackages = self.calc_setuptools_nspackages()
+        self.nspackages = self._calc_setuptools_nspackages()
 
-    def calc_setuptools_nspackages(self):
+    def _calc_setuptools_nspackages(self):
         # Setuptools has some magic handling for namespace
         # packages when using 'install --single-version-externally-managed'
         # (used by system packagers and also by pip)

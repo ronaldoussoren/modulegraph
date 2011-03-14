@@ -37,6 +37,8 @@ sys.path.insert(0,
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.todo', 'sphinx.ext.ifconfig']
 
+
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -104,7 +106,8 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'default'
+#html_theme = 'default'
+html_theme = 'nature'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -141,7 +144,7 @@ html_static_path = ['_static']
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
-#html_use_smartypants = True
+html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}
@@ -212,3 +215,5 @@ intersphinx_mapping = {
         'python': ('http://docs.python.org/', None),
         'altgraph': ('http://packages.python.org/altgraph', None),
 }
+
+todo_include_todos = True

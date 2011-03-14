@@ -12,12 +12,20 @@ Features:
 - Documentation is now generated using `sphinx <http://pypi.python.org/pypi/sphinx>`_
   and can be viewed at <http://packages.python.org/modulegraph>.
 
+  The documention is very rough at this moment and in need of reorganisation and
+  language cleanup. I've basiclly writting the current version by reading the code
+  and documenting what it does, the order in which classes and methods are document
+  is therefore not necessarily the most useful. 
+
 - The repository has moved to bitbucket
 
 - Renamed ``modulegraph.modulegraph.AddPackagePath`` to ``addPackagePath``,
   likewise ``ReplacePackage`` is now ``replacePackage``. The old name is still
   available, but is deprecated and will be removed before the 1.0 release.
 
+- ``modulegraph.modulegraph`` contains two node types that are unused and
+  have unclear semantics: ``FlatPackage`` and ``ArchiveModule``. These node
+  types are deprecated and will be removed before 1.0 is released.
 
 Bug fixes:
 
