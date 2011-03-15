@@ -18,7 +18,6 @@ try:
 except ImportError:
     from io import StringIO
 
-
 try:
     expectedFailure = unittest.expectedFailure
 except AttributeError:
@@ -504,7 +503,26 @@ class TestModuleGraph (unittest.TestCase):
 
     @expectedFailure
     def test_scan_code(self):
-        self.fail("scan_code")
+        mod = modulegraph.Node('root')
+
+        graph = modulegraph.ModuleGraph()
+        code = compile('', '<test>', 'exec', 0, False)
+        graph.scan_code(code, mod)
+        self.assertEqual(list(graph.nodes()), [])
+
+        graph = modulegraph.ModuleGraph()
+        code = compile(textwrap.dedent('''\
+            import sys
+            import os.path
+            
+            def testfunc():
+                import shutil
+            '''), '<test>', 'exec', 0, False)
+        graph.scan_code(code, mod)
+        modules = [node.identifier for node in graph.nodes()]
+
+        self.fail("tests needed....")
+
 
     @expectedFailure
     def test_load_package(self):
@@ -522,9 +540,47 @@ class TestModuleGraph (unittest.TestCase):
     def test_itergraphreport(self):
         self.fail("itergraphreport")
 
-    @expectedFailure
     def test_report(self):
-        self.fail("report")
+        graph = modulegraph.ModuleGraph()
+
+        saved_stdout = sys.stdout
+        try:
+            fp = sys.stdout = StringIO()
+            graph.report()
+            lines = fp.getvalue().splitlines()
+            fp.close()
+
+            self.assertEqual(len(lines), 3)
+            self.assertEqual(lines[0], '')
+            self.assertEqual(lines[1], 'Class           Name                      File')
+            self.assertEqual(lines[2], '-----           ----                      ----')
+
+            fp = sys.stdout = StringIO()
+            graph._safe_import_hook('os', None, ())
+            graph._safe_import_hook('sys', None, ())
+            graph._safe_import_hook('nomod', None, ())
+            graph.report()
+            lines = fp.getvalue().splitlines()
+            fp.close()
+
+            self.assertEqual(lines[0], '')
+            self.assertEqual(lines[1], 'Class           Name                      File')
+            self.assertEqual(lines[2], '-----           ----                      ----')
+            expected = []
+            for n in graph.flatten():
+                if n.filename:
+                    expected.append([type(n).__name__, n.identifier, n.filename])
+                else:
+                    expected.append([type(n).__name__, n.identifier])
+                    
+            expected.sort()
+            actual = [item.split() for item in lines[3:]]
+            actual.sort()
+            self.assertEqual(expected, actual)
+
+
+        finally:
+            sys.stdout = saved_stdout
 
     def test_graphreport(self):
 

@@ -21,6 +21,7 @@ import urllib
 import zipfile
 import zipimport
 import re
+from collections import deque
 
 from altgraph.Dot import Dot
 from altgraph.ObjectGraph import ObjectGraph
@@ -106,7 +107,7 @@ def _eval_str_tuple(value):
     return tuple(result)
 
 
-def _os_listdir(path):
+def os_listdir(path):
     """
     os.listdir with support for zipfiles
     """
@@ -741,7 +742,7 @@ class ModuleGraph(ObjectGraph):
         suffixes = [triple[0] for triple in imp.get_suffixes()]
         for path in m.packagepath:
             try:
-                names = _os_listdir(path)
+                names = os_listdir(path)
             except os.error:
                 self.msg(2, "can't list directory", path)
                 continue
@@ -1038,7 +1039,7 @@ class ModuleGraph(ObjectGraph):
         
 
     def itergraphreport(self, name='G', flatpackages=()):
-        # XXX: Can this be implemented using Dot()
+        # XXX: Can this be implemented using Dot()?
         nodes = map(self.graph.describe_node, self.graph.iterdfs(self))
         describe_edge = self.graph.describe_edge
         edges = deque()
@@ -1061,7 +1062,10 @@ class ModuleGraph(ObjectGraph):
                 s += '| <f%d> %s' % (i,v)
             return {'label':s, 'shape':'record'}
 
+
         def edgevisitor(edge, data, head, tail):
+            # XXX: This method nonsense, the edge
+            # data is never initialized.
             if data == 'orphan':
                 return {'style':'dashed'}
             elif data == 'pkgref':
@@ -1174,7 +1178,7 @@ class ModuleGraph(ObjectGraph):
         """
         print
         print "%-15s %-25s %s" % ("Class", "Name", "File")
-        print "%-15s %-25s %s" % ("----", "----", "----")
+        print "%-15s %-25s %s" % ("-----", "----", "----")
         # Print modules found
         sorted = [(os.path.basename(mod.identifier), mod) for mod in self.flatten()]
         sorted.sort()
@@ -1206,19 +1210,35 @@ class ModuleGraph(ObjectGraph):
                          co.co_firstlineno, co.co_lnotab,
                          co.co_freevars, co.co_cellvars)
 
-def _debug():
+def _cmdline():
     # Parse command line
     import getopt
+    import textwrap
+    usage = textwrap.dedent('''\
+        Usage:
+            modulegraph [options] scriptfile ...
+
+        Valid options:
+        * -d: Increase debug level
+        * -q: Clear debug level
+        * -g: Output a .dot graph
+        * -h: Output a html file
+        * -m: arguments are module names, not script files
+        * -x name: Add 'name' to the excludes list
+        * -p name: Add 'name' to the module search path
+    ''')
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "dgmp:qx:")
+        opts, args = getopt.getopt(sys.argv[1:], "hdgmp:qx:")
     except getopt.error, msg:
-        print msg
-        return
+        print >>sys.stderr, msg
+        print >>sys.stderr, usage
+        sys.exit(1)
 
     # Process options
     debug = 1
     domods = 0
     dodot = False
+    dohtml = False
     addpath = []
     excludes = []
     for o, a in opts:
@@ -1234,19 +1254,25 @@ def _debug():
             excludes.append(a)
         if o == '-g':
             dodot = True
+            dohtml = False
+        if o == '-h':
+            dohtml = True
+            dodot = False
 
     # Provide default arguments
     if not args:
-        script = __file__
-    else:
-        script = args[0]
+        print >>sys.stderr, "No script specified"
+        print >>sys.stderr, usage
+        sys.exit(1)
+
+    script = args[0]
 
     # Set the path based on sys.path and the script directory
     path = sys.path[:]
     path[0] = os.path.dirname(script)
     path = addpath + path
     if debug > 1:
-        print "path:"
+        print >>sys.stderr, "path:"
         for item in path:
             print "   ", repr(item)
 
@@ -1266,13 +1292,15 @@ def _debug():
     mf.run_script(script)
     if dodot:
         mf.graphreport()
+    elif dohtml:
+        mf.create_xref()
     else:
         mf.report()
-    return mf  # for -i debugging
+    sys.exit(0)
 
 
 if __name__ == '__main__':
     try:
-        mf = _debug()
+        mf = _cmdline()
     except KeyboardInterrupt:
         print "\n[interrupt]"

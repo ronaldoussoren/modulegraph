@@ -20,6 +20,7 @@ Contents:
 
    changelog
    license
+   commandline
    modulegraph
    find_modules
    util

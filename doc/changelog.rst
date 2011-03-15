@@ -27,6 +27,9 @@ Features:
   have unclear semantics: ``FlatPackage`` and ``ArchiveModule``. These node
   types are deprecated and will be removed before 1.0 is released.
 
+- Added a simple commandline tool (``modulegraph``) that will print information
+  about the dependency graph of a script.
+
 Bug fixes:
 
 - The ``__cmp__`` method of a Node no longer causes an exception
@@ -42,6 +45,8 @@ Bug fixes:
 - Due to the switch to mercurial setuptools will no longer include
   all required files. Fixed by adding a MANIFEST.in file
 
+- The method for printing a ``.dot`` representation of a ``ModuleGraph``
+  works again.
 
 
 0.8.1

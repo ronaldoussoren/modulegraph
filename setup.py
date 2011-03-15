@@ -274,12 +274,17 @@ setup(
     license="MIT License",
     packages=['modulegraph'],
     platforms=['any'],
-    install_requires=["altgraph>=0.7"],
+    install_requires=["altgraph>=0.9"],
     zip_safe=True,
     test_suite='__main__.test_loader',
     cmdclass=dict(
         upload_docs=upload_docs,
         test=modulegraph_test,
+    ),
+    entry_points=dict(
+        console_scripts=[
+            'modulegraph = modulegraph.modulegraph:_cmdline',
+        ],
     ),
     **extra_args
 )

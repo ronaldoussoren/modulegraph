@@ -116,7 +116,7 @@ made private methods before the 1.0 release.
 
    This method is called to load the rest of a dotted name after loading the root
    of a package. This will import all intermediate modules as well (using 
-   :method:`import_module`), and returns the module :class:`node <Node>` for the
+   :meth:`import_module`), and returns the module :class:`node <Node>` for the
    requested node.
 
    .. note:: When *tail* is empty this will just return *mod*.
