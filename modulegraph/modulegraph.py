@@ -18,7 +18,6 @@ if sys.version_info[0] == 2:
     import new
 import struct
 import urllib
-import zipfile
 import zipimport
 import re
 from collections import deque
@@ -31,6 +30,7 @@ from modulegraph._compat import Bchr
 from itertools import imap, ifilter, izip, count
 
 from modulegraph import util
+from modulegraph import zipio
 
 # File open mode for reading (univeral newlines)
 _READ_MODE = "rU"  
@@ -109,43 +109,11 @@ def _eval_str_tuple(value):
 
 def os_listdir(path):
     """
-    os.listdir with support for zipfiles
+    Deprecated name
     """
-    try:
-        return os.listdir(path)
-    except os.error:
-        info = sys.exc_info()
-
-        rest = ''
-        prev_rest = None
-        while not os.path.exists(path) and prev_rest != rest:
-            prev_rest = rest
-            path, r = os.path.split(path)
-            rest = os.path.join(r, rest)
-
-        if not os.path.isfile(path):
-            # Directory really doesn't exist
-            raise info[0], info[1], info[2]
-        
-        try:
-            zf = zipfile.ZipFile(path)
-        except zipfile.BadZipfile:
-            raise info[0], info[1], info[2]
-
-        if rest:
-            rest = rest + '/'
-            while '//' in rest:
-                rest = rest.replace('//', '/')
-
-        result = set()
-        for nm in zf.namelist():
-            if nm.startswith(rest):
-                value = nm[len(rest):].split('/')[0]
-                if not value: continue
-                result.add(value)
-        if len(result) == 0:
-            raise info[0], info[1], info[2]
-        return list(result)
+    warnings.warn("Use zipio.listdir instead of os_listdir",
+            DeprecationWarning) 
+    return zipio.listdir(path)
 
 
 def _code_to_file(co):
@@ -742,7 +710,7 @@ class ModuleGraph(ObjectGraph):
         suffixes = [triple[0] for triple in imp.get_suffixes()]
         for path in m.packagepath:
             try:
-                names = os_listdir(path)
+                names = zipio.listdir(path)
             except os.error:
                 self.msg(2, "can't list directory", path)
                 continue

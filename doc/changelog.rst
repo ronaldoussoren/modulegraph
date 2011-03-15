@@ -1,8 +1,8 @@
 Release history
 ===============
 
-0.8.2
------
+0.9
+---
 
 This is a minor feature release
 
@@ -29,6 +29,12 @@ Features:
 
 - Added a simple commandline tool (``modulegraph``) that will print information
   about the dependency graph of a script.
+
+- Added a module (``zipio``) for dealing with paths that may refer to entries 
+  inside zipfiles (such as source paths referring to modules in zipped eggfiles).
+
+  With this addition ``modulegraph.modulegraph.os_listdir`` is deprecated and
+  it will be removed before the 1.0 release.
 
 Bug fixes:
 

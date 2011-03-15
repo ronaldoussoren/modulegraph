@@ -20,7 +20,7 @@ except ImportError:
 import sys
 import os
 
-VERSION = '0.8.2'
+VERSION = '0.9'
 DESCRIPTION = "Python module dependency analysis tool"
 LONG_DESCRIPTION = """
 modulegraph determines a dependency graph between Python modules primarily
