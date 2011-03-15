@@ -4,29 +4,6 @@ import os, shutil
 
 from modulegraph import modulegraph
 
-class OsListDirTestCase(unittest.TestCase):
-    tmp_dir = "test.tmp"
-    def setUp(self):
-        os.mkdir(self.tmp_dir)
-    def tearDown(self):
-        shutil.rmtree(self.tmp_dir)
-
-    def testListDir(self):
-        # current directory exists
-        self.assertTrue(len(modulegraph._os_listdir(".")) >= 0)
-        # maybe use os.tmpnam, but that gives a runtime warning.
-        self.assertRaises(OSError,
-                modulegraph._os_listdir, "hopefully/not/existing/dir")
-        self.assertRaises(OSError,
-                modulegraph._os_listdir, "hopefully-not-existing-dir")
-
-        # defect zip file: raises IOError no such file ...
-        fn = self.tmp_dir + "/empty.zip"
-        fp = open(fn, "w")
-        fp.close()
-        self.assertRaises((IOError, OSError),
-                modulegraph._os_listdir, fn)
-
 class DummyModule(object):
     packagepath = None
     def __init__(self, ppath):

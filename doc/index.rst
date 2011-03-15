@@ -24,6 +24,7 @@ Contents:
    modulegraph
    find_modules
    util
+   zipio
 
 Online Resources
 ================

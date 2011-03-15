@@ -711,7 +711,7 @@ class ModuleGraph(ObjectGraph):
         for path in m.packagepath:
             try:
                 names = zipio.listdir(path)
-            except os.error:
+            except (os.error, IOError):
                 self.msg(2, "can't list directory", path)
                 continue
             for (path, mode, typ) in ifilter(None, imap(moduleInfoForPath, names)):

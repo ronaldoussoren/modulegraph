@@ -5,15 +5,17 @@ that can refer to data inside a zipfile
 import os as _os
 import zipfile as _zipfile
 import errno as _errno
-import time
+import time as _time
+import sys as _sys
 
 try:
-    from  StringIO import StringIO as StringIO
-    from  StringIO import StringIO as BytesIO
+    from  StringIO import StringIO as _StringIO
+    from  StringIO import StringIO as _BytesIO
 
 
 except ImportError:
-    from io import StringIO, BytesIO
+    from io import StringIO as _StringIO
+    from io import BytesIO as _BytesIO
 
 def _locate(path):
     full_path = path
@@ -23,7 +25,7 @@ def _locate(path):
     else:
         rest = []
         root = _os.path.splitdrive(path)
-        while path != root:
+        while path and path != root:
             path, bn = _os.path.split(path)
             rest.append(bn)
             if _os.path.exists(path):
@@ -40,7 +42,7 @@ def _locate(path):
                 "No such file or directory")
 
         rest.reverse()
-        return path, '/'.join(rest)
+        return path, '/'.join(rest).strip('/')
 
 _open = open
 def open(path, mode='r'):
@@ -51,6 +53,7 @@ def open(path, mode='r'):
         raise IOError(
             _errno.EINVAL, path, "Write access not supported")
 
+    full_path = path
     path, rest = _locate(path)
     if not rest:
         return _open(path, mode)
@@ -74,17 +77,18 @@ def open(path, mode='r'):
         zf.close()
 
         if mode == 'rb':
-            return BytesIO(data)
+            return _BytesIO(data)
 
         else:
-            if sys.version_info[0] == 3:
+            if _sys.version_info[0] == 3:
                 data = data.decode('ascii')
 
-            return StringIO(data)
+            return _StringIO(data)
 
 def listdir(path):
+    full_path = path
     path, rest = _locate(path)
-    if not rest:
+    if not rest and not _os.path.isfile(path):
         return _os.listdir(path)
 
     else:
@@ -97,10 +101,26 @@ def listdir(path):
                 "No such file or directory")
 
         result = set()
+        seen = False
         try:
             for nm in zf.namelist():
-                if nm.startswith(rest):
-                    value = nm[len(rest):].split('/')[0]
+                if rest is None:
+                    seen = True
+                    value = nm.split('/')[0]
+                    if value: 
+                        result.add(value)
+
+                elif nm.startswith(rest):
+                    if nm == rest:
+                        seen = True
+                        value = ''
+                        pass
+                    elif nm[len(rest)] == '/':
+                        seen = True
+                        value = nm[len(rest)+1:].split('/')[0]
+                    else:
+                        value = None
+
                     if value: 
                         result.add(value)
         except _zipfile.error:
@@ -111,7 +131,7 @@ def listdir(path):
 
         zf.close()
 
-        if len(result) == 0:
+        if not seen:
             raise IOError(
                 _errno.ENOENT, full_path, 
                 "No such file or directory")
@@ -119,9 +139,17 @@ def listdir(path):
         return list(result)
 
 def isfile(path):
+    full_path = path
     path, rest = _locate(path)
     if not rest:
-        return _os.path.isfile(path)
+        ok =  _os.path.isfile(path)
+        if ok:
+            try:
+                zf = _zipfile.ZipFile(path, 'r')
+                return False
+            except _zipfile.error:
+                return True
+        return False
 
     zf = None
     try:
@@ -132,63 +160,172 @@ def isfile(path):
     except (KeyError, _zipfile.error):
         if zf is not None:
             zf.close()
-        return False
+
+        # Check if this is a directory
+        try:
+            info = zf.getinfo(rest + '/')
+        except KeyError:
+            pass
+        else:
+            return False
+
+        rest = rest + '/'
+        for nm in zf.namelist():
+            if nm.startswith(rest):
+                # Directory
+                return False
+
+        # No trace in zipfile
+        raise IOError(
+            _errno.ENOENT, full_path, 
+            "No such file or directory")
+
+        
         
 
 def isdir(path):
+    full_path = path
     path, rest = _locate(path)
     if not rest:
-        return _os.path.isdir(path)
+        ok =  _os.path.isdir(path)
+        if not ok:
+            try:
+                zf = _zipfile.ZipFile(path, 'r')
+            except _zipfile.error:
+                return False
+            return True
+        return True
 
     zf = None
     try:
-        zf = _zipfile.ZipFile(zf)
         try:
-            info = zip.getinfo(rest)
+            zf = _zipfile.ZipFile(path)
+        except _zipfile.error:
+            raise IOError(
+                _errno.ENOENT, full_path, 
+                "No such file or directory")
+            
+        try:
+            info = zf.getinfo(rest)
         except KeyError:
-            zf.close()
+            pass
+        else:
+            # File found
+            return False
+
+        rest = rest + '/'
+        try:
+            info = zf.getinfo(rest)
+        except KeyError:
+            pass
+        else:
+            # Directory entry found
             return True
+       
+        for nm in zf.namelist():
+            if nm.startswith(rest):
+                return True
 
-        
-        zf.close()
-
-        # Not quite true, you can store information 
-        # about directories in zipfiles, but those 
-        # have a lash at the end of the filename
-        return False
-    except (KeyError, _zipfile.error):
+        raise IOError(
+            _errno.ENOENT, full_path, 
+            "No such file or directory")
+    finally:
         if zf is not None:
             zf.close()
-        return False
+
 
 def islink(path):
+    full_path = path
     path, rest = _locate(path)
-    if rest:
-        # No symlinks inside zipfiles
-        return False
+    if not rest:
+        return _os.path.islink(path)
 
-    return _os.path.islink(path)
+    try:
+        zf = _zipfile.ZipFile(path)
+    except _zipfile.error:
+        raise IOError(
+            _errno.ENOENT, full_path, 
+            "No such file or directory")
+    try:
+            
+
+        try:
+            info = zf.getinfo(rest)
+        except KeyError:
+            pass
+        else:
+            # File
+            return False
+
+        rest += '/'
+        try:
+            info = zf.getinfo(rest)
+        except KeyError:
+            pass
+        else:
+            # Directory
+            return False
+
+        for nm in zf.namelist():
+            if nm.startswith(rest):
+                # Directory without listing
+                return False
+
+        raise IOError(
+            _errno.ENOENT, full_path, 
+            "No such file or directory")
+
+    finally:
+        zf.close()
+
 
 def readlink(path):
+    full_path = path
     path, rest = _locate(path)
     if rest:
         # No symlinks inside zipfiles
-        raise IOError(
+        raise OSError(
             _errno.ENOENT, full_path, 
             "No such file or directory")
 
     return _os.readlink(path)
 
 def getmtime(path):
+    full_path = path
     path, rest = _locate(path)
     if not rest:
-        return _os.getmtime(path)
+        return _os.path.getmtime(path)
 
     zf = None
     try:
         zf = _zipfile.ZipFile(path)
-        info = zf.getinfo(rest)
-        zf.close()
+        info = None
+
+        try:
+            info = zf.getinfo(rest)
+        except KeyError:
+            pass
+        
+        if info is None:
+            try:
+                info = zf.getinfo(rest + '/')
+            except KeyError:
+                pass
+
+        if info is None:
+            rest = rest + '/'
+            for nm in zf.namelist():
+                if nm.startswith(rest):
+                    break
+            else:
+                raise IOError(
+                    _errno.ENOENT, full_path, 
+                    "No such file or directory")
+            
+            # Directory exists, but has no entry of its
+            # own, fake mtime by using the timestamp of
+            # the zipfile itself.
+            return _os.path.getmtime(path)
 
         return _time.mktime(info.date_time + (0, 0, 0))
 

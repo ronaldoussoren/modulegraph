@@ -99,11 +99,11 @@ class TestFunctions (unittest.TestCase):
         root = os.path.join(
                 os.path.dirname(os.path.abspath(__file__)), 'testdata')
 
-        self.assertEqual(modulegraph._os_listdir('/etc/'), os.listdir('/etc'))
-        self.assertRaises(OSError, modulegraph._os_listdir, '/etc/hosts/foobar')
-        self.assertRaises(OSError, modulegraph._os_listdir, os.path.join(root, 'test.egg', 'bar'))
+        self.assertEqual(modulegraph.os_listdir('/etc/'), os.listdir('/etc'))
+        self.assertRaises(IOError, modulegraph.os_listdir, '/etc/hosts/foobar')
+        self.assertRaises(IOError, modulegraph.os_listdir, os.path.join(root, 'test.egg', 'bar'))
 
-        self.assertEqual(list(sorted(modulegraph._os_listdir(os.path.join(root, 'test.egg', 'foo')))),
+        self.assertEqual(list(sorted(modulegraph.os_listdir(os.path.join(root, 'test.egg', 'foo')))),
             [ 'bar', 'bar.txt', 'baz.txt' ])
 
     def test_code_to_file(self):
