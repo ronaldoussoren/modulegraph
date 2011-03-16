@@ -17,6 +17,7 @@ class TestModuleGraph (unittest.TestCase):
         self.assertEqual(zipio._locate('/usr/bin/ditto/foo/bar///bar/'), ('/usr/bin/ditto', 'foo/bar/bar'))
         self.assertEqual(zipio._locate('/usr/bin/ditto///foo/bar///bar/'), ('/usr/bin/ditto', 'foo/bar/bar'))
         self.assertRaises(IOError, zipio._locate, '/usr/bin/ditto.bar')
+        self.assertRaises(IOError, zipio._locate, '/foo/bar/baz.txt')
 
     def test_open(self):
         # 1. Regular file

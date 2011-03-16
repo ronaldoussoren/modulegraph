@@ -37,8 +37,8 @@ The actual graph
 
 .. method:: run_script(pathname[, caller])
 
-   Create a node by path (not module name). The *pathname* should refer to a Python
-   source file and will be scanned for dependencies.
+   Create, and return,  a node by path (not module name). The *pathname* should 
+   refer to a Python source file and will be scanned for dependencies.
 
    The optional argument *caller* is the the node that calls this script,
    and is used to add a reference in the graph.
@@ -107,8 +107,10 @@ made private methods before the 1.0 release.
 
 .. method:: determine_parent(caller)
 
-   Returns package node that contains the *caller*. Returns :data:`None` when
-   *caller* is not in a package, or is itself :data:`None`.
+   Returns the node of the package root voor *caller*. If *caller* is a package
+   this is the node itself, if the node is a module in a package this is the
+   node of for the package and otherwise the *caller* is not a package and
+   the result is :data:`None`.
 
 .. method:: find_head_package(parent, name[, level])
 

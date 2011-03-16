@@ -632,9 +632,11 @@ class ModuleGraph(ObjectGraph):
         parent = self.determine_parent(caller)
         q, tail = self.find_head_package(parent, name, level)
         m = self.load_tail(q, tail)
-        modules = set([m])
+        modules = [m]
         if fromlist and m.packagepath:
-            modules.update(self.ensure_fromlist(m, fromlist))
+            for s in self.ensure_fromlist(m, fromlist):
+                if s not in modules:
+                    modules.append(s)
         for m in modules:
             self.createReference(caller, m)
         return modules
@@ -648,6 +650,8 @@ class ModuleGraph(ObjectGraph):
         if caller:
             pname = caller.identifier
             if caller.packagepath:
+                # XXX: I have no idea why this line
+                # is necessary.
                 parent = self.findNode(pname)
             elif '.' in pname:
                 pname = pname[:pname.rfind('.')]

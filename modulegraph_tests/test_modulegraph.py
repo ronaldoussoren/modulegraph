@@ -4,6 +4,7 @@ import pkg_resources
 import os
 import imp
 import sys
+import shutil
 import warnings
 from altgraph import Graph
 import textwrap
@@ -428,17 +429,50 @@ class TestModuleGraph (unittest.TestCase):
     def test_findNode(self):
         self.fail("findNode")
 
-    @expectedFailure
     def test_run_script(self):
-        self.fail("run_script")
+        script = os.path.join(os.path.dirname(TESTDATA), 'script')
+
+        graph = modulegraph.ModuleGraph()
+        master = graph.createNode(modulegraph.Node, 'root')
+        m = graph.run_script(script, master)
+        self.assertEqual(list(graph.get_edges(master)[0])[0], m)
+        self.assertEqual(set(graph.get_edges(m)[0]), set([
+            graph.findNode('sys'),
+            graph.findNode('os'),
+        ]))
 
     @expectedFailure
     def test_import_hook(self):
         self.fail("import_hook")
 
-    @expectedFailure
     def test_determine_parent(self):
-        self.fail("determine_parent")
+        graph = modulegraph.ModuleGraph()
+        graph.import_hook('os.path', None)
+        
+        for node in graph.nodes():
+            if isinstance(node, modulegraph.Package):
+                break
+        else:
+            self.fail("No package located, should have at least 'os'")
+
+        self.assertIsInstance(node, modulegraph.Package)
+        parent = graph.determine_parent(node)
+        self.assertEqual(parent.identifier, node.identifier)
+        self.assertEqual(parent, graph.findNode(node.identifier))
+        self.assertTrue(isinstance(parent, modulegraph.Package))
+
+        # XXX: Might be a usecase for some odd code in determine_parent...
+        node = modulegraph.Package('encodings')
+        node.packagepath = parent.packagepath
+        m = graph.determine_parent(node)
+        self.assertTrue(m is parent)
+
+        m = graph.findNode('xml')
+        self.assertEqual(graph.determine_parent(m), None)
+
+        m = graph.findNode('xml.dom')
+        self.assertEqual(graph.determine_parent(m), graph.findNode('xml'))
+
 
     @expectedFailure
     def test_find_head_package(self):
@@ -577,9 +611,58 @@ class TestModuleGraph (unittest.TestCase):
     def test_load_package(self):
         self.fail("load_package")
 
-    @expectedFailure
     def test_find_module(self):
-        self.fail("find_module")
+        record = []
+        def mock_finder(name, path):
+            record.append((name, path))
+            return saved_finder(name, path)
+
+        saved_finder = modulegraph.find_module
+        try:
+            modulegraph.find_module = mock_finder
+
+            graph = modulegraph.ModuleGraph()
+            m = graph.find_module('sys', None)
+            self.assertEqual(record, [])
+            self.assertEqual(m, (None, None, ("", "", imp.C_BUILTIN)))
+
+            modulegraph.find_module = saved_finder
+            xml = graph.import_hook("xml")[0]
+            self.assertEqual(xml.identifier, 'xml')
+            modulegraph.find_module = mock_finder
+
+            self.assertRaises(ImportError, graph.find_module, 'xml', None)
+
+            self.assertEqual(record, [])
+            m = graph.find_module('shutil', None)
+            self.assertEqual(record, [
+                ('shutil', graph.path),
+            ])
+            self.assertTrue(isinstance(m, tuple))
+            self.assertEqual(len(m), 3)
+            self.assertTrue(hasattr(m[0], 'read'))
+            self.assertIsInstance(m[0].read(), str)
+            srcfn = shutil.__file__
+            if srcfn.endswith('.pyc'):
+                srcfn = srcfn[:-1]
+            self.assertEqual(m[1], srcfn)
+            self.assertEqual(m[2], ('.py', 'rU', imp.PY_SOURCE))
+
+            m2 = graph.find_module('shutil', None)
+            self.assertEqual(m[1:], m2[1:])
+
+
+            record[:] = []
+            m = graph.find_module('sax', xml.packagepath, xml)
+            self.assertEqual(m,
+                    (None, os.path.join(os.path.dirname(xml.filename), 'sax'), 
+                    ('', '', imp.PKG_DIRECTORY)))
+            self.assertEqual(record, [
+                ('sax', xml.packagepath),
+            ])
+
+        finally:
+            modulegraph.find_module = saved_finder
 
     @expectedFailure
     def test_create_xref(self):

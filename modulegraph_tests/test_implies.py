@@ -5,7 +5,7 @@ import os, shutil, sys
 from modulegraph import modulegraph
 
 class ImpliesTestCase(unittest.TestCase):
-    if not hasattr(unittest.TestCase, 'assertIsInstance'):
+    if not hasattr(unittest.TestCase, 'assertIsInstance'): 
         def assertIsInstance(self, object, types, message=None):
             self.assertTrue(isinstance(object, types),
                     message or '%r is not an instance of %r'%(object, types))
