@@ -171,7 +171,20 @@ made private methods before the 1.0 release.
 
 .. method:: find_module(name, path[, parent])
 
-   .. todo:: To be documented
+   Locates a module named *name* that is not yet part of the
+   graph. This method will raise :exc:`ImportError` when
+   the module cannot be found or when it is already part
+   of the graph. The *name* can not be a dotted name.
+
+   The *path* is the search path used, or :data:`None` to
+   use the default path. 
+
+   When the *parent* is specified *name* refers to a
+   subpackage of *parent*, and *path* should be the
+   search path of the parent.
+
+   Returns the result of the global function
+   :func:`find_module <modulegraph.modulegraph.find_module>`.
 
 
 .. method:: itergraphreport([name[, flatpackages]])

@@ -417,9 +417,9 @@ class ModuleGraph(ObjectGraph):
             self.lazynodes[m] = None
         self.replace_paths = replace_paths
 
-        self.nspackages = self._calc_setuptools_nspackages()
+        self.nspackages = self.calc_setuptools_nspackages()
 
-    def _calc_setuptools_nspackages(self):
+    def calc_setuptools_nspackages(self):
         # Setuptools has some magic handling for namespace
         # packages when using 'install --single-version-externally-managed'
         # (used by system packagers and also by pip)
@@ -732,25 +732,35 @@ class ModuleGraph(ObjectGraph):
             if parent:
                 self.createReference(m, parent)
             return m
+
         if parent and parent.packagepath is None:
             self.msgout(3, "import_module -> None")
             return None
+
         try:
+            searchpath = None
+            if parent is not None and parent.packagepath:
+                searchpath = parent.packagepath
+
             fp, pathname, stuff = self.find_module(partname,
-                parent and parent.packagepath, parent)
+                searchpath, parent)
+
         except ImportError:
             self.msgout(3, "import_module ->", None)
             return None
 
         try:
             m = self.load_module(fqname, fp, pathname, stuff)
+
         finally:
             if fp is not None:
                 fp.close()
+
         if parent:
             self.msgout(4, "create reference", m, "->", parent)
             self.createReference(m, parent)
             parent[partname] = m
+
         self.msgout(3, "import_module ->", m)
         return m
 
