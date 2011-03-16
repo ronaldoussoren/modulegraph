@@ -13,12 +13,11 @@ import errno as _errno
 import time as _time
 import sys as _sys
 
-try:
+if _sys.version_info[0] == 2:
     from  StringIO import StringIO as _StringIO
     from  StringIO import StringIO as _BytesIO
 
-
-except ImportError:
+else:
     from io import StringIO as _StringIO
     from io import BytesIO as _BytesIO
 

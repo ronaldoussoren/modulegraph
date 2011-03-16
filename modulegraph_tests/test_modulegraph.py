@@ -710,10 +710,10 @@ class TestModuleGraph (unittest.TestCase):
         graph.createReference(n1, n2)
         outs, ins = map(list, graph.get_edges(n1))
         self.assertEqual(outs, [n2])
-        self.assertEquals(ins, [])
+        self.assertEqual(ins, [])
         outs, ins = map(list, graph.get_edges(n2))
         self.assertEqual(outs, [])
-        self.assertEquals(ins, [n1])
+        self.assertEqual(ins, [n1])
 
         e = graph.graph.edge_by_node('n1', 'n2')
         self.assertIsInstance(e, int)

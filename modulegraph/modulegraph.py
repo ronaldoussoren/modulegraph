@@ -124,6 +124,33 @@ def _code_to_file(co):
     return BytesIO(
             imp.get_magic() + B('\0\0\0\0') + marshal.dumps(co))
 
+#import traceback
+#class closing (object):
+#    def __init__(self, value):
+#        self._value = value
+#        self._info = None
+#        self._info = traceback.format_stack()
+#
+#    def __getattr__(self, key):
+#        return getattr(self._value, key)
+#
+#    def __setattr__(self, key, value):
+#        if key in ('_value', '_info'):
+#            self.__dict__[key] = value
+#            return 
+#
+#        return setattr(self._value, key, value)
+#
+#    def __del__(self):
+#        try:
+#            self._value.close()
+#        except:
+#            print self._info
+#
+        
+
+
+
 def find_module(name, path=None):
     """
     A version of imp.find_module that works with zipped packages.
@@ -187,6 +214,9 @@ def find_module(name, path=None):
         elif hasattr(loader, 'get_code'):
             co = loader.get_code(name)
             fp = _code_to_file(co)
+
+        else:
+            fp = None
 
 
         pathname = os.path.join(entry, *name.split('.'))
@@ -992,10 +1022,14 @@ class ModuleGraph(ObjectGraph):
             path = self.path
 
         fp, buf, stuff = find_module(name, path)
-        if buf:
-            buf = os.path.realpath(buf)
+        try:
+            if buf:
+                buf = os.path.realpath(buf)
 
-        return (fp, buf, stuff)
+            return (fp, buf, stuff)
+        except:
+            fp.close()
+            raise
 
     def create_xref(self, out=None):
         if out is None:
@@ -1205,6 +1239,9 @@ class ModuleGraph(ObjectGraph):
                 new_filename = r + original_filename[len(f):]
                 break
 
+        else:
+            return co
+
         consts = list(co.co_consts)
         for i in range(len(consts)):
             if isinstance(consts[i], type(co)):
@@ -1215,7 +1252,14 @@ class ModuleGraph(ObjectGraph):
         else:
             code_func = type(co)
 
-        return code_func(co.co_argcount, co.co_nlocals, co.co_stacksize,
+        if hasattr(co, 'co_kwonlyargcount'):
+            return code_func(co.co_argcount, co.co_kwonlyargcount, co.co_nlocals, co.co_stacksize,
+                         co.co_flags, co.co_code, tuple(consts), co.co_names,
+                         co.co_varnames, new_filename, co.co_name,
+                         co.co_firstlineno, co.co_lnotab,
+                         co.co_freevars, co.co_cellvars)
+        else:
+            return code_func(co.co_argcount, co.co_nlocals, co.co_stacksize,
                          co.co_flags, co.co_code, tuple(consts), co.co_names,
                          co.co_varnames, new_filename, co.co_name,
                          co.co_firstlineno, co.co_lnotab,
