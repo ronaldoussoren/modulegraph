@@ -61,14 +61,14 @@ _SETUPTOOLS_NAMESPACEPKG_PTHs=(
 )
 
 
-def _namespace_package_path(fqname, pathname): 
+def _namespace_package_path(fqname, pathnames): 
     """
     Return the __path__ for the python package in *fqname*.
 
     This function uses setuptools metadata to extract information
     about namespace packages from installed eggs.
     """
-    path = []
+    path = list(pathnames)
 
     working_set = pkg_resources.working_set
 
@@ -77,13 +77,11 @@ def _namespace_package_path(fqname, pathname):
             namespaces = dist.get_metadata(
                     'namespace_packages.txt').splitlines()
             if fqname in namespaces:
-                path.append(os.path.join(dist.location, *fqname.split('.')))
+                nspath = os.path.join(dist.location, *fqname.split('.'))
+                if nspath not in path:
+                    path.append(nspath)
 
-    if not path:
-        return [pathname]
-    
-    else:
-        return path
+    return path
 
 _strs = re.compile(r'''^\s*["']([A-Za-z0-9_]+)["'],?\s*''')
 def _eval_str_tuple(value):
@@ -472,7 +470,10 @@ class ModuleGraph(ObjectGraph):
                                             # There is a real __init__.py, ignore the setuptools hack
                                             continue
 
-                                        m = pkgmap[identifier] = subdir
+                                        if identifier in pkgmap:
+                                            pkgmap[identifier].append(subdir)
+                                        else:
+                                            pkgmap[identifier] = [subdir]
                                         break
                         finally:
                             fp.close()
@@ -537,14 +538,14 @@ class ModuleGraph(ObjectGraph):
         if name in self.nspackages:
             # name is a --single-version-externally-managed
             # namespace package (setuptools/distribute)
-            pathname = self.nspackages.pop(name)
+            pathnames = self.nspackages.pop(name)
             m = self.createNode(Package, name)
 
             # FIXME: The filename must be set to a string to ensure that py2app
             # works, it is not clear yet why that is. Setting to None would be
             # cleaner.
             m.filename = '-'
-            m.packagepath = _namespace_package_path(name, pathname)
+            m.packagepath = _namespace_package_path(name, pathnames)
 
             # As per comment at top of file, simulate runtime packagepath additions.
             m.packagepath = m.packagepath + _packagePathMap.get(name, [])
@@ -759,10 +760,12 @@ class ModuleGraph(ObjectGraph):
             m = self.load_package(fqname, pathname)
             self.msgout(2, "load_module ->", m)
             return m
+
         if typ == imp.PY_SOURCE:
             contents = fp.read() + '\n'
             co = compile(contents, pathname, 'exec', 0, True)
             cls = SourceModule
+
         elif typ == imp.PY_COMPILED:
             if fp.read(4) != imp.get_magic():
                 self.msgout(2, "raise ImportError: Bad magic number", pathname)
@@ -770,19 +773,24 @@ class ModuleGraph(ObjectGraph):
             fp.read(4)
             co = marshal.loads(fp.read())
             cls = CompiledModule
+
         elif typ == imp.C_BUILTIN:
             cls = BuiltinModule
             co = None
+
         else:
             cls = Extension
             co = None
+
         m = self.createNode(cls, fqname)
         m.filename = pathname
         if co:
             if self.replace_paths:
                 co = self.replace_paths_in_code(co)
+
             m.code = co
             self.scan_code(co, m)
+
         self.msgout(2, "load_module ->", m)
         return m
 
@@ -837,8 +845,8 @@ class ModuleGraph(ObjectGraph):
             STORE_GLOBAL=Bchr(dis.opname.index('STORE_GLOBAL')),
             unpack=struct.unpack):
 
-        # Python >=2.5: LOAD_CONST flags, LOAD_CONST names, IMPRT_NAME name
-        # Python < 2.5: LOAD_CONST names, IMPRT_NAME name
+        # Python >=2.5: LOAD_CONST flags, LOAD_CONST names, IMPORT_NAME name
+        # Python < 2.5: LOAD_CONST names, IMPORT_NAME name
         extended_import = bool(sys.version_info[:2] >= (2,5))
 
         code = co.co_code
@@ -923,6 +931,7 @@ class ModuleGraph(ObjectGraph):
                 oparg = unpack('<H', code[i - 2:i])[0]
                 name = co.co_names[oparg]
                 m.globalnames.add(name)
+
         cotype = type(co)
         for c in constants:
             if isinstance(c, cotype):
@@ -938,7 +947,7 @@ class ModuleGraph(ObjectGraph):
             fqname = newname
         m = self.createNode(Package, fqname)
         m.filename = pathname
-        m.packagepath = _namespace_package_path(fqname, pathname)
+        m.packagepath = _namespace_package_path(fqname, [pathname])
 
         # As per comment at top of file, simulate runtime packagepath additions.
         m.packagepath = m.packagepath + _packagePathMap.get(fqname, [])

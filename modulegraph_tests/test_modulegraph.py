@@ -18,6 +18,10 @@ try:
 except ImportError:
     from io import StringIO
 
+TESTDATA = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "testdata", "nspkg")
+
 try:
     expectedFailure = unittest.expectedFailure
 except AttributeError:
@@ -88,9 +92,9 @@ class TestFunctions (unittest.TestCase):
         try:
             pkg_resources.working_set = WS()
 
-            self.assertEqual(modulegraph._namespace_package_path("sys", "appdir/pkg"), ["appdir/pkg"])
-            self.assertEqual(modulegraph._namespace_package_path("foo", "appdir/pkg"), ["/pkg/pkg2/foo", "/pkg/pkg4/foo"])
-            self.assertEqual(modulegraph._namespace_package_path("bar.baz", "appdir/pkg"), ["/pkg/pkg3/bar/baz"])
+            self.assertEqual(modulegraph._namespace_package_path("sys", ["appdir/pkg"]), ["appdir/pkg"])
+            self.assertEqual(modulegraph._namespace_package_path("foo", ["appdir/pkg"]), ["appdir/pkg", "/pkg/pkg2/foo", "/pkg/pkg4/foo"])
+            self.assertEqual(modulegraph._namespace_package_path("bar.baz", ["appdir/pkg"]), ["appdir/pkg", "/pkg/pkg3/bar/baz"])
 
         finally:
             pkg_resources.working_set = saved_ws
@@ -398,9 +402,23 @@ class TestModuleGraph (unittest.TestCase):
         self.assertTrue(o.graph is g)
         self.assertEqual(o.debug, 1)
 
-    @expectedFailure
     def test_calc_setuptools_nspackages(self):
-        self.fail("add tests")
+        stdlib = [ fn for fn in sys.path if fn.startswith(sys.prefix) and 'site-packages' not in fn ]
+        for subdir in [ nm for nm in os.listdir(TESTDATA) if nm != 'src' ]:
+            graph = modulegraph.ModuleGraph(path=[
+                    os.path.join(TESTDATA, subdir, "parent"),
+                    os.path.join(TESTDATA, subdir, "child"),
+                ] + stdlib)
+
+            pkgs = graph.nspackages
+            self.assertTrue('namedpkg' in pkgs)
+            self.assertEqual(set(pkgs['namedpkg']),
+                    set([
+                        os.path.join(TESTDATA, subdir, "parent", "namedpkg"),
+                        os.path.join(TESTDATA, subdir, "child", "namedpkg"),
+                    ]))
+            self.assertFalse(os.path.exists(os.path.join(TESTDATA, subdir, "parent", "namedpkg", "__init__.py")))
+            self.assertFalse(os.path.exists(os.path.join(TESTDATA, subdir, "child", "namedpkg", "__init__.py")))
 
     @expectedFailure
     def testImpliedReference(self):
@@ -510,7 +528,18 @@ class TestModuleGraph (unittest.TestCase):
         graph.scan_code(code, mod)
         self.assertEqual(list(graph.nodes()), [])
 
+        node_map = {}
+        def _safe_import(name, mod, fromlist, level):
+            if name in node_map:
+                node = node_map[name]
+            else:
+                node = modulegraph.Node(name)
+            node_map[name] = node
+            return [node]
+
         graph = modulegraph.ModuleGraph()
+        graph._safe_import_hook = _safe_import
+
         code = compile(textwrap.dedent('''\
             import sys
             import os.path
@@ -520,8 +549,28 @@ class TestModuleGraph (unittest.TestCase):
             '''), '<test>', 'exec', 0, False)
         graph.scan_code(code, mod)
         modules = [node.identifier for node in graph.nodes()]
+        self.assertEqual(set(node_map), set(['sys', 'os.path', 'shutil']))
 
-        self.fail("tests needed....")
+
+        # from module import a, b, c
+        # from module import *
+        #  both:
+        #   -> with/without globals
+        #   -> with/without modules in globals (e.g, 
+        #       from os import * adds dependency to os.path)
+        # from .module import a
+        # from ..module import a
+        #   -> check levels
+        # import name
+        # import a.b
+        #   -> should add dependency to a
+        # try to build case where commented out
+        # code would behave different than current code
+        # (Carbon.SomeMod contains 'import Sibling' seems
+        # to cause difference in real code)
+
+        self.fail("actual test needed")
+
 
 
     @expectedFailure

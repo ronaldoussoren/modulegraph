@@ -1,6 +1,11 @@
 """
 A helper module that can work with paths 
 that can refer to data inside a zipfile
+
+XXX: Need to determine if isdir("zipfile.zip")
+should return True or False. Currently returns
+True, but that might do the wrong thing with
+data-files that are zipfiles.
 """
 import os as _os
 import zipfile as _zipfile

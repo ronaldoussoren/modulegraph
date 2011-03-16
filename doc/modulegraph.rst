@@ -102,6 +102,9 @@ The methods in this section should be considered as methods for subclassing at b
 please let us know if you need these methods in your code as they are on track to be
 made private methods before the 1.0 release.
 
+.. warning:: The methods in this section will be refactored in a future release,
+   the current architecture makes it unnecessarily hard to write proper tests.
+
 .. method:: determine_parent(caller)
 
    Returns package node that contains the *caller*. Returns :data:`None` when
@@ -142,7 +145,17 @@ made private methods before the 1.0 release.
 
 .. method:: load_module(fqname, fp, pathname, (suffix, mode, type))
 
-   .. todo: To be documented
+   Load the module named *fqname* from the given *pathame*. The
+   argument *fp* is either :data:`None`, or a stream where the
+   code for the Python module can be loaded (either byte-code or
+   the source code). The *(suffix, mode, type)* tuple are the 
+   suffix of the source file, the open mode for the file and the
+   type of module.
+
+   Creates a node of the right class and processes the dependencies
+   of the :class:`node <Node>` by scanning the byte-code for the node. 
+
+   Returns the resulting :class:`node <Node>`.
 
 .. method:: scan_code(code, m)
 
@@ -169,6 +182,18 @@ made private methods before the 1.0 release.
 
    Replace the filenames in code object *co* using the *replace_paths* value that
    was passed to the contructor. Returns the rewritten code object.
+
+.. method:: calc_setuptools_nspackages()
+
+   Returns a mapping from package name to a list of paths where that package
+   can be found in ``--single-version-externally-managed`` form.
+
+   This method is used to be able to find those packages: these use
+   a magic ``.pth`` file to ensure that the package is added to :data:`sys.path`,
+   as they do not contain an ``___init__.py`` file. 
+   
+   Packages in this form are used by system packages and the "pip"
+   installer.
 
 Graph nodes
 -----------
