@@ -147,7 +147,7 @@ def isfile(path):
             try:
                 zf = _zipfile.ZipFile(path, 'r')
                 return False
-            except _zipfile.error:
+            except (_zipfile.error, IOError):
                 return True
         return False
 
@@ -191,7 +191,7 @@ def isdir(path):
         if not ok:
             try:
                 zf = _zipfile.ZipFile(path, 'r')
-            except _zipfile.error:
+            except (_zipfile.error, IOError):
                 return False
             return True
         return True
