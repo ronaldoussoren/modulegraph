@@ -8,7 +8,6 @@ from __future__ import absolute_import
 
 import pkg_resources
 
-import StringIO
 import dis
 import imp
 import marshal
@@ -26,14 +25,20 @@ from altgraph.Dot import Dot
 from altgraph.ObjectGraph import ObjectGraph
 from altgraph.GraphUtil import filter_stack
 
-from modulegraph._compat import Bchr
+from modulegraph._compat import Bchr, B
 from itertools import imap, ifilter, izip, count
 
 from modulegraph import util
 from modulegraph import zipio
 
+if sys.version_info[0] == 2:
+    from StringIO import StringIO as BytesIO
+else:
+    from io import BytesIO
+
 # File open mode for reading (univeral newlines)
 _READ_MODE = "rU"  
+
 
 
 
@@ -118,8 +123,8 @@ def os_listdir(path):
 
 def _code_to_file(co):
     """ Convert code object to a .pyc pseudo-file """
-    return StringIO.StringIO(
-            imp.get_magic() + chr(0)*4 + marshal.dumps(co))
+    return BytesIO(
+            imp.get_magic() + B('\0\0\0\0') + marshal.dumps(co))
 
 def find_module(name, path=None):
     """
@@ -793,14 +798,15 @@ class ModuleGraph(ObjectGraph):
             assert len(mods) == 1
             m = list(mods)[0]
 
-        subs = set([m])
+        subs = [m]
         for sub in (fromlist or ()):
             # If this name is in the module namespace already,
             # then add the entry to the list of substitutions
             if sub in m:
                 sm = m[sub]
                 if sm is not None:
-                    subs.add(sm)
+                    if sm not in subs:
+                        subs.append(sm)
                 continue
 
             # See if we can load it
@@ -818,7 +824,8 @@ class ModuleGraph(ObjectGraph):
             m[sub] = sm
             if sm is not None:
                 self.createReference(sm, m)
-                subs.add(sm)
+                if sm not in subs:
+                    subs.append(sm)
         return subs
 
     def scan_code(self, co, m,
@@ -873,27 +880,44 @@ class ModuleGraph(ObjectGraph):
 
                 #self.msgin(2, "Before import hook", repr(name), repr(m), repr(fromlist), repr(level))
 
-                self._safe_import_hook(name, m, fromlist, level)
+                imported_module = self._safe_import_hook(name, m, fromlist, level)[0]
 
                 if have_star:
-                    # We've encountered an "import *". If it is a Python module,
-                    # the code has already been parsed and we can suck out the
-                    # global names.
-                    mm = None
-                    if m.packagepath:
-                        # At this point we don't know whether 'name' is a
-                        # submodule of 'm' or a global module. Let's just try
-                        # the full name first.
-                        mm = self.findNode(m.identifier + '.' + name)
-                    if mm is None:
-                        mm = self.findNode(name)
-                    if mm is not None:
-                        m.globalnames.update(mm.globalnames)
-                        m.starimports.update(mm.starimports)
-                        if mm.code is None:
-                            m.starimports.add(name)
-                    else:
+                    m.globalnames.update(imported_module.globalnames)
+                    m.starimports.update(imported_module.starimports)
+                    if imported_module.code is None:
                         m.starimports.add(name)
+
+                
+                # XXX: The code below tries to find the module we're 
+                # star-importing from. That code uses heuristics, which is
+                # a bit lame as we already know that module: _safe_import has
+                # just calculated it for us (after a small tweak to the 
+                # return value of that method).
+                # 
+                #
+                #if have_star:
+                #    # We've encountered an "import *". If it is a Python module,
+                #    # the code has already been parsed and we can suck out the
+                #    # global names.
+                #    mm = None
+                #    if m.packagepath:
+                #        # At this point we don't know whether 'name' is a
+                #        # submodule of 'm' or a global module. Let's just try
+                #        # the full name first.
+                #        mm = self.findNode(m.identifier + '.' + name)
+                #    if mm is None:
+                #        mm = self.findNode(name)
+                #
+                #
+                #    assert actual_mod is mm, (name, m, fromlist, actual_mod, mm)
+                #    if mm is not None:
+                #        m.globalnames.update(mm.globalnames)
+                #        m.starimports.update(mm.starimports)
+                #        if mm.code is None:
+                #            m.starimports.add(name)
+                #    else:
+                #        m.starimports.add(name)
             elif c == STORE_NAME or c == STORE_GLOBAL:
                 # keep track of all global names that are assigned to
                 oparg = unpack('<H', code[i - 2:i])[0]
