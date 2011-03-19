@@ -3,6 +3,9 @@ Find modules used by a script, using bytecode analysis.
 
 Based on the stdlib modulefinder by Thomas Heller and Just van Rossum,
 but uses a graph data structure and 2.3 features
+
+XXX: Verify all calls to import_hook (and variants) to ensure that 
+imports are done in the right way.
 """
 from __future__ import absolute_import
 
@@ -765,6 +768,7 @@ class ModuleGraph(ObjectGraph):
                     yield path
 
     def import_module(self, partname, fqname, parent):
+        # XXX: Review me for use with absolute imports.
         self.msgin(3, "import_module", partname, fqname, parent)
         m = self.findNode(fqname)
         if m is not None:

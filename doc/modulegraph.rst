@@ -62,11 +62,15 @@ The actual graph
    a :class:`node <Node>` or the name of a module that will be
    searched for as if it were an absolute import.
 
+
+
 .. method:: createReference(fromnode, tonode[, edge_data])
 
    Create a reference from *fromnode* to *tonode*, with optional edge data.
 
    The default for *edge_data* is ``"direct"``.
+
+
 
 .. method:: findNode(name)
 
@@ -78,15 +82,21 @@ The actual graph
    If a lazy node exists by that identifier with dependencies, it and its
    dependencies will be instantiated and scanned for additional depende
 
+
+
 .. method:: create_xref([out])
 
    Write an HTML file to the *out* stream (defaulting to :data:`sys.stdout`).
 
    The HTML file contains a textual description of the dependency graph.
 
+
+
 .. method:: graphreport([fileobj[, flatpackages]])
 
    .. todo:: To be documented
+
+
 
 .. method:: report()
 
@@ -134,15 +144,27 @@ made private methods before the 1.0 release.
 
 .. method:: ensure_fromlist(m, fromlist)
 
-   .. todo: To be documented
+   Yield all submodules that would be imported when importing *fromlist*
+   from *m* (using ``from m import fromlist...``).
+
+   *m* must be a package and not a regular module.
 
 .. method:: find_all_submodules(m)
 
-   Yield the module info for submodules of in the same package as *m*.
+   Yield the filenames for submodules of in the same package as *m*.
+
+
 
 .. method:: import_module(partname, fqname, parent)
 
-   .. todo: To be documented
+   Perform import of the module with basename *partname* (``path``) and 
+   full name *fqname* (``os.path``). Import is performed by *parent*.
+
+   This will create a reference from the parent node to the 
+   module node and will load the module node when it is not already
+   loaded.
+
+
 
 .. method:: load_module(fqname, fp, pathname, (suffix, mode, type))
 
@@ -158,6 +180,8 @@ made private methods before the 1.0 release.
 
    Returns the resulting :class:`node <Node>`.
 
+
+
 .. method:: scan_code(code, m)
 
    Scan the *code* object for module *m* and update the dependencies of
@@ -166,9 +190,13 @@ made private methods before the 1.0 release.
    This will automaticly scan the code for nested functions, generator
    expressions and list comprehensions as well.
 
+
+
 .. method:: load_package(fqname, pathname)
 
    Load a package directory.
+
+
 
 .. method:: find_module(name, path[, parent])
 
@@ -192,10 +220,14 @@ made private methods before the 1.0 release.
 
    .. todo:: To be documented
 
+
+
 .. method:: replace_paths_in_code(co)
 
    Replace the filenames in code object *co* using the *replace_paths* value that
    was passed to the contructor. Returns the rewritten code object.
+
+
 
 .. method:: calc_setuptools_nspackages()
 
@@ -208,6 +240,8 @@ made private methods before the 1.0 release.
    
    Packages in this form are used by system packages and the "pip"
    installer.
+
+
 
 Graph nodes
 -----------
