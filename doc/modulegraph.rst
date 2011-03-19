@@ -58,10 +58,9 @@ The actual graph
 
 .. method:: implyNodeReference(node, other)
 
-   Imply that one *node* depends on an *other* node. The *other*
-   argument is either a :class:`Node`, or the name of a node.
-
-   Use this for imports by extension modules and tricky import code.
+   Explictly mark that *node* depends on *other*. Other is either
+   a :class:`node <Node>` or the name of a module that will be
+   searched for as if it were an absolute import.
 
 .. method:: createReference(fromnode, tonode[, edge_data])
 

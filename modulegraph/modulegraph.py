@@ -179,7 +179,6 @@ def find_module(name, path=None):
         loader = importer.find_module(name)
         if loader is None: continue
 
-
         if isinstance(importer, ImpImporter):
             filename = loader.filename
             if filename.endswith('.pyc') or filename.endswith('.pyo'):
@@ -217,13 +216,14 @@ def find_module(name, path=None):
 
         else:
             fp = None
+            co = None
 
 
         pathname = os.path.join(entry, *name.split('.'))
 
         if isinstance(loader, zipimport.zipimporter):
-            # Check if this happens to be a wrapper module introduced by setuptools,
-            # if it is we return the actual extension.
+            # Check if this happens to be a wrapper module introduced by 
+            # setuptools, if it is we return the actual extension.
             zn = '/'.join(name.split('.'))
             for _sfx, _mode, _type in imp.get_suffixes():
                 if _type == imp.C_EXTENSION:
@@ -235,9 +235,15 @@ def find_module(name, path=None):
         if hasattr(loader, 'is_package') and loader.is_package(name):
             return (None, pathname, ('', '', imp.PKG_DIRECTORY))
 
-        pathname = pathname + '.pyc'
-        description = ('.pyc', 'rb', imp.PY_COMPILED)
-        return (fp, pathname, description)
+        if co is None:
+            pathname = pathname + '.py'
+            description = ('.pyc', 'rb', imp.PY_COMPILED)
+            return (fp, pathname, ('.py', 'rU', imp.PY_SOURCE))
+
+        else:
+            pathname = pathname + '.pyc'
+            description = ('.pyc', 'rb', imp.PY_COMPILED)
+            return (fp, pathname, ('.pyc', 'rb', imp.PY_COMPILED))
 
     raise ImportError(name)
 
@@ -517,17 +523,16 @@ class ModuleGraph(ObjectGraph):
 
         For use by extension modules and tricky import code
         """
-        if not isinstance(other, Node):
-            if not isinstance(other, tuple):
-                other = (other, node)
-            others = self.import_hook(*other)
+        if isinstance(other, Node):
+            self.createReference(node, other)
+
+        else:
+            if isinstance(other, tuple):
+                raise ValueError(other)
+
+            others = self._safe_import_hook(other, node, None)
             for other in others:
                 self.createReference(node, other)
-        elif isinstance(other, AliasNode):
-            self.addNode(other)
-            other.connectTo(node)  # XXX: method doesn't exist
-        else:
-            self.createReference(node, other)
 
 
     def createReference(self, fromnode, tonode, edge_data='direct'):
@@ -559,6 +564,7 @@ class ModuleGraph(ObjectGraph):
                 other = self._safe_import_hook(deps, None, None).pop()
                 m = self.createNode(AliasNode, name, other)
                 self.implyNodeReference(m, other)
+
             else:
                 m = self._safe_import_hook(name, None, None).pop()
                 for dep in deps:

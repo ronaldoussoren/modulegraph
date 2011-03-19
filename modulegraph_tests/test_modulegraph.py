@@ -124,9 +124,90 @@ class TestFunctions (unittest.TestCase):
         self.assertIsInstance(content, bytes)
         data.close()
 
-    @expectedFailure
     def test_find_module(self):
-        self.fail("Missing test for modulegraph.find_module")
+        for path in ('syspath', 'syspath.zip', 'syspath.egg'):
+            path = os.path.join(os.path.dirname(TESTDATA), path)
+            if os.path.exists(os.path.join(path, 'mymodule.pyc')):
+                os.unlink(os.path.join(path, 'mymodule.pyc'))
+
+            # Plain module
+            info = modulegraph.find_module('mymodule', path=[path] + sys.path)
+
+            fp = info[0]
+            filename = info[1]
+            description = info[2]
+
+            self.assertTrue(hasattr(fp, 'read'))
+
+            if path.endswith('.zip') or path.endswith('.egg'):
+                # Zip importers will precompile
+                self.assertEqual(filename, os.path.join(path, 'mymodule.pyc'))
+                self.assertEqual(description, ('.pyc', 'rb', imp.PY_COMPILED))
+
+            else:
+                self.assertEqual(filename, os.path.join(path, 'mymodule.py'))
+                self.assertEqual(description, ('.py', 'rU', imp.PY_SOURCE))
+
+            # Compiled plain module, no source
+            if path.endswith('.zip') or path.endswith('.egg'):
+                self.assertRaises(ImportError, modulegraph.find_module, 'mymodule2', path=[path] + sys.path)
+
+            else:
+                info = modulegraph.find_module('mymodule2', path=[path] + sys.path)
+
+                fp = info[0]
+                filename = info[1]
+                description = info[2]
+
+                self.assertTrue(hasattr(fp, 'read'))
+                self.assertEqual(filename, os.path.join(path, 'mymodule2.pyc'))
+                self.assertEqual(description, ('.pyc', 'rb', imp.PY_COMPILED))
+
+            # Compiled plain module, with source
+#            info = modulegraph.find_module('mymodule3', path=[path] + sys.path)
+#
+#            fp = info[0]
+#            filename = info[1]
+#            description = info[2]
+#
+#            self.assertTrue(hasattr(fp, 'read'))
+#
+#            if sys.version_info[:2] >= (3,2):
+#                self.assertEqual(filename, os.path.join(path, '__pycache__', 'mymodule3.cpython-32.pyc'))
+#            else:
+#                self.assertEqual(filename, os.path.join(path, 'mymodule3.pyc'))
+#            self.assertEqual(description, ('.pyc', 'rb', imp.PY_COMPILED))
+
+
+            # Package
+            info = modulegraph.find_module('mypkg', path=[path] + sys.path)
+            fp = info[0]
+            filename = info[1]
+            description = info[2]
+
+            self.assertEqual(fp, None)
+            self.assertEqual(filename, os.path.join(path, 'mypkg'))
+            self.assertEqual(description, ('', '', imp.PKG_DIRECTORY))
+
+            # Extension
+            if path.endswith('.zip'):
+                self.assertRaises(ImportError, modulegraph.find_module, 'myext', path=[path] + sys.path)
+
+            else:
+                info = modulegraph.find_module('myext', path=[path] + sys.path)
+                fp = info[0]
+                filename = info[1]
+                description = info[2]
+
+                if sys.platform == 'win32':
+                    ext = '.pyd'
+                else:
+                    # This is a ly, but is good enough for now  
+                    ext = '.so'
+
+                self.assertEqual(fp, None)
+                self.assertEqual(filename, os.path.join(path, 'myext' + ext))
+                self.assertEqual(description, (ext, 'rb', imp.C_EXTENSION))
 
     def test_moduleInfoForPath(self):
         self.assertEqual(modulegraph.moduleInfoForPath("/somewhere/else/file.txt"), None)
@@ -421,9 +502,41 @@ class TestModuleGraph (unittest.TestCase):
             self.assertFalse(os.path.exists(os.path.join(TESTDATA, subdir, "parent", "namedpkg", "__init__.py")))
             self.assertFalse(os.path.exists(os.path.join(TESTDATA, subdir, "child", "namedpkg", "__init__.py")))
 
-    @expectedFailure
     def testImpliedReference(self):
-        self.fail("implyNodeReference")
+        graph = modulegraph.ModuleGraph()
+
+        record = []
+        def import_hook(*args):
+            record.append(('import_hook',) + args)
+            return [graph.createNode(modulegraph.Node, args[0])]
+
+        def _safe_import_hook(*args):
+            record.append(('_safe_import_hook',) + args)
+            return [graph.createNode(modulegraph.Node, args[0])]
+
+        graph.import_hook = import_hook
+        graph._safe_import_hook = _safe_import_hook
+
+        n1 = graph.createNode(modulegraph.Node, 'n1')
+        n2 = graph.createNode(modulegraph.Node, 'n2')
+
+        graph.implyNodeReference(n1, n2)
+        outs, ins = map(list, graph.get_edges(n1))
+        self.assertEqual(outs, [n2])
+        self.assertEqual(ins, [])
+
+        self.assertEqual(record, [])
+
+        graph.implyNodeReference(n2, "n3")
+        n3 = graph.findNode('n3')
+        outs, ins = map(list, graph.get_edges(n2))
+        self.assertEqual(outs, [n3])
+        self.assertEqual(ins, [n1])
+        self.assertEqual(record, [
+            ('_safe_import_hook', 'n3', n2, None)
+        ])
+
+
 
     @expectedFailure
     def test_findNode(self):
