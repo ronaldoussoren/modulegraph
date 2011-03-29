@@ -648,10 +648,21 @@ class TestModuleGraph (unittest.TestCase):
 
     @expectedFailure
     def test_ensure_fromlist(self):
+        # 1. basic 'from module import name, name'
+        # 2. 'from module import *'
+        # 3. from module import os 
+        #    (where 'os' is not a name in 'module',
+        #     should create MissingModule node, and
+        #     should *not* refer to the global os)
         self.fail("ensure_fromlist")
 
     @expectedFailure
     def test_find_all_submodules(self):
+        # 1. basic
+        # 2. no packagepath (basic module)
+        # 3. extensions, python modules
+        # 4. with/without zipfile
+        # 5. files that aren't python modules/extensions
         self.fail("find_all_submodules")
 
     @expectedFailure
