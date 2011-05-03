@@ -854,7 +854,14 @@ class ModuleGraph(ObjectGraph):
             mods = self.import_hook(name, caller, level=level)
         except ImportError, msg:
             self.msg(2, "ImportError:", str(msg))
-            m = self.createNode(MissingModule, name)
+
+            # This is a hack, but sadly enough the necessary information
+            # isn't available otherwise.
+            m = re.match('^No module named (\S+)$', str(msg))
+            if m is not None:
+                m = self.createNode(MissingModule, m.group(1))
+            else:
+                m = self.createNode(MissingModule, name)
             self.createReference(caller, m)
         else:
             assert len(mods) == 1

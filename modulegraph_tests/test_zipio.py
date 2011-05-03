@@ -156,10 +156,10 @@ class TestModuleGraph (unittest.TestCase):
         self.assertEqual(os.path.getmtime(fn), zipio.getmtime(fn))
 
         fn = os.path.join(TESTDATA, 'zipped.egg/test.txt')
-        self.assertEqual(zipio.getmtime(fn), 1300215280.0)
+        self.assertEqual(zipio.getmtime(fn), 1300193680.0)
 
         fn = os.path.join(TESTDATA, 'zipped.egg/subdir')
-        self.assertEqual(zipio.getmtime(fn), 1300215490.0)
+        self.assertEqual(zipio.getmtime(fn), 1300193890.0)
 
         fn = os.path.join(TESTDATA, 'zipped.egg/subdir4')
         self.assertEqual(zipio.getmtime(fn), os.path.getmtime(os.path.join(TESTDATA, 'zipped.egg')))

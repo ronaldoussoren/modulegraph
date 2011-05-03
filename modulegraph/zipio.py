@@ -331,7 +331,7 @@ def getmtime(path):
             # the zipfile itself.
             return _os.path.getmtime(path)
 
-        return _time.mktime(info.date_time + (0, 0, 0))
+        return _time.mktime(info.date_time + (0, 0, -1))
 
     except KeyError:
         if zf is not None:

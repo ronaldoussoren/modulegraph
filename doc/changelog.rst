@@ -1,6 +1,27 @@
 Release history
 ===============
 
+0.9.1
+-----
+
+This is a bugfix release
+
+Bug fixes
+.........
+
+- Fixed the name of nodes imports in packages where the first element of
+  a dotted name can be found but the rest cannot. This used to create
+  a MissingModule node for the dotted name in the global namespace instead
+  of relative to the package.
+
+  That is, given a package "pkg" with submodule "sub" if the "__init__.py"
+  of "pkg" contains "import sub.nomod" we now create a MissingModule node
+  for "pkg.sub.nomod" instead of "sub.nomod".
+
+  This fixes an issue with including the crcmod package in application 
+  bundles, first reported on the pythonmac-sig mailinglist by
+  Brendan Simon.
+
 0.9
 ---
 
