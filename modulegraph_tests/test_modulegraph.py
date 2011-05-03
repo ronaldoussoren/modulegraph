@@ -561,6 +561,7 @@ class TestModuleGraph (unittest.TestCase):
     def test_determine_parent(self):
         graph = modulegraph.ModuleGraph()
         graph.import_hook('os.path', None)
+        graph.import_hook('idlelib', None)
         
         for node in graph.nodes():
             if isinstance(node, modulegraph.Package):
@@ -575,10 +576,10 @@ class TestModuleGraph (unittest.TestCase):
         self.assertTrue(isinstance(parent, modulegraph.Package))
 
         # XXX: Might be a usecase for some odd code in determine_parent...
-        node = modulegraph.Package('encodings')
-        node.packagepath = parent.packagepath
-        m = graph.determine_parent(node)
-        self.assertTrue(m is parent)
+        #node = modulegraph.Package('encodings')
+        #node.packagepath = parent.packagepath
+        #m = graph.determine_parent(node)
+        #self.assertTrue(m is parent)
 
         m = graph.findNode('xml')
         self.assertEqual(graph.determine_parent(m), None)
