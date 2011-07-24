@@ -208,6 +208,36 @@ class TestRegressions2 (unittest.TestCase):
         node = self.mf.findNode('pkg.pkg')
         self.assertIsInstance(node, modulegraph.SourceModule)
 
+class TestRegressions3 (unittest.TestCase):
+    if not hasattr(unittest.TestCase, 'assertIsInstance'):
+        def assertIsInstance(self, value, types):
+            if not isinstance(value, types):
+                self.fail("%r is not an instance of %r"%(value, types))
+
+    def setUp(self):
+        root = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                'testpkg-regr3')
+        self.mf = modulegraph.ModuleGraph(path=[ root ] + sys.path)
+        self.mf.run_script(os.path.join(root, 'script.py'))
+
+    def testRegr1(self):
+        node = self.mf.findNode('mypkg.distutils')
+        self.assertIsInstance(node, modulegraph.Package)
+        node = self.mf.findNode('mypkg.distutils.ccompiler')
+        self.assertIsInstance(node, modulegraph.SourceModule)
+        self.assertTrue(node.filename.startswith(os.path.dirname(__file__)))
+
+        import distutils.sysconfig, distutils.ccompiler
+        node = self.mf.findNode('distutils.ccompiler')
+        self.assertIsInstance(node, modulegraph.SourceModule)
+        self.assertEqual(os.path.dirname(node.filename), 
+                os.path.dirname(distutils.ccompiler.__file__))
+
+        node = self.mf.findNode('distutils.sysconfig')
+        self.assertIsInstance(node, modulegraph.SourceModule)
+        self.assertEqual(os.path.dirname(node.filename), 
+                os.path.dirname(distutils.sysconfig.__file__))
 
 if __name__ == "__main__":
     unittest.main()
