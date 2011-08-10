@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Documentation for modulegraph
-=============================
+Modulegraph - Python module dependency graph
+============================================
 
 modulegraph determines a dependency graph between Python modules primarily
 by bytecode analysis for import statements.
@@ -27,14 +27,14 @@ Contents:
    zipio
 
 Online Resources
-================
+----------------
 
 * `Sourcecode repository on bitbucket <http://bitbucket.org/ronaldoussoren/modulegraph/>`_
 
 * `The issue tracker <http://bitbucket.org/ronaldoussoren/modulegraph/issues>`_
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
