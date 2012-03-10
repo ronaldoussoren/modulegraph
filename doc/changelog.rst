@@ -4,7 +4,16 @@ Release history
 0.9.2
 -----
 
-?
+This is a bugfix release
+
+Bugfixes
+........
+
+* The 'packages' option to modulegraph.find_modules.find_modules ignored
+  the search path argument but always used the default search path.
+
+* The 'imp_find_modules' function in modulegraph.util has an argument 'path',
+  this was a string in previous release and can now also be a sequence.
 
 0.9.1
 -----

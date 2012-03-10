@@ -194,7 +194,7 @@ def find_needed_modules(mf=None, scripts=(), includes=(), packages=(), warn=warn
             # Find path of package
             # TODO: use imp_find_module_or_importer
             try:
-                path = imp_find_module(f)[1]
+                path = imp_find_module(f, mf.path)[1]
             except ImportError:
                 warn("No package named %s" % f)
                 continue

@@ -12,7 +12,8 @@ def imp_find_module(name, path=None):
     """
     names = name.split('.')
     if path is not None:
-        path = [os.path.realpath(path)]
+        if isinstance(path, (str, unicode)):
+            path = [os.path.realpath(path)]
     for name in names:
         result = imp.find_module(name, path)
         if result[0] is not None:
