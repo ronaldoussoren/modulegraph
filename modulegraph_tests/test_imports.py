@@ -239,5 +239,31 @@ class TestRegressions3 (unittest.TestCase):
         self.assertEqual(os.path.dirname(node.filename), 
                 os.path.dirname(distutils.sysconfig.__file__))
 
+class TestRegression4 (unittest.TestCase):
+    if not hasattr(unittest.TestCase, 'assertIsInstance'):
+        def assertIsInstance(self, value, types):
+            if not isinstance(value, types):
+                self.fail("%r is not an instance of %r"%(value, types))
+
+    def setUp(self):
+        root = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                'testpkg-regr4')
+        self.mf = modulegraph.ModuleGraph(path=[ root ] + sys.path)
+        self.mf.run_script(os.path.join(root, 'script.py'))
+
+    def testRegr1(self):
+        node = self.mf.findNode('pkg.core')
+        self.assertIsInstance(node, modulegraph.Package)
+
+        node = self.mf.findNode('pkg.core.callables')
+        self.assertIsInstance(node, modulegraph.SourceModule)
+
+        node = self.mf.findNode('pkg.core.listener')
+        self.assertIsInstance(node, modulegraph.SourceModule)
+
+        node = self.mf.findNode('pkg.core.listenerimpl')
+        self.assertIsInstance(node, modulegraph.SourceModule)
+
 if __name__ == "__main__":
     unittest.main()
