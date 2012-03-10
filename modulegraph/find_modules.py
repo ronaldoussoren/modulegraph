@@ -178,10 +178,13 @@ def find_needed_modules(mf=None, scripts=(), includes=(), packages=(), warn=warn
         mf.run_script(path)
 
     for mod in includes:
-        if mod[-2:] == '.*':
-            mf.import_hook(mod[:-2], None, ['*'])
-        else:
-            mf.import_hook(mod)
+        try:
+            if mod[-2:] == '.*':
+                mf.import_hook(mod[:-2], None, ['*'])
+            else:
+                mf.import_hook(mod)
+        except ImportError:
+            warn("No module named %s"%(mod,))
 
     for f in packages:
         # If modulegraph has seen a reference to the package, then

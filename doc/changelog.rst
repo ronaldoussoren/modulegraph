@@ -15,6 +15,9 @@ Bugfixes
 * The 'imp_find_modules' function in modulegraph.util has an argument 'path',
   this was a string in previous release and can now also be a sequence.
 
+* Don't crash when a module on the 'includes' list doesn't exist, but warn
+  just like for missing 'packages' (modulegraph.find_modules.find_modules)
+
 0.9.1
 -----
 
