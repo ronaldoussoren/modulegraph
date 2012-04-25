@@ -24,9 +24,7 @@ import zipimport
 import re
 from collections import deque
 
-from altgraph.Dot import Dot
 from altgraph.ObjectGraph import ObjectGraph
-from altgraph.GraphUtil import filter_stack
 
 from modulegraph._compat import Bchr, B
 from itertools import imap, ifilter, izip, count
