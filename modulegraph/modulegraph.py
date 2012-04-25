@@ -445,25 +445,25 @@ class ArchiveModule(BaseModule): # nocoverage
 header = """\
 <html>
   <head>
-    <title>@TITLE@</title>
+    <title>%(TITLE)s</title>
     <style>
       .node { margin:1em 0; }
     </style>
   </head>
   <body>
-    <h1>@TITLE@</h1>"""
+    <h1>%(TITLE)s</h1>"""
 entry = """
 <div class="node">
-  <a name="@NAME@" />
-  @CONTENT@
+  <a name="%(NAME)s" />
+  %(CONTENT)s
 </div>"""
-contpl = """<tt>@NAME@</tt> @TYPE@"""
+contpl = """<tt>%(NAME)s</tt> %(TYPE)s"""
 contpl_linked = """\
-<a target="code" href="@URL@" type="text/plain"><tt>@NAME@</tt></a>"""
+<a target="code" href="%(URL)s" type="text/plain"><tt>%(NAME)s</tt></a>"""
 imports = """\
   <div class="import">
-@HEAD@:
-  @LINKS@
+%(HEAD)s:
+  %(LINKS)s
   </div>
 """
 footer = """
@@ -1098,7 +1098,7 @@ class ModuleGraph(ObjectGraph):
         mods = scripts
 
         title = "modulegraph cross reference for "  + ', '.join(scriptnames)
-        print >>out, header.replace("@TITLE@", title)
+        print >>out, header % {"TITLE": title}
 
         def sorted_namelist(mods):
             lst = [os.path.basename(mod.identifier) for mod in mods if mod]
@@ -1107,29 +1107,26 @@ class ModuleGraph(ObjectGraph):
         for name, m in mods:
             content = ""
             if isinstance(m, BuiltinModule):
-                content = contpl.replace("@NAME@", name)\
-                                .replace("@TYPE@", "<i>(builtin module)</i>")
+                content = contpl % {"NAME": name,
+                                    "TYPE": "<i>(builtin module)</i>"}
             elif isinstance(m, Extension):
-                content = contpl.replace("@NAME@", name)\
-                                .replace("@TYPE@", "<tt>%s</tt>" % m.filename)
+                content = contpl % {"NAME": name,\
+                                    "TYPE": "<tt>%s</tt>" % m.filename}
             else:
                 url = urllib.pathname2url(m.filename or "")
-                content = contpl_linked.replace("@NAME@", name)\
-                                 .replace("@URL@", url)
+                content = contpl_linked % {"NAME": name, "URL": url}
             oute, ince = map(sorted_namelist, self.get_edges(m))
             if oute:
                 links = ""
                 for n in oute:
                     links += """  <a href="#%s">%s</a>\n""" % (n, n)
-                content += imports.replace("@HEAD@", "imports")\
-                                  .replace("@LINKS@", links)
+                content += imports % {"HEAD": "imports", "LINKS": links}
             if ince:
                 links = ""
                 for n in ince:
                     links += """  <a href="#%s">%s</a>\n""" % (n, n)
-                content += imports.replace("@HEAD@", "imported by")\
-                                  .replace("@LINKS@", links)
-            print >>out, entry.replace("@NAME@", name).replace("@CONTENT@", content)
+                content += imports % {"HEAD": "imported by", "LINKS": links}
+            print >>out, entry % {"NAME": name,"CONTENT": content}
         print >>out, footer
         
 
