@@ -1051,6 +1051,31 @@ class ModuleGraph(ObjectGraph):
             raise
 
     def create_xref(self, out=None):
+        header = """\
+<html>
+  <head>
+    <title>@TITLE@</title>
+  </head>
+  <body>
+    <h1>@TITLE@</h1>"""
+        entry = """
+<br/>
+<a name="@NAME@" /><tt>@NAME@</tt> @TYPE@ <br />
+        """
+        entry_linked = """
+<a name="@NAME@" />
+  <a target="code" href="@URL@" type="text/plain"><tt>@NAME@</tt></a>
+<br />
+        """
+        imports = """\
+@HEAD@:
+  @LINKS@
+<br />
+"""
+        footer = """
+  </body>
+</html>"""
+
         if out is None:
             out = sys.stdout
         scripts = []
@@ -1068,8 +1093,7 @@ class ModuleGraph(ObjectGraph):
         mods = scripts
 
         title = "modulegraph cross reference for "  + ', '.join(scriptnames)
-        print >>out, """<html><head><title>%s</title></head>
-            <body><h1>%s</h1>""" % (title, title)
+        print >>out, header.replace("@TITLE@", title)
 
         def sorted_namelist(mods):
             lst = [os.path.basename(mod.identifier) for mod in mods if mod]
@@ -1077,29 +1101,30 @@ class ModuleGraph(ObjectGraph):
             return lst
         for name, m in mods:
             if isinstance(m, BuiltinModule):
-                print >>out, """<a name="%s" /><tt>%s</tt>
-                    <i>(builtin module)</i> <br />""" % (name, name)
+                print >>out, entry.replace("@NAME@", name)\
+                                  .replace("@TYPE@", "<i>(builtin module)</i>")
             elif isinstance(m, Extension):
-                print >>out, """<a name="%s" /><tt>%s</tt> <tt>%s</tt></a>
-                    <br />""" % (name, name, m.filename)
+                print >>out, entry.replace("@NAME@", name)\
+                                  .replace("@TYPE@", "<tt>%s</tt>" % m.filename)
             else:
                 url = urllib.pathname2url(m.filename or "")
-                print >>out, """<a name="%s" />
-                    <a target="code" href="%s" type="text/plain"><tt>%s</tt></a>
-                    <br />""" % (name, url, name)
+                print >>out, entry_linked.replace("@NAME@", name)\
+                                 .replace("@URL@", url)
             oute, ince = map(sorted_namelist, self.get_edges(m))
             if oute:
-                print >>out, 'imports:'
+                links = ""
                 for n in oute:
-                    print >>out, """<a href="#%s">%s</a>""" % (n, n)
-                print >>out, '<br />'
+                    links += """  <a href="#%s">%s</a>\n""" % (n, n)
+                print >>out, imports.replace("@HEAD@", "imports")\
+                                    .replace("@LINKS@", links)
             if ince:
-                print >>out, 'imported by:'
+                links = ""
                 for n in ince:
-                    print >>out, """<a href="#%s">%s</a>""" % (n, n)
-                print >>out, '<br />'
+                    links += """  <a href="#%s">%s</a>\n""" % (n, n)
+                print >>out, imports.replace("@HEAD@", "imported by")\
+                                    .replace("@LINKS@", links)
             print >>out, '<br/>'
-        print >>out, '</body></html>'
+        print >>out, footer
         
 
     def itergraphreport(self, name='G', flatpackages=()):
