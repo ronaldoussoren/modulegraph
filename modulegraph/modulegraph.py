@@ -441,6 +441,35 @@ class ArchiveModule(BaseModule): # nocoverage
             DeprecationWarning)
         super(FlatPackage, *args, **kwds)
 
+# HTML templates for ModuleGraph generator
+header = """\
+<html>
+  <head>
+    <title>@TITLE@</title>
+    <style>
+      .node { margin:1em 0; }
+    </style>
+  </head>
+  <body>
+    <h1>@TITLE@</h1>"""
+entry = """
+<div class="node">
+  <a name="@NAME@" />
+  @CONTENT@
+</div>"""
+contpl = """<tt>@NAME@</tt> @TYPE@"""
+contpl_linked = """\
+<a target="code" href="@URL@" type="text/plain"><tt>@NAME@</tt></a>"""
+imports = """\
+  <div class="import">
+@HEAD@:
+  @LINKS@
+  </div>
+"""
+footer = """
+  </body>
+</html>"""
+
 class ModuleGraph(ObjectGraph):
     def __init__(self, path=None, excludes=(), replace_paths=(), implies=(), graph=None, debug=0):
         super(ModuleGraph, self).__init__(graph=graph, debug=debug)
@@ -1051,34 +1080,7 @@ class ModuleGraph(ObjectGraph):
             raise
 
     def create_xref(self, out=None):
-        header = """\
-<html>
-  <head>
-    <title>@TITLE@</title>
-    <style>
-      .node { margin:1em 0; }
-    </style>
-  </head>
-  <body>
-    <h1>@TITLE@</h1>"""
-        entry = """
-<div class="node">
-  <a name="@NAME@" />
-  @CONTENT@
-</div>"""
-        contpl = """<tt>@NAME@</tt> @TYPE@"""
-        contpl_linked = """\
-<a target="code" href="@URL@" type="text/plain"><tt>@NAME@</tt></a>"""
-        imports = """\
-  <div class="import">
-@HEAD@:
-  @LINKS@
-  </div>
-"""
-        footer = """
-  </body>
-</html>"""
-
+        global header, footer, entry, contpl, contpl_linked, imports
         if out is None:
             out = sys.stdout
         scripts = []
