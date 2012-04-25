@@ -1055,22 +1055,25 @@ class ModuleGraph(ObjectGraph):
 <html>
   <head>
     <title>@TITLE@</title>
+    <style>
+      .node { margin:1em 0; }
+    </style>
   </head>
   <body>
     <h1>@TITLE@</h1>"""
         entry = """
-<br/>
-<a name="@NAME@" /><tt>@NAME@</tt> @TYPE@ <br />
-        """
-        entry_linked = """
-<a name="@NAME@" />
-  <a target="code" href="@URL@" type="text/plain"><tt>@NAME@</tt></a>
-<br />
-        """
+<div class="node">
+  <a name="@NAME@" />
+  @CONTENT@
+</div>"""
+        contpl = """<tt>@NAME@</tt> @TYPE@"""
+        contpl_linked = """\
+<a target="code" href="@URL@" type="text/plain"><tt>@NAME@</tt></a>"""
         imports = """\
+  <div class="import">
 @HEAD@:
   @LINKS@
-<br />
+  </div>
 """
         footer = """
   </body>
@@ -1100,30 +1103,31 @@ class ModuleGraph(ObjectGraph):
             lst.sort()
             return lst
         for name, m in mods:
+            content = ""
             if isinstance(m, BuiltinModule):
-                print >>out, entry.replace("@NAME@", name)\
-                                  .replace("@TYPE@", "<i>(builtin module)</i>")
+                content = contpl.replace("@NAME@", name)\
+                                .replace("@TYPE@", "<i>(builtin module)</i>")
             elif isinstance(m, Extension):
-                print >>out, entry.replace("@NAME@", name)\
-                                  .replace("@TYPE@", "<tt>%s</tt>" % m.filename)
+                content = contpl.replace("@NAME@", name)\
+                                .replace("@TYPE@", "<tt>%s</tt>" % m.filename)
             else:
                 url = urllib.pathname2url(m.filename or "")
-                print >>out, entry_linked.replace("@NAME@", name)\
+                content = contpl_linked.replace("@NAME@", name)\
                                  .replace("@URL@", url)
             oute, ince = map(sorted_namelist, self.get_edges(m))
             if oute:
                 links = ""
                 for n in oute:
                     links += """  <a href="#%s">%s</a>\n""" % (n, n)
-                print >>out, imports.replace("@HEAD@", "imports")\
-                                    .replace("@LINKS@", links)
+                content += imports.replace("@HEAD@", "imports")\
+                                  .replace("@LINKS@", links)
             if ince:
                 links = ""
                 for n in ince:
                     links += """  <a href="#%s">%s</a>\n""" % (n, n)
-                print >>out, imports.replace("@HEAD@", "imported by")\
-                                    .replace("@LINKS@", links)
-            print >>out, '<br/>'
+                content += imports.replace("@HEAD@", "imported by")\
+                                  .replace("@LINKS@", links)
+            print >>out, entry.replace("@NAME@", name).replace("@CONTENT@", content)
         print >>out, footer
         
 
