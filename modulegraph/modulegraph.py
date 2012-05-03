@@ -7,7 +7,7 @@ but uses a graph data structure and 2.3 features
 XXX: Verify all calls to import_hook (and variants) to ensure that 
 imports are done in the right way.
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import pkg_resources
 
@@ -26,16 +26,22 @@ from collections import deque
 
 from altgraph.ObjectGraph import ObjectGraph
 
-from modulegraph._compat import Bchr, B
-from itertools import imap, ifilter, izip, count
+from itertools import count
 
 from modulegraph import util
 from modulegraph import zipio
 
 if sys.version_info[0] == 2:
     from StringIO import StringIO as BytesIO
+    def _Bchr(value):
+        return chr(value)
+
 else:
     from io import BytesIO
+
+    def _Bchr(value):
+        return value
+
 
 # File open mode for reading (univeral newlines)
 _READ_MODE = "rU"  
@@ -123,34 +129,7 @@ def os_listdir(path):
 def _code_to_file(co):
     """ Convert code object to a .pyc pseudo-file """
     return BytesIO(
-            imp.get_magic() + B('\0\0\0\0') + marshal.dumps(co))
-
-#import traceback
-#class closing (object):
-#    def __init__(self, value):
-#        self._value = value
-#        self._info = None
-#        self._info = traceback.format_stack()
-#
-#    def __getattr__(self, key):
-#        return getattr(self._value, key)
-#
-#    def __setattr__(self, key, value):
-#        if key in ('_value', '_info'):
-#            self.__dict__[key] = value
-#            return 
-#
-#        return setattr(self._value, key, value)
-#
-#    def __del__(self):
-#        try:
-#            self._value.close()
-#        except:
-#            print self._info
-#
-        
-
-
+            imp.get_magic() + b'\0\0\0\0' + marshal.dumps(co))
 
 def find_module(name, path=None):
     """
@@ -685,13 +664,17 @@ class ModuleGraph(ObjectGraph):
         parent = None
         if caller:
             pname = caller.identifier
-            if caller.packagepath:
+
+            if '.' in pname:
+                pname = pname[:pname.rfind('.')]
+                parent = self.findNode(pname)
+
+            elif caller.packagepath:
                 # XXX: I have no idea why this line
                 # is necessary.
                 parent = self.findNode(pname)
-            elif '.' in pname:
-                pname = pname[:pname.rfind('.')]
-                parent = self.findNode(pname)
+
+
         self.msgout(4, "determine_parent ->", parent)
         return parent
 
@@ -719,7 +702,7 @@ class ModuleGraph(ObjectGraph):
             parent = None
 
         else:
-            for i in xrange(level-1):
+            for i in range(level-1):
                 p_fqdn = parent.identifier.rsplit('.', 1)[0]
                 new_parent = self.findNode(p_fqdn)
                 if new_parent is None:
@@ -745,7 +728,7 @@ class ModuleGraph(ObjectGraph):
                 self.msgout(4, "find_head_package ->", (q, tail))
                 return q, tail
         self.msgout(4, "raise ImportError: No module named", qname)
-        raise ImportError, "No module named " + qname
+        raise ImportError("No module named " + qname)
 
     def load_tail(self, mod, tail):
         self.msgin(4, "load_tail", mod, tail)
@@ -758,7 +741,7 @@ class ModuleGraph(ObjectGraph):
             result = self.import_module(head, mname, result)
             if not result:
                 self.msgout(4, "raise ImportError: No module named", mname)
-                raise ImportError, "No module named " + mname
+                raise ImportError("No module named " + mname)
         self.msgout(4, "load_tail ->", result)
         return result
 
@@ -774,7 +757,7 @@ class ModuleGraph(ObjectGraph):
                 fullname = m.identifier + '.' + sub
                 submod = self.import_module(sub, fullname, m)
                 if submod is None:
-                    raise ImportError, "No module named " + fullname
+                    raise ImportError("No module named " + fullname)
             yield submod
 
     def find_all_submodules(self, m):
@@ -790,9 +773,10 @@ class ModuleGraph(ObjectGraph):
             except (os.error, IOError):
                 self.msg(2, "can't list directory", path)
                 continue
-            for (path, mode, typ) in ifilter(None, imap(moduleInfoForPath, names)):
-                if path != '__init__':
-                    yield path
+            for info in (moduleInfoForPath(p) for p in names):
+                if info is None: continue
+                if info[0] != '__init__':
+                    yield info[0]
 
     def import_module(self, partname, fqname, parent):
         # XXX: Review me for use with absolute imports.
@@ -835,7 +819,8 @@ class ModuleGraph(ObjectGraph):
         self.msgout(3, "import_module ->", m)
         return m
 
-    def load_module(self, fqname, fp, pathname, (suffix, mode, typ)):
+    def load_module(self, fqname, fp, pathname, info):
+        suffix, mode, typ = info
         self.msgin(2, "load_module", fqname, fp and "fp", pathname)
         if typ == imp.PKG_DIRECTORY:
             m = self.load_package(fqname, pathname)
@@ -850,7 +835,7 @@ class ModuleGraph(ObjectGraph):
         elif typ == imp.PY_COMPILED:
             if fp.read(4) != imp.get_magic():
                 self.msgout(2, "raise ImportError: Bad magic number", pathname)
-                raise ImportError, "Bad magic number in %s" % pathname
+                raise ImportError("Bad magic number in %s" % pathname)
             fp.read(4)
             co = marshal.loads(fp.read())
             cls = CompiledModule
@@ -879,7 +864,7 @@ class ModuleGraph(ObjectGraph):
         # wrapper for self.import_hook() that won't raise ImportError
         try:
             mods = self.import_hook(name, caller, level=level)
-        except ImportError, msg:
+        except ImportError as msg:
             self.msg(2, "ImportError:", str(msg))
 
             # This is a hack, but sadly enough the necessary information
@@ -911,7 +896,7 @@ class ModuleGraph(ObjectGraph):
             if sm is None:
                 try:
                     sm = self.import_hook(name, caller, [sub], level=level)
-                except ImportError, msg:
+                except ImportError as msg:
                     self.msg(2, "ImportError:", str(msg))
                     sm = self.createNode(MissingModule, fullname)
                 else:
@@ -925,12 +910,12 @@ class ModuleGraph(ObjectGraph):
         return subs
 
     def scan_code(self, co, m,
-            HAVE_ARGUMENT=Bchr(dis.HAVE_ARGUMENT),
-            LOAD_CONST=Bchr(dis.opname.index('LOAD_CONST')),
-            IMPORT_NAME=Bchr(dis.opname.index('IMPORT_NAME')),
-            IMPORT_FROM=Bchr(dis.opname.index('IMPORT_FROM')),
-            STORE_NAME=Bchr(dis.opname.index('STORE_NAME')),
-            STORE_GLOBAL=Bchr(dis.opname.index('STORE_GLOBAL')),
+            HAVE_ARGUMENT=_Bchr(dis.HAVE_ARGUMENT),
+            LOAD_CONST=_Bchr(dis.opname.index('LOAD_CONST')),
+            IMPORT_NAME=_Bchr(dis.opname.index('IMPORT_NAME')),
+            IMPORT_FROM=_Bchr(dis.opname.index('IMPORT_FROM')),
+            STORE_NAME=_Bchr(dis.opname.index('STORE_NAME')),
+            STORE_GLOBAL=_Bchr(dis.opname.index('STORE_GLOBAL')),
             unpack=struct.unpack):
 
         # Python >=2.5: LOAD_CONST flags, LOAD_CONST names, IMPORT_NAME name
@@ -1061,7 +1046,7 @@ class ModuleGraph(ObjectGraph):
         node = self.findNode(fullname)
         if node is not None:
             self.msgout(3, "find_module -> already included?", node)
-            raise ImportError, name
+            raise ImportError(name)
 
         if path is None:
             if name in sys.builtin_module_names:
@@ -1098,7 +1083,7 @@ class ModuleGraph(ObjectGraph):
         mods = scripts
 
         title = "modulegraph cross reference for "  + ', '.join(scriptnames)
-        print >>out, header % {"TITLE": title}
+        print(header % {"TITLE": title}, file=out)
 
         def sorted_namelist(mods):
             lst = [os.path.basename(mod.identifier) for mod in mods if mod]
@@ -1126,8 +1111,8 @@ class ModuleGraph(ObjectGraph):
                 for n in ince:
                     links += """  <a href="#%s">%s</a>\n""" % (n, n)
                 content += imports % {"HEAD": "imported by", "LINKS": links}
-            print >>out, entry % {"NAME": name,"CONTENT": content}
-        print >>out, footer
+            print(entry % {"NAME": name,"CONTENT": content}, file=out)
+        print(footer, file=out)
         
 
     def itergraphreport(self, name='G', flatpackages=()):
@@ -1150,7 +1135,7 @@ class ModuleGraph(ObjectGraph):
             #if isinstance(d, (ExcludedModule, MissingModule, BadModule)):
             #    return None
             s = '<f0> ' + type(data).__name__
-            for i,v in izip(count(1), data.infoTuple()[:1]):
+            for i,v in enumerate(data.infoTuple()[:1], 1):
                 s += '| <f%d> %s' % (i,v)
             return {'label':s, 'shape':'record'}
 
@@ -1182,7 +1167,7 @@ class ModuleGraph(ObjectGraph):
         # create sets for subgraph, write out descriptions
         for (node, data, outgoing, incoming) in nodes:
             # update edges
-            for edge in imap(describe_edge, outgoing):
+            for edge in (describe_edge(e) for e in outgoing):
                 edges.append(edge)
 
             # describe node
@@ -1268,14 +1253,14 @@ class ModuleGraph(ObjectGraph):
         """Print a report to stdout, listing the found modules with their
         paths, as well as modules that are missing, or seem to be missing.
         """
-        print
-        print "%-15s %-25s %s" % ("Class", "Name", "File")
-        print "%-15s %-25s %s" % ("-----", "----", "----")
+        print()
+        print("%-15s %-25s %s" % ("Class", "Name", "File"))
+        print("%-15s %-25s %s" % ("-----", "----", "----"))
         # Print modules found
         sorted = [(os.path.basename(mod.identifier), mod) for mod in self.flatten()]
         sorted.sort()
         for (name, m) in sorted:
-            print "%-15s %-25s %s" % (type(m).__name__, name, m.filename or "")
+            print("%-15s %-25s %s" % (type(m).__name__, name, m.filename or ""))
 
     def replace_paths_in_code(self, co):
         new_filename = original_filename = os.path.normpath(co.co_filename)
@@ -1331,9 +1316,9 @@ def _cmdline():
     ''')
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hdgmp:qx:")
-    except getopt.error, msg:
-        print >>sys.stderr, msg
-        print >>sys.stderr, usage
+    except getopt.error as msg:
+        print(msg, file=sys.stderr)
+        print(usage, file=sys.stderr)
         sys.exit(1)
 
     # Process options
@@ -1363,8 +1348,8 @@ def _cmdline():
 
     # Provide default arguments
     if not args:
-        print >>sys.stderr, "No script specified"
-        print >>sys.stderr, usage
+        print("No script specified", file=sys.stderr)
+        print(usage, file=sys.stderr)
         sys.exit(1)
 
     script = args[0]
@@ -1374,9 +1359,9 @@ def _cmdline():
     path[0] = os.path.dirname(script)
     path = addpath + path
     if debug > 1:
-        print >>sys.stderr, "path:"
+        print("path:", file=sys.stderr)
         for item in path:
-            print "   ", repr(item)
+            print("   ", repr(item), file=sys.stderr)
 
     # Create the module finder and turn its crank
     mf = ModuleGraph(path, excludes=excludes, debug=debug)
@@ -1405,4 +1390,4 @@ if __name__ == '__main__':
     try:
         mf = _cmdline()
     except KeyboardInterrupt:
-        print "\n[interrupt]"
+        print("\n[interrupt]")

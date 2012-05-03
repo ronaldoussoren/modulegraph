@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 import unittest
 
 import os, shutil, sys
 
-from modulegraph import modulegraph
 from modulegraph import find_modules
+from modulegraph import modulegraph
+
 
 class PackagesTestCase (unittest.TestCase):
     if not hasattr(unittest.TestCase, 'assertIsInstance'): 

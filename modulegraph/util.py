@@ -4,7 +4,11 @@ import os
 import imp
 import sys
 import re
-from modulegraph._compat import B
+
+try:
+    unicode
+except NameError:
+    unicode = str
 
 def imp_find_module(name, path=None):
     """
@@ -39,7 +43,7 @@ def _check_importer_for_path(name, path_item):
     if importer is None:
         try:
             return imp.find_module(name, [path_item])
-        except ImportError, e:
+        except ImportError:
             return None
     return importer.find_module(name)
 
@@ -72,7 +76,7 @@ def imp_walk(name):
     raise ImportError('No module named %s' % (name,))
 
 
-cookie_re = re.compile(B("coding[:=]\s*([-\w.]+)"))
+cookie_re = re.compile(b"coding[:=]\s*([-\w.]+)")
 if sys.version_info[0] == 2:
     default_encoding = 'ascii'
 else:

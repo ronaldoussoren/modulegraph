@@ -562,6 +562,7 @@ class TestModuleGraph (unittest.TestCase):
         graph = modulegraph.ModuleGraph()
         graph.import_hook('os.path', None)
         graph.import_hook('idlelib', None)
+        graph.import_hook('xml.dom', None)
         
         for node in graph.nodes():
             if isinstance(node, modulegraph.Package):
@@ -582,7 +583,7 @@ class TestModuleGraph (unittest.TestCase):
         #self.assertTrue(m is parent)
 
         m = graph.findNode('xml')
-        self.assertEqual(graph.determine_parent(m), None)
+        self.assertEqual(graph.determine_parent(m), m)
 
         m = graph.findNode('xml.dom')
         self.assertEqual(graph.determine_parent(m), graph.findNode('xml'))
@@ -928,6 +929,15 @@ class TestModuleGraph (unittest.TestCase):
         self.assertEqual(graph.graph.edge_data(e), 'direct')
 
 
+class CompatTests (unittest.TestCase):
+    def test_Bchr(self):
+        v = modulegraph._Bchr(ord('A'))
+        if sys.version_info[0] == 2: 
+            self.assertTrue(isinstance(v, bytes))
+            self.assertEqual(v, b'A')
+        else:
+            self.assertTrue(isinstance(v, int))
+            self.assertEqual(v, ord('A'))
 
 if __name__ == "__main__":
     unittest.main()

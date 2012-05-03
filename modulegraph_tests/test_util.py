@@ -2,7 +2,6 @@ import unittest
 import encodings
 import encodings.aliases
 from modulegraph import util
-from modulegraph._compat import B
 import sys
 
 try:
@@ -32,22 +31,22 @@ class TestUtil (unittest.TestCase):
 
 
     def test_guess_encoding(self):
-        fp = BytesIO(B("# coding: utf-8"))
+        fp = BytesIO(b"# coding: utf-8")
         self.assertEqual(util.guess_encoding(fp), "utf-8")
 
-        fp = BytesIO(B("\n# coding: utf-8"))
+        fp = BytesIO(b"\n# coding: utf-8")
         self.assertEqual(util.guess_encoding(fp), "utf-8")
 
-        fp = BytesIO(B("# coding: latin-1"))
+        fp = BytesIO(b"# coding: latin-1")
         self.assertEqual(util.guess_encoding(fp), "latin-1")
 
-        fp = BytesIO(B("\n# coding: latin-1"))
+        fp = BytesIO(b"\n# coding: latin-1")
         self.assertEqual(util.guess_encoding(fp), "latin-1")
 
-        fp = BytesIO(B("#!/usr/bin/env/python\n# vim: set fileencoding=latin-1 :"))
+        fp = BytesIO(b"#!/usr/bin/env/python\n# vim: set fileencoding=latin-1 :")
         self.assertEqual(util.guess_encoding(fp), "latin-1")
 
-        fp = BytesIO(B("\n\n\n# coding: latin-1"))
+        fp = BytesIO(b"\n\n\n# coding: latin-1")
         if sys.version_info[0] == 2:
             self.assertEqual(util.guess_encoding(fp), "ascii")
         else:

@@ -1,6 +1,24 @@
 Release history
 ===============
 
+0.10
+----
+
+This is a minor feature release
+
+Features
+........
+
+* No longer use "2to3" to support Python 3. 
+
+  Because of this modulegraph now supports Python 2.6
+  and later.
+
+* Slightly improved HTML output, which makes it easier
+  to manipulate the generated HTML using JavaScript.
+
+  Patch by anatoly techtonik.
+
 0.9.2
 -----
 

@@ -1,5 +1,4 @@
 from modulegraph import zipio
-from modulegraph._compat import B
 import unittest
 import os
 import time
@@ -30,7 +29,7 @@ class TestModuleGraph (unittest.TestCase):
             fp = zipio.open(os.path.join(TESTDATA, 'test.txt'), 'rb')
             data = fp.read()
             fp.close()
-            self.assertEqual(data, B('This is test.txt\n'))
+            self.assertEqual(data, b'This is test.txt\n')
 
         # 2. File inside zipfile
         fp = zipio.open(os.path.join(TESTDATA, 'zipped.egg', 'test.txt'), 'r')
@@ -42,7 +41,7 @@ class TestModuleGraph (unittest.TestCase):
             fp = zipio.open(os.path.join(TESTDATA, 'zipped.egg', 'test.txt'), 'rb')
             data = fp.read()
             fp.close()
-            self.assertEqual(data, B('Zipped up test.txt\n'))
+            self.assertEqual(data, b'Zipped up test.txt\n')
 
         # 3. EXC: Directory inside zipfile
         self.assertRaises(IOError, zipio.open, os.path.join(TESTDATA, 'zipped.egg', 'subdir'))
