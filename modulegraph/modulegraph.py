@@ -1314,7 +1314,7 @@ class ModuleGraph(ObjectGraph):
 
 def _cmdline():
     # Parse command line
-    import getopt
+    import optparse
     import textwrap
     usage = textwrap.dedent('''\
         Usage:
@@ -1329,62 +1329,37 @@ def _cmdline():
         * -x name: Add 'name' to the excludes list
         * -p name: Add 'name' to the module search path
     ''')
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "hdgmp:qx:")
-    except getopt.error, msg:
-        print >>sys.stderr, msg
-        print >>sys.stderr, usage
-        sys.exit(1)
+    parser = optparse.OptionParser(usage=usage, add_help_option=False)
+    parser.add_option('-d', action='count', dest='debug', default=1)
+    parser.add_option('-q', action='store_const', dest='debug', const=0)
 
-    # Process options
-    debug = 1
-    domods = 0
-    dodot = False
-    dohtml = False
-    addpath = []
-    excludes = []
-    for o, a in opts:
-        if o == '-d':
-            debug = debug + 1
-        if o == '-m':
-            domods = 1
-        if o == '-p':
-            addpath = addpath + a.split(os.pathsep)
-        if o == '-q':
-            debug = 0
-        if o == '-x':
-            excludes.append(a)
-        if o == '-g':
-            dodot = True
-            dohtml = False
-        if o == '-h':
-            dohtml = True
-            dodot = False
+    parser.add_option('-m', action='store_true', dest='domods', default=False)
+    parser.add_option('-x', action='append', dest='excludes', default=[])
+    parser.add_option('-p', action='append', dest='addpath', default=[])
 
-    # Provide default arguments
+    parser.add_option('-g', action='store_const', dest='output', const='dot')
+    parser.add_option('-h', action='store_const', dest='output', const='html')
+    opts, args = parser.parse_args()
+
     if not args:
-        print >>sys.stderr, "No script specified"
         print >>sys.stderr, usage
-        sys.exit(1)
+        sys.exit("error: No script specified")
 
     script = args[0]
 
     # Set the path based on sys.path and the script directory
     path = sys.path[:]
     path[0] = os.path.dirname(script)
-    path = addpath + path
-    if debug > 1:
+    path = opts.addpath + path
+    if opts.debug > 1:
         print >>sys.stderr, "path:"
         for item in path:
             print "   ", repr(item)
 
     # Create the module finder and turn its crank
-    mf = ModuleGraph(path, excludes=excludes, debug=debug)
-    for arg in args[1:]:
-        if arg == '-m':
-            domods = 1
-            continue
-        if domods:
+    mf = ModuleGraph(path, excludes=opts.excludes, debug=opts.debug)
+    for arg in args:
+        if opts.domods:
             if arg[-2:] == '.*':
                 mf.import_hook(arg[:-2], None, ["*"])
             else:
@@ -1392,9 +1367,9 @@ def _cmdline():
         else:
             mf.run_script(arg)
     mf.run_script(script)
-    if dodot:
+    if opts.output == 'dot':
         mf.graphreport()
-    elif dohtml:
+    elif opts.output == 'html':
         mf.create_xref()
     else:
         mf.report()
