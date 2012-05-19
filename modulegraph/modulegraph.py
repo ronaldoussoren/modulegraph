@@ -1323,11 +1323,13 @@ def _cmdline():
         Valid options:
         * -d: Increase debug level
         * -q: Clear debug level
-        * -g: Output a .dot graph
-        * -h: Output a html file
+
         * -m: arguments are module names, not script files
         * -x name: Add 'name' to the excludes list
         * -p name: Add 'name' to the module search path
+
+        * -g: Output a .dot graph
+        * -h: Output a html file
     ''')
     parser = optparse.OptionParser(usage=usage, add_help_option=False)
     parser.add_option('-d', action='count', dest='debug', default=1)
