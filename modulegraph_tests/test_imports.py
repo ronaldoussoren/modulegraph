@@ -39,6 +39,10 @@ class TestNativeImport (unittest.TestCase):
             data = data.decode('UTF-8')
         data = data.strip()
 
+        if data.endswith(' refs]'):
+            # with --with-pydebug builds
+            data = data.rsplit('\n', 1)[0].strip()
+
         sts = p.wait()
 
         if sts != 0:

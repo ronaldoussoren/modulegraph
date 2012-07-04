@@ -75,6 +75,8 @@ class TestPythonBehaviour (unittest.TestCase):
         if sys.version_info[0] != 2:
             data = data.decode('UTF-8')
         data = data.strip()
+        if data.endswith(' refs]'):
+            data = data.rsplit('\n', 1)[0].strip()
 
         sts = p.wait()
 
