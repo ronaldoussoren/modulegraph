@@ -156,6 +156,8 @@ def find_module(name, path=None):
 
     for entry in path:
         importer = pkg_resources.get_importer(entry)
+        if importer is None:
+            continue
         loader = importer.find_module(name)
         if loader is None: continue
 
@@ -198,7 +200,6 @@ def find_module(name, path=None):
             fp = None
             co = None
 
-
         pathname = os.path.join(entry, *name.split('.'))
 
         if isinstance(loader, zipimport.zipimporter):
@@ -216,14 +217,14 @@ def find_module(name, path=None):
             return (None, pathname, ('', '', imp.PKG_DIRECTORY))
 
         if co is None:
-            pathname = pathname + '.py'
-            description = ('.pyc', 'rb', imp.PY_COMPILED)
-            return (fp, pathname, ('.py', 'rU', imp.PY_SOURCE))
+            if loader.path.endswith('.py') or loader.path.endswith('.pyw'):
+                pathname = pathname + '.py'
+                return (fp, pathname, ('.py', 'rU', imp.PY_SOURCE))
+            else:
+                return (None, loader.path, (os.path.splitext(loader.path)[-1], 'rb', imp.C_EXTENSION))
 
         else:
-            pathname = pathname + '.pyc'
-            description = ('.pyc', 'rb', imp.PY_COMPILED)
-            return (fp, pathname, ('.pyc', 'rb', imp.PY_COMPILED))
+            return (fp, loader.path, ('.pyc', 'rb', imp.PY_COMPILED))
 
     raise ImportError(name)
 
@@ -822,13 +823,23 @@ class ModuleGraph(ObjectGraph):
     def load_module(self, fqname, fp, pathname, info):
         suffix, mode, typ = info
         self.msgin(2, "load_module", fqname, fp and "fp", pathname)
+
         if typ == imp.PKG_DIRECTORY:
             m = self.load_package(fqname, pathname)
             self.msgout(2, "load_module ->", m)
             return m
 
         if typ == imp.PY_SOURCE:
-            contents = fp.read() + '\n'
+            contents = fp.read()
+            if isinstance(contents, bytes):
+                contents += b'\n'
+            else:
+                contents += '\n'
+
+
+            print(pathname)
+            print(repr(contents))
+
             co = compile(contents, pathname, 'exec', 0, True)
             cls = SourceModule
 

@@ -19,6 +19,9 @@ Features
 
   Patch by anatoly techtonik.
 
+* Ensure modulegraph works with changes introduced after
+  Python 3.3b1.
+
 0.9.2
 -----
 
