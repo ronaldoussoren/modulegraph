@@ -4,11 +4,23 @@ import os
 import imp
 import sys
 import re
+import marshal
+import warnings
 
 try:
     unicode
 except NameError:
     unicode = str
+
+
+if sys.version_info[0] == 2:
+    from StringIO import StringIO as BytesIO
+    from StringIO import StringIO
+
+else:
+    from io import BytesIO, StringIO
+
+
 
 def imp_find_module(name, path=None):
     """
@@ -53,6 +65,8 @@ def imp_walk(name):
 
     raise ImportError if a name can not be found.
     """
+    warnings.warn("imp_walk will be removed in a future version", DeprecationWarning)
+
     if name in sys.builtin_module_names:
         yield name, (None, None, ("", "", imp.C_BUILTIN))
         return
@@ -61,7 +75,18 @@ def imp_walk(name):
     for namepart in name.split('.'):
         for path_item in paths:
             res = _check_importer_for_path(namepart, path_item)
-            if hasattr(res, 'find_module'):
+            if hasattr(res, 'load_module'):
+                if res.path.endswith('.py') or res.path.endswith('.pyw'):
+                    fp = StringIO(res.get_source(namepart))
+                    res = (fp, res.path, ('.py', 'rU', imp.PY_SOURCE))
+                elif res.path.endswith('.pyc') or res.path.endswith('.pyo'):
+                    co  = res.get_code(namepart)
+                    fp = BytesIO(imp.get_magic() + b'\0\0\0\0' + marshal.dumps(co))
+                    res = (fp, res.path, ('.pyc', 'rb', imp.PY_COMPILED))
+
+                else:
+                    res = (None, loader.path, (os.path.splitext(loader.path)[-1], 'rb', imp.C_EXTENSION))
+
                 break
             elif isinstance(res, tuple):
                 break
