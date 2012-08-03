@@ -509,6 +509,10 @@ class ModuleGraph(ObjectGraph):
             except ImportError:
                 ImpImporter = pkg_resources.ImpWrapper
 
+        if sys.version_info[:2] >= (3,3):
+            import importlib.machinery
+            ImpImporter = importlib.machinery.FileFinder
+
         for entry in self.path:
             importer = pkg_resources.get_importer(entry)
 

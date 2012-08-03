@@ -781,9 +781,11 @@ class TestModuleGraph (unittest.TestCase):
                 srcfn = srcfn[:-1]
             self.assertEqual(m[1], srcfn)
             self.assertEqual(m[2], ('.py', 'rU', imp.PY_SOURCE))
+            m[0].close()
 
             m2 = graph.find_module('shutil', None)
             self.assertEqual(m[1:], m2[1:])
+            m2[0].close()
 
 
             record[:] = []
@@ -794,6 +796,7 @@ class TestModuleGraph (unittest.TestCase):
             self.assertEqual(record, [
                 ('sax', xml.packagepath),
             ])
+            if m[0] is not None: m[0].close()
 
         finally:
             modulegraph.find_module = saved_finder
