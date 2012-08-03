@@ -163,6 +163,8 @@ class TestFunctions (unittest.TestCase):
                 self.assertEqual(filename, os.path.join(path, 'mymodule2.pyc'))
                 self.assertEqual(description, ('.pyc', 'rb', imp.PY_COMPILED))
 
+                fp.close()
+
             # Compiled plain module, with source
 #            info = modulegraph.find_module('mymodule3', path=[path] + sys.path)
 #
@@ -367,12 +369,18 @@ class TestNode (unittest.TestCase):
         d = dict(klass.__dict__)
         del d['__doc__']
         del d['__module__']
+        if '__qualname__' in d:
+            # New in Python 3.3
+            del d['__qualname__']
         self.assertEqual(d, {})
 
     def assertHasExactMethods(self, klass, *methods):
         d = dict(klass.__dict__)
         del d['__doc__']
         del d['__module__']
+        if '__qualname__' in d:
+            # New in Python 3.3
+            del d['__qualname__']
 
         for nm in methods:
             self.assertTrue(nm in d, "%s doesn't have attribute %r"%(klass, nm))

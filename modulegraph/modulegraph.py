@@ -33,11 +33,12 @@ from modulegraph import zipio
 
 if sys.version_info[0] == 2:
     from StringIO import StringIO as BytesIO
+    from StringIO import StringIO 
     def _Bchr(value):
         return chr(value)
 
 else:
-    from io import BytesIO
+    from io import BytesIO, StringIO
 
     def _Bchr(value):
         return value
@@ -143,9 +144,12 @@ def find_module(name, path=None):
     # - In setuptools 0.7 and later there's _pkgutil.ImpImporter
     # - In earlier setuptools versions you pkg_resources.ImpWrapper
     #
-    # This is a bit of a hack, should check if we can just rely on
+    # XXX: This is a bit of a hack, should check if we can just rely on
     # PEP302's get_code() method with all recent versions of pkgutil and/or
     # setuptools (setuptools 0.6.latest, setuptools trunk and python2.[45])
+    #
+    # For python 3.3 this code should be replaced by code using importlib,
+    # for python 3.2 and 2.7 this should be cleaned up a lot.
     try:
         from pkgutil import ImpImporter
     except ImportError:
@@ -192,13 +196,29 @@ def find_module(name, path=None):
 
                 return (None, filename, description)
 
-        elif hasattr(loader, 'get_code'):
-            co = loader.get_code(name)
-            fp = _code_to_file(co)
+        if hasattr(loader, 'path'):
+            if loader.path.endswith('.pyc') or loader.path.endswith('.pyo'):
+                fp = open(loader.path, 'rb')
+                description = ('.pyc', 'rb', imp.PY_COMPILED)
+                return (fp, loader.path, description)
+
+
+        if hasattr(loader, 'path') and hasattr(loader, 'get_source'):
+            source = loader.get_source(name)
+            fp = StringIO(source)
+            co = None
 
         else:
-            fp = None
-            co = None
+            source = None
+
+        if source is None:
+            if hasattr(loader, 'get_code'):
+                co = loader.get_code(name)
+                fp = _code_to_file(co)
+
+            else:
+                fp = None
+                co = None
 
         pathname = os.path.join(entry, *name.split('.'))
 
@@ -218,13 +238,15 @@ def find_module(name, path=None):
 
         if co is None:
             if loader.path.endswith('.py') or loader.path.endswith('.pyw'):
-                pathname = pathname + '.py'
-                return (fp, pathname, ('.py', 'rU', imp.PY_SOURCE))
+                return (fp, loader.path, ('.py', 'rU', imp.PY_SOURCE))
             else:
                 return (None, loader.path, (os.path.splitext(loader.path)[-1], 'rb', imp.C_EXTENSION))
 
         else:
-            return (fp, loader.path, ('.pyc', 'rb', imp.PY_COMPILED))
+            if hasattr(loader, 'path'):
+                return (fp, loader.path, ('.pyc', 'rb', imp.PY_COMPILED))
+            else:
+                return (fp, pathname + '.pyc', ('.pyc', 'rb', imp.PY_COMPILED))
 
     raise ImportError(name)
 
@@ -836,9 +858,6 @@ class ModuleGraph(ObjectGraph):
             else:
                 contents += '\n'
 
-
-            print(pathname)
-            print(repr(contents))
 
             co = compile(contents, pathname, 'exec', 0, True)
             cls = SourceModule
