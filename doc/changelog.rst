@@ -22,6 +22,9 @@ Features
 * Ensure modulegraph works with changes introduced after
   Python 3.3b1.
 
+* Implement support for PEP 420 ("Implicit namespace packages")
+  in Python 3.3.
+
 * ``modulegraph.util.imp_walk`` is deprecated and will be 
   removed in the next release of this package.
 

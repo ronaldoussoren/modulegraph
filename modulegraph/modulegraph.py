@@ -158,11 +158,21 @@ def find_module(name, path=None):
         except ImportError:
             ImpImporter = pkg_resources.ImpWrapper
 
+    namespace_path =[] 
     for entry in path:
         importer = pkg_resources.get_importer(entry)
         if importer is None:
             continue
-        loader = importer.find_module(name)
+
+        if sys.version_info[:2] >= (3,3) and hasattr(importer, 'find_loader'):
+            loader, portions = importer.find_loader(name)
+
+        else:
+            loader = importer.find_module(name)
+            portions = []
+
+        namespace_path.extend(portions)
+
         if loader is None: continue
 
         if isinstance(importer, ImpImporter):
@@ -247,6 +257,9 @@ def find_module(name, path=None):
                 return (fp, loader.path, ('.pyc', 'rb', imp.PY_COMPILED))
             else:
                 return (fp, pathname + '.pyc', ('.pyc', 'rb', imp.PY_COMPILED))
+
+    if namespace_path:
+        return (None, namespace_path[0], ('', namespace_path, imp.PKG_DIRECTORY))
 
     raise ImportError(name)
 
@@ -851,7 +864,12 @@ class ModuleGraph(ObjectGraph):
         self.msgin(2, "load_module", fqname, fp and "fp", pathname)
 
         if typ == imp.PKG_DIRECTORY:
-            m = self.load_package(fqname, pathname)
+            if isinstance(mode, (list, tuple)):
+                packagepath = mode
+            else:
+                packagepath = []
+
+            m = self.load_package(fqname, pathname, packagepath)
             self.msgout(2, "load_module ->", m)
             return m
 
@@ -1044,11 +1062,11 @@ class ModuleGraph(ObjectGraph):
             if isinstance(c, cotype):
                 self.scan_code(c, m)
 
-    def load_package(self, fqname, pathname):
+    def load_package(self, fqname, pathname, pkgpath):
         """
         Called only when an imp.PACKAGE_DIRECTORY is found
         """
-        self.msgin(2, "load_package", fqname, pathname)
+        self.msgin(2, "load_package", fqname, pathname, pkgpath)
         newname = _replacePackageMap.get(fqname)
         if newname:
             fqname = newname
@@ -1056,17 +1074,25 @@ class ModuleGraph(ObjectGraph):
         m.filename = pathname
         m.packagepath = _namespace_package_path(fqname, [pathname])
 
+        if pkgpath:
+            m.filename = '-'
+            m.packagepath = _namespace_package_path(fqname, pkgpath)
+
         # As per comment at top of file, simulate runtime packagepath additions.
         m.packagepath = m.packagepath + _packagePathMap.get(fqname, [])
 
         
 
-        fp, buf, stuff = self.find_module("__init__", m.packagepath)
-        try:
-            self.load_module(fqname, fp, buf, stuff)
-        finally:
-            if fp is not None:
-                fp.close()
+        if not pkgpath:
+            # XXX: pkgpath is only set for PEP420 packages, which don't have
+            # an __init__ module. Need a cleaner interface for this.
+
+            fp, buf, stuff = self.find_module("__init__", m.packagepath)
+            try:
+                self.load_module(fqname, fp, buf, stuff)
+            finally:
+                if fp is not None:
+                    fp.close()
         self.msgout(2, "load_package ->", m)
         return m
 
