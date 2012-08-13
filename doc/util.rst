@@ -24,6 +24,8 @@
    for that module (taking into account :pep:`302`
    importers)
 
+   .. deprecated:: 0.10
+
 .. function:: guess_encoding(fp)
 
    Returns the encoding of a python source file.
