@@ -705,7 +705,10 @@ class ModuleGraph(ObjectGraph):
         if caller:
             pname = caller.identifier
 
-            if '.' in pname:
+            if isinstance(caller, Package):
+                parent = caller
+
+            elif '.' in pname:
                 pname = pname[:pname.rfind('.')]
                 parent = self.findNode(pname)
 
@@ -1083,12 +1086,15 @@ class ModuleGraph(ObjectGraph):
 
         
 
-        if not pkgpath:
-            # XXX: pkgpath is only set for PEP420 packages, which don't have
-            # an __init__ module. Need a cleaner interface for this.
-
+        try:
+            self.msg(2, "find __init__ for %s"%(m.packagepath,))
             fp, buf, stuff = self.find_module("__init__", m.packagepath)
+        except ImportError:
+            pass
+
+        else:
             try:
+                self.msg(2, "load __init__ for %s"%(m.packagepath,))
                 self.load_module(fqname, fp, buf, stuff)
             finally:
                 if fp is not None:

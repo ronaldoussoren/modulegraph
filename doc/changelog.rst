@@ -28,6 +28,21 @@ Features
 * ``modulegraph.util.imp_walk`` is deprecated and will be 
   removed in the next release of this package.
 
+Bugfixes
+........
+
+* The module graph was incomplete, and generated incorrect warnings
+  along the way, when a subpackage contained import statements for
+  submodules.
+
+  An example of this is ``sqlalchemy.util``, the ``__init__.py`` file
+  for this package contains imports of modules in that modules using
+  the classic relative import syntax (that is ``import compat`` to
+  import ``sqlalchemy.util.compat``). Until this release modulegraph
+  searched the wrong path to locate these modules (and hence failed
+  to find them).
+
+
 0.9.2
 -----
 

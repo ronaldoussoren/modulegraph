@@ -594,7 +594,7 @@ class TestModuleGraph (unittest.TestCase):
         self.assertEqual(graph.determine_parent(m), m)
 
         m = graph.findNode('xml.dom')
-        self.assertEqual(graph.determine_parent(m), graph.findNode('xml'))
+        self.assertEqual(graph.determine_parent(m), graph.findNode('xml.dom'))
 
 
     @expectedFailure
