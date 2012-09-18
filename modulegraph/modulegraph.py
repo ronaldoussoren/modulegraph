@@ -132,6 +132,7 @@ def _code_to_file(co):
     return BytesIO(
             imp.get_magic() + b'\0\0\0\0' + marshal.dumps(co))
 
+
 def find_module(name, path=None):
     """
     A version of imp.find_module that works with zipped packages.
@@ -186,11 +187,8 @@ def find_module(name, path=None):
                 if sys.version_info[0] == 2:
                     fp = open(filename, _READ_MODE)
                 else:
-                    fp = open(filename, 'rb')
-                    try:
+                    with open(filename, 'rb') as fp:
                         encoding = util.guess_encoding(fp)
-                    finally:
-                        fp.close()
 
                     fp = open(filename, _READ_MODE, encoding=encoding)
                 description = ('.py', _READ_MODE, imp.PY_SOURCE)
@@ -250,6 +248,8 @@ def find_module(name, path=None):
             if loader.path.endswith('.py') or loader.path.endswith('.pyw'):
                 return (fp, loader.path, ('.py', 'rU', imp.PY_SOURCE))
             else:
+                if fp is not None:
+                    fp.close()
                 return (None, loader.path, (os.path.splitext(loader.path)[-1], 'rb', imp.C_EXTENSION))
 
         else:
@@ -259,6 +259,8 @@ def find_module(name, path=None):
                 return (fp, pathname + '.pyc', ('.pyc', 'rb', imp.PY_COMPILED))
 
     if namespace_path:
+        if fp is not None:
+            fp.close()
         return (None, namespace_path[0], ('', namespace_path, imp.PKG_DIRECTORY))
 
     raise ImportError(name)
@@ -650,11 +652,8 @@ class ModuleGraph(ObjectGraph):
             return m
 
         if sys.version_info[0] != 2:
-            fp = open(pathname, 'rb')
-            try:
+            with open(pathname, 'rb') as fp:
                 encoding = util.guess_encoding(fp)
-            finally:
-                fp.close()
 
             fp = open(pathname, _READ_MODE, encoding=encoding)
             try:
@@ -662,11 +661,8 @@ class ModuleGraph(ObjectGraph):
             finally:
                 fp.close()
         else:
-            fp = open(pathname, _READ_MODE)
-            try:
+            with open(pathname, _READ_MODE) as fp:
                 contents = fp.read() + '\n'
-            finally:
-                fp.close()
 
         co = compile(contents, pathname, 'exec', 0, True)
         if self.replace_paths:
