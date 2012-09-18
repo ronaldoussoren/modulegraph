@@ -48,13 +48,23 @@ class TestNativeImport (unittest.TestCase):
         return data
         
 
+    @unittest.skipUnless(sys.version_info[0] == 2, "Python 2.x test")
     def testRootPkg(self):
         m = self.importModule('pkg')
         self.assertEqual(m, 'pkg')
 
+    @unittest.skipUnless(sys.version_info[0] == 2, "Python 2.x test")
     def testSubPackage(self):
         m = self.importModule('pkg.subpkg')
         self.assertEqual(m, 'pkg.subpkg')
+
+    def testRootPkgRelImport(self):
+        m = self.importModule('pkg2')
+        self.assertEqual(m, 'pkg2')
+
+    def testSubPackageRelImport(self):
+        m = self.importModule('pkg2.subpkg')
+        self.assertEqual(m, 'pkg2.subpkg')
 
     
 class TestModuleGraphImport (unittest.TestCase):
@@ -72,11 +82,13 @@ class TestModuleGraphImport (unittest.TestCase):
         self.mf.run_script(os.path.join(root, 'script.py'))
 
 
+    @unittest.skipUnless(sys.version_info[0] == 2, "Python 2.x test")
     def testRootPkg(self):
         node = self.mf.findNode('pkg')
         self.assertIsInstance(node, modulegraph.Package)
         self.assertEqual(node.identifier, 'pkg')
 
+    @unittest.skipUnless(sys.version_info[0] == 2, "Python 2.x test")
     def testSubPackage(self):
         node = self.mf.findNode('pkg.subpkg')
         self.assertIsInstance(node, modulegraph.Package)
@@ -89,6 +101,24 @@ class TestModuleGraphImport (unittest.TestCase):
         node = self.mf.findNode('pkg.subpkg._collections')
         self.assertIsInstance(node, modulegraph.SourceModule)
         self.assertEqual(node.identifier, 'pkg.subpkg._collections')
+
+    def testRootPkgRelImport(self):
+        node = self.mf.findNode('pkg2')
+        self.assertIsInstance(node, modulegraph.Package)
+        self.assertEqual(node.identifier, 'pkg2')
+
+    def testSubPackageRelImport(self):
+        node = self.mf.findNode('pkg2.subpkg')
+        self.assertIsInstance(node, modulegraph.Package)
+        self.assertEqual(node.identifier, 'pkg2.subpkg')
+
+        node = self.mf.findNode('pkg2.subpkg.compat')
+        self.assertIsInstance(node, modulegraph.SourceModule)
+        self.assertEqual(node.identifier, 'pkg2.subpkg.compat')
+
+        node = self.mf.findNode('pkg2.subpkg._collections')
+        self.assertIsInstance(node, modulegraph.SourceModule)
+        self.assertEqual(node.identifier, 'pkg2.subpkg._collections')
 
 
 if __name__ == "__main__":
