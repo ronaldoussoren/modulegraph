@@ -87,6 +87,8 @@ class TestNativeImport (unittest.TestCase):
         m = self.importModule('pkg.subpkg.mod2.mod')
         self.assertEqual(m, 'pkg.sub2.mod')
 
+        m = self.importModule('pkg.subpkg.relative2')
+        self.assertEqual(m, 'pkg.subpkg.relative2')
 
 class TestModuleGraphImport (unittest.TestCase):
     if not hasattr(unittest.TestCase, 'assertIsInstance'):
@@ -163,6 +165,12 @@ class TestModuleGraphImport (unittest.TestCase):
         self.assertIsInstance(sub, modulegraph.SourceModule)
         self.assertEqual(sub.identifier, 'pkg.sub2.mod')
 
+        node = self.mf.findNode('pkg.subpkg.relative2')
+        self.assertIsInstance(node, modulegraph.SourceModule)
+        self.assertEqual(node.identifier, 'pkg.subpkg.relative2')
+
+        node = self.mf.findNode('pkg.relimport')
+        self.assertIsInstance(node, modulegraph.SourceModule)
 
 class TestRegressions1 (unittest.TestCase):
     if not hasattr(unittest.TestCase, 'assertIsInstance'):
