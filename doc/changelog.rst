@@ -9,6 +9,9 @@ This is a minor feature release
 Features
 ........
 
+* Issue #9: The modulegraph script is deprecated, use 
+  "python -mmodulegraph" instead.
+
 * Issue #10: Ensure that the result of "zipio.open" can be used
   in a with statement (that is, ``with zipio.open(...) as fp``.
 

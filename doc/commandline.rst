@@ -1,7 +1,7 @@
 Commandline tools
 =================
 
-The package installs a singe commandline script: ``modulegraph``
+The package can be used as a script using "python -mmodulegraph".
 
 This script calculates the module graph for the scripts passed
 on the commandline and by default prints a list of modules
@@ -22,3 +22,10 @@ The script has a number of options to change the output:
 * ``-g``: Emit a ``.dot`` file instead of a list of modules
 
 * ``-h``: Emit a ``.html`` file instead of a list of modules
+
+Deprecation warning
+-------------------
+
+The package also installs a command-line tool named "modulegraph",
+this command-line tool is deprecated and will be removed in a
+future version.
