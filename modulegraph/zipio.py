@@ -14,12 +14,31 @@ import time as _time
 import sys as _sys
 
 if _sys.version_info[0] == 2:
-    from  StringIO import StringIO as _StringIO
-    from  StringIO import StringIO as _BytesIO
+    from  StringIO import StringIO as _BaseStringIO
+    from  StringIO import StringIO as _BaseBytesIO
+
+    class _StringIO (_BaseStringIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.close()
+            return False
+
+    class _BytesIO (_BaseBytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.close()
+            return False
 
 else:
     from io import StringIO as _StringIO
     from io import BytesIO as _BytesIO
+
+
+
 
 def _locate(path):
     full_path = path

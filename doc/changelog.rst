@@ -9,6 +9,9 @@ This is a minor feature release
 Features
 ........
 
+* Issue #10: Ensure that the result of "zipio.open" can be used
+  in a with statement (that is, ``with zipio.open(...) as fp``.
+
 * No longer use "2to3" to support Python 3. 
 
   Because of this modulegraph now supports Python 2.6

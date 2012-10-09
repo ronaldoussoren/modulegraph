@@ -166,5 +166,48 @@ class TestModuleGraph (unittest.TestCase):
         self.assertRaises(IOError, zipio.getmtime, os.path.join(TESTDATA, 'no-file'))
         self.assertRaises(IOError, zipio.getmtime, os.path.join(TESTDATA, 'zipped.egg/no-file'))
 
+    def test_contextlib(self):
+        # 1. Regular file
+        with zipio.open(os.path.join(TESTDATA, 'test.txt'), 'r') as fp:
+            data = fp.read()
+        try:
+            fp.read()
+            self.fail("file not closed")
+        except (ValueError, IOError):
+            pass
+
+        self.assertEqual(data, 'This is test.txt\n')
+
+        if sys.version_info[0] == 3:
+            with zipio.open(os.path.join(TESTDATA, 'test.txt'), 'rb') as fp:
+                data = fp.read()
+            try:
+                fp.read()
+                self.fail("file not closed")
+            except (ValueError, IOError):
+                pass
+
+            self.assertEqual(data, b'This is test.txt\n')
+
+        # 2. File inside zipfile
+        with zipio.open(os.path.join(TESTDATA, 'zipped.egg', 'test.txt'), 'r') as fp:
+            data = fp.read()
+        try:
+            fp.read()
+            self.fail("file not closed")
+        except (ValueError, IOError):
+            pass
+        self.assertEqual(data, 'Zipped up test.txt\n')
+
+        if sys.version_info[0] == 3:
+            with zipio.open(os.path.join(TESTDATA, 'zipped.egg', 'test.txt'), 'rb') as fp:
+                data = fp.read()
+            try:
+                fp.read()
+                self.fail("file not closed")
+            except (IOError, ValueError):
+                pass
+            self.assertEqual(data, b'Zipped up test.txt\n')
+
 if __name__ == "__main__":
     unittest.main()
