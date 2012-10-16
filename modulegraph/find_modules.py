@@ -208,10 +208,19 @@ def find_needed_modules(mf=None, scripts=(), includes=(), packages=(), warn=warn
         # first trim the path (of the head package),
         # then convert directory name in package name,
         # finally push into modulegraph.
+        # FIXME:
+        # 1) Needs to be adjusted for namespace packages in python 3.3
+        # 2) Code is fairly dodgy and needs better tests
         for (dirpath, dirnames, filenames) in os.walk(path):
             if '__init__.py' in filenames and dirpath.startswith(path):
-                package = f + '.' + path[len(path)+1:].replace(os.sep, '.')
-                mf.import_hook(package, None, ["*"])
+                package = f + '.' + dirpath[len(path)+1:].replace(os.sep, '.')
+                if package.endswith('.'):
+                    package = package[:-1]
+                m = mf.import_hook(package, None, ["*"])
+            else:
+                # Exclude subtrees that aren't packages
+                dirnames[:] = []
+
 
     return mf
 

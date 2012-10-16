@@ -9,6 +9,10 @@ This is a minor feature release
 Features
 ........
 
+* ``modulegraph.find_modules.find_needed_modules`` claimed to automaticly
+  include subpackages for the "packages" argument as well, but that code
+  didn't work at all.
+
 * Issue #9: The modulegraph script is deprecated, use 
   "python -mmodulegraph" instead.
 
