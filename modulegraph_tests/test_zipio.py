@@ -1,8 +1,13 @@
 from modulegraph import zipio
-import unittest
 import os
 import time
 import sys
+
+if sys.version_info[:2] <= (2,6):
+    import unittest2 as unittest
+
+else:
+    import unittest
 
 TESTDATA=os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
