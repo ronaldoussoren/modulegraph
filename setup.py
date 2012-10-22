@@ -149,6 +149,8 @@ def _as_requires(value):
                 continue
             req = req.strip()
 
+        if not req:
+            continue
         requires.append(_map_requirement(req))
     return requires
 
