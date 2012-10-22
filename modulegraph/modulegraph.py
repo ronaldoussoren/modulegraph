@@ -160,6 +160,7 @@ def find_module(name, path=None):
             ImpImporter = pkg_resources.ImpWrapper
 
     namespace_path =[] 
+    fp = None
     for entry in path:
         importer = pkg_resources.get_importer(entry)
         if importer is None:
