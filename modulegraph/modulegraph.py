@@ -16,10 +16,7 @@ import imp
 import marshal
 import os
 import sys
-if sys.version_info[0] == 2:
-    import new
 import struct
-import urllib
 import zipimport
 import re
 from collections import deque
@@ -34,10 +31,12 @@ from modulegraph import zipio
 if sys.version_info[0] == 2:
     from StringIO import StringIO as BytesIO
     from StringIO import StringIO 
+    from  urllib import pathname2url
     def _Bchr(value):
         return chr(value)
 
 else:
+    from urllib.request  import pathname2url
     from io import BytesIO, StringIO
 
     def _Bchr(value):
@@ -1161,7 +1160,7 @@ class ModuleGraph(ObjectGraph):
                 content = contpl % {"NAME": name,\
                                     "TYPE": "<tt>%s</tt>" % m.filename}
             else:
-                url = urllib.pathname2url(m.filename or "")
+                url = pathname2url(m.filename or "")
                 content = contpl_linked % {"NAME": name, "URL": url}
             oute, ince = map(sorted_namelist, self.get_edges(m))
             if oute:
@@ -1215,7 +1214,7 @@ class ModuleGraph(ObjectGraph):
         yield 'digraph %s {\n' % (name,)
         attr = dict(rankdir='LR', concentrate='true')
         cpatt  = '%s="%s"'
-        for item in attr.iteritems():
+        for item in attr.items():
             yield '\t%s;\n' % (cpatt % item,)
 
         # find all packages (subgraphs)
@@ -1238,7 +1237,7 @@ class ModuleGraph(ObjectGraph):
                 node,
                 ','.join([
                     (cpatt % item) for item in
-                    nodevisitor(node, data, outgoing, incoming).iteritems()
+                    nodevisitor(node, data, outgoing, incoming).items()
                 ]),
             )
 
@@ -1292,10 +1291,10 @@ class ModuleGraph(ObjectGraph):
                 yield edgestr % (
                     head,
                     tail,
-                    ','.join([(cpatt % item) for item in attribs.iteritems()]),
+                    ','.join([(cpatt % item) for item in attribs.items()]),
                 )
 
-        for g, edges in subgraphs.iteritems():
+        for g, edges in subgraphs.items():
             yield '\tsubgraph "cluster_%s" {\n' % (g,)
             yield '\t\tlabel="%s";\n' % (nodetoident[g],)
             for s in do_graph(edges, '\t\t'):
@@ -1342,10 +1341,7 @@ class ModuleGraph(ObjectGraph):
             if isinstance(consts[i], type(co)):
                 consts[i] = self.replace_paths_in_code(consts[i])
 
-        if sys.version_info[0] == 2:
-            code_func = new.code
-        else:
-            code_func = type(co)
+        code_func = type(co)
 
         if hasattr(co, 'co_kwonlyargcount'):
             return code_func(co.co_argcount, co.co_kwonlyargcount, co.co_nlocals, co.co_stacksize,
