@@ -8,6 +8,7 @@ import shutil
 import warnings
 from altgraph import Graph
 import textwrap
+import xml.etree.ElementTree as ET
 
 try:
     bytes
@@ -938,6 +939,44 @@ class TestModuleGraph (unittest.TestCase):
         e = graph.graph.edge_by_node('n1', 'n2')
         self.assertIsInstance(e, int)
         self.assertEqual(graph.graph.edge_data(e), 'direct')
+
+    def test_create_xref(self):
+        # XXX: This test is far from optimal, it just ensures
+        # that all code is exercised to catch small bugs and
+        # py3k issues without verifying that the code actually
+        # works....
+        graph = modulegraph.ModuleGraph()
+        graph.run_script(__file__)
+        graph.import_hook('os')
+        graph.import_hook('xml.etree')
+        graph.import_hook('unittest')
+
+        fp = StringIO()
+        graph.create_xref(out=fp)
+
+        data = fp.getvalue()
+        r = ET.fromstring(data)
+
+    def test_itergraphreport(self):
+        # XXX: This test is far from optimal, it just ensures
+        # that all code is exercised to catch small bugs and
+        # py3k issues without verifying that the code actually
+        # works....
+        graph = modulegraph.ModuleGraph()
+        graph.run_script(__file__)
+        graph.import_hook('os')
+        graph.import_hook('xml.etree')
+        graph.import_hook('unittest')
+        graph.import_hook('distutils.command.build')
+
+        fp = StringIO()
+        list(graph.itergraphreport())
+
+        # XXX: platpackages isn't implemented, and is undocumented hence
+        # it is unclear what this is inteded to be...
+        #list(graph.itergraphreport(flatpackages=...))
+
+
 
 
 class CompatTests (unittest.TestCase):

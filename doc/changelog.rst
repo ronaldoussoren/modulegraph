@@ -1,6 +1,20 @@
 Release history
 ===============
 
+0.10.1
+------
+
+This is a bugfix release
+
+Bugfixes
+........
+
+* Issue #11: creating xrefs and dotty graphs from modulegraphs (the --xref 
+  and --graph options of py2app) didn't work with python 3 due to use of
+  APIs that aren't available in that version of python.
+
+  Reported by Andrew Barnert.
+
 0.10
 ----
 
