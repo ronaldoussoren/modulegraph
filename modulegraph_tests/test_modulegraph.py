@@ -946,7 +946,11 @@ class TestModuleGraph (unittest.TestCase):
         # py3k issues without verifying that the code actually
         # works....
         graph = modulegraph.ModuleGraph()
-        graph.run_script(__file__)
+        if __file__.endswith('.py'):
+            graph.run_script(__file__)
+        else:
+            graph.run_script(__file__[:-1])
+
         graph.import_hook('os')
         graph.import_hook('xml.etree')
         graph.import_hook('unittest')
@@ -963,7 +967,10 @@ class TestModuleGraph (unittest.TestCase):
         # py3k issues without verifying that the code actually
         # works....
         graph = modulegraph.ModuleGraph()
-        graph.run_script(__file__)
+        if __file__.endswith('.py'):
+            graph.run_script(__file__)
+        else:
+            graph.run_script(__file__[:-1])
         graph.import_hook('os')
         graph.import_hook('xml.etree')
         graph.import_hook('unittest')
