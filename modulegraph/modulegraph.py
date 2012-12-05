@@ -1084,7 +1084,7 @@ class ModuleGraph(ObjectGraph):
 
         try:
             self.msg(2, "find __init__ for %s"%(m.packagepath,))
-            fp, buf, stuff = self.find_module("__init__", m.packagepath)
+            fp, buf, stuff = self.find_module("__init__", m.packagepath, parent=m)
         except ImportError:
             pass
 
