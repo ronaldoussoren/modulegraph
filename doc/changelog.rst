@@ -1,6 +1,16 @@
 Release history
 ===============
 
+0.10.3
+------
+
+This is a bugfix release
+
+Bugfixes
+........
+
+* ...
+
 0.10.2
 ------
 
