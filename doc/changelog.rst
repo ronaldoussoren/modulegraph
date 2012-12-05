@@ -15,6 +15,12 @@ Bugfixes
 
   Reported by Andrew Barnert.
 
+* Issue #12: modulegraph would sometimes find the wrong package *__init__*
+  module due to using the wrong search method. One easy way to reproduce the
+  problem was to have a toplevel module named *__init__*.
+
+  Reported by Kentzo.
+
 0.10
 ----
 
