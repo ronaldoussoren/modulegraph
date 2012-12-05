@@ -1,6 +1,40 @@
 Release history
 ===============
 
+0.11
+----
+
+This is a feature release
+
+Features
+........
+
+* ...
+
+0.10.3
+------
+
+This is a bugfix release
+
+Bugfixes
+........
+
+* ...
+
+0.10.2
+------
+
+This is a bugfix release
+
+Bugfixes
+........
+
+* Issue #12: modulegraph would sometimes find the wrong package *__init__*
+  module due to using the wrong search method. One easy way to reproduce the
+  problem was to have a toplevel module named *__init__*.
+
+  Reported by Kentzo.
+
 0.10.1
 ------
 
@@ -15,11 +49,6 @@ Bugfixes
 
   Reported by Andrew Barnert.
 
-* Issue #12: modulegraph would sometimes find the wrong package *__init__*
-  module due to using the wrong search method. One easy way to reproduce the
-  problem was to have a toplevel module named *__init__*.
-
-  Reported by Kentzo.
 
 0.10
 ----
