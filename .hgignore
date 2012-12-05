@@ -3,6 +3,8 @@ modulegraph.egg-info
 testsuite/testpkg-setuptools-namespace/src/nspkg.egg-info
 __pycache__
 build
+htmlcov
+.coverage
 .DS_Store
 
 syntax: glob
