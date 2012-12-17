@@ -4,7 +4,7 @@ This script looks for ImportModules calls in C extensions
 of the stdlib.
 
 The current version has harcoded the location of the source
-tries on Ronald's machine, a future version will be able 
+tries on Ronald's machine, a future version will be able
 to rebuild the modulegraph source file that contains
 this information.
 """

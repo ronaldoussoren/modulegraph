@@ -4,7 +4,7 @@ Find modules used by a script, using bytecode analysis.
 Based on the stdlib modulefinder by Thomas Heller and Just van Rossum,
 but uses a graph data structure and 2.3 features
 
-XXX: Verify all calls to import_hook (and variants) to ensure that 
+XXX: Verify all calls to import_hook (and variants) to ensure that
 imports are done in the right way.
 """
 from __future__ import absolute_import, print_function
@@ -30,7 +30,7 @@ from modulegraph import zipio
 
 if sys.version_info[0] == 2:
     from StringIO import StringIO as BytesIO
-    from StringIO import StringIO 
+    from StringIO import StringIO
     from  urllib import pathname2url
     def _Bchr(value):
         return chr(value)
@@ -44,7 +44,7 @@ else:
 
 
 # File open mode for reading (univeral newlines)
-_READ_MODE = "rU"  
+_READ_MODE = "rU"
 
 
 
@@ -58,9 +58,9 @@ _READ_MODE = "rU"
 _packagePathMap = {}
 
 # Prefix used in magic .pth files used by setuptools to create namespace
-# packages without an __init__.py file. 
+# packages without an __init__.py file.
 #
-# The value is a list of such prefixes as the prefix varies with versions of 
+# The value is a list of such prefixes as the prefix varies with versions of
 # setuptools.
 _SETUPTOOLS_NAMESPACEPKG_PTHs=(
     "import sys,types,os; p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('",
@@ -68,7 +68,7 @@ _SETUPTOOLS_NAMESPACEPKG_PTHs=(
 )
 
 
-def _namespace_package_path(fqname, pathnames): 
+def _namespace_package_path(fqname, pathnames):
     """
     Return the __path__ for the python package in *fqname*.
 
@@ -122,7 +122,7 @@ def os_listdir(path):
     Deprecated name
     """
     warnings.warn("Use zipio.listdir instead of os_listdir",
-            DeprecationWarning) 
+            DeprecationWarning)
     return zipio.listdir(path)
 
 
@@ -158,7 +158,7 @@ def find_module(name, path=None):
         except ImportError:
             ImpImporter = pkg_resources.ImpWrapper
 
-    namespace_path =[] 
+    namespace_path =[]
     fp = None
     for entry in path:
         importer = pkg_resources.get_importer(entry)
@@ -231,7 +231,7 @@ def find_module(name, path=None):
         pathname = os.path.join(entry, *name.split('.'))
 
         if isinstance(loader, zipimport.zipimporter):
-            # Check if this happens to be a wrapper module introduced by 
+            # Check if this happens to be a wrapper module introduced by
             # setuptools, if it is we return the actual extension.
             zn = '/'.join(name.split('.'))
             for _sfx, _mode, _type in imp.get_suffixes():
@@ -275,7 +275,7 @@ def moduleInfoForPath(path):
 import warnings
 def AddPackagePath(packagename, path):
     warnings.warn("Use addPackagePath instead of AddPackagePath",
-            DeprecationWarning) 
+            DeprecationWarning)
 
     addPackagePath(packagename, path)
 
@@ -510,7 +510,7 @@ class ModuleGraph(ObjectGraph):
         # When this option is used namespace packages are writting to
         # disk *without* an __init__.py file, which means the regular
         # import machinery will not find them.
-        # 
+        #
         # We therefore explicitly look for the hack used by
         # setuptools to get this kind of namespace packages to work.
 
@@ -1020,13 +1020,13 @@ class ModuleGraph(ObjectGraph):
                     if imported_module.code is None:
                         m.starimports.add(name)
 
-                
-                # XXX: The code below tries to find the module we're 
+
+                # XXX: The code below tries to find the module we're
                 # star-importing from. That code uses heuristics, which is
                 # a bit lame as we already know that module: _safe_import has
-                # just calculated it for us (after a small tweak to the 
+                # just calculated it for us (after a small tweak to the
                 # return value of that method).
-                # 
+                #
                 #
                 #if have_star:
                 #    # We've encountered an "import *". If it is a Python module,
@@ -1080,7 +1080,7 @@ class ModuleGraph(ObjectGraph):
         # As per comment at top of file, simulate runtime packagepath additions.
         m.packagepath = m.packagepath + _packagePathMap.get(fqname, [])
 
-        
+
 
         try:
             self.msg(2, "find __init__ for %s"%(m.packagepath,))
@@ -1175,7 +1175,7 @@ class ModuleGraph(ObjectGraph):
                 content += imports % {"HEAD": "imported by", "LINKS": links}
             print(entry % {"NAME": name,"CONTENT": content}, file=out)
         print(footer, file=out)
-        
+
 
     def itergraphreport(self, name='G', flatpackages=()):
         # XXX: Can this be implemented using Dot()?

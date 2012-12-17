@@ -27,7 +27,7 @@ class TestNativeImport (unittest.TestCase):
                 print (%s.__name__)
             """) %(name, name)
 
-        p = subprocess.Popen([sys.executable, '-c', script], 
+        p = subprocess.Popen([sys.executable, '-c', script],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 cwd=os.path.join(
@@ -49,7 +49,7 @@ class TestNativeImport (unittest.TestCase):
             print (data)
         self.assertEqual(sts, 0)
         return data
-        
+
 
     def testRootModule(self):
         m = self.importModule('mod')
@@ -76,7 +76,7 @@ class TestNativeImport (unittest.TestCase):
     def testNewStyle(self):
         m = self.importModule('pkg.toplevel.mod')
         self.assertEqual(m, 'mod')
-    
+
     def testRelativeImport(self):
         m = self.importModule('pkg.relative.mod')
         self.assertEqual(m, 'pkg.mod')
@@ -142,7 +142,7 @@ class TestModuleGraphImport (unittest.TestCase):
         self.assertEqual(node.identifier, 'pkg.toplevel')
         sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
         self.assertEqual(sub.identifier, 'mod')
-    
+
     def testRelativeImport(self):
         node = self.mf.findNode('pkg.relative')
         self.assertIsInstance(node, modulegraph.SourceModule)
@@ -243,12 +243,12 @@ class TestRegressions3 (unittest.TestCase):
         import distutils.sysconfig, distutils.ccompiler
         node = self.mf.findNode('distutils.ccompiler')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertEqual(os.path.dirname(node.filename), 
+        self.assertEqual(os.path.dirname(node.filename),
                 os.path.dirname(distutils.ccompiler.__file__))
 
         node = self.mf.findNode('distutils.sysconfig')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertEqual(os.path.dirname(node.filename), 
+        self.assertEqual(os.path.dirname(node.filename),
                 os.path.dirname(distutils.sysconfig.__file__))
 
 class TestRegression4 (unittest.TestCase):

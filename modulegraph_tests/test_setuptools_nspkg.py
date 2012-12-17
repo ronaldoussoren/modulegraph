@@ -17,12 +17,12 @@ gSrcDir = os.path.join(gRootDir, 'testpkg-setuptools-namespace')
 
 def install_testpkg(test_dir):
     p = subprocess.Popen([
-        sys.executable, 'setup.py', 'install', 
-            '--install-lib', test_dir, 
-            '--single-version-externally-managed', 
+        sys.executable, 'setup.py', 'install',
+            '--install-lib', test_dir,
+            '--single-version-externally-managed',
             '--record', os.path.join(test_dir, 'record.lst'),
         ], cwd=gSrcDir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    
+
     data = p.communicate()[0]
 
     exit = p.wait()
@@ -64,7 +64,7 @@ class TestPythonBehaviour (unittest.TestCase):
                 print (%s.__name__)
             """) %(test_dir, name, name)
 
-        p = subprocess.Popen([sys.executable, '-c', script], 
+        p = subprocess.Popen([sys.executable, '-c', script],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 cwd=os.path.join(

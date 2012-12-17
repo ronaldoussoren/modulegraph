@@ -27,7 +27,7 @@ class TestNativeImport (unittest.TestCase):
                 print (%s.__name__)
             """) %(name, name)
 
-        p = subprocess.Popen([sys.executable, '-c', script], 
+        p = subprocess.Popen([sys.executable, '-c', script],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 cwd=os.path.join(
@@ -49,7 +49,7 @@ class TestNativeImport (unittest.TestCase):
             print (data)
         self.assertEqual(sts, 0)
         return data
-        
+
 
     @unittest.skipUnless(sys.version_info[0] == 2, "Python 2.x test")
     def testRootPkg(self):
@@ -69,7 +69,7 @@ class TestNativeImport (unittest.TestCase):
         m = self.importModule('pkg2.subpkg')
         self.assertEqual(m, 'pkg2.subpkg')
 
-    
+
 class TestModuleGraphImport (unittest.TestCase):
     if not hasattr(unittest.TestCase, 'assertIsInstance'):
         def assertIsInstance(self, value, types):

@@ -1,4 +1,4 @@
-""" 
+"""
 Package structure simular to crcmod
 """
 try:

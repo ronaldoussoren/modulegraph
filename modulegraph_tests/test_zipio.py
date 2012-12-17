@@ -120,7 +120,7 @@ class TestModuleGraph (unittest.TestCase):
         os.symlink('test.txt', fn)
         try:
             self.assertTrue(zipio.islink(fn))
-        
+
         finally:
             os.unlink(fn)
 
@@ -141,7 +141,7 @@ class TestModuleGraph (unittest.TestCase):
         os.symlink('test.txt', fn)
         try:
             self.assertEqual(zipio.readlink(fn), 'test.txt')
-        
+
         finally:
             os.unlink(fn)
 
@@ -151,7 +151,7 @@ class TestModuleGraph (unittest.TestCase):
         self.assertRaises(OSError, zipio.readlink, os.path.join(TESTDATA, 'zipped.egg', 'subdir4'))
         self.assertRaises(OSError, zipio.readlink, os.path.join(TESTDATA, 'zipped.egg', 'no-such-file'))
         self.assertRaises(OSError, zipio.readlink, os.path.join(TESTDATA, 'zipped.egg', 'subdir/no-such-file'))
-        
+
     def test_getmtime(self):
         fn = os.path.join(TESTDATA, 'test.txt')
         self.assertEqual(os.path.getmtime(fn), zipio.getmtime(fn))

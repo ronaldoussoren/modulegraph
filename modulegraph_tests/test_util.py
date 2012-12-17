@@ -53,7 +53,7 @@ class TestUtil (unittest.TestCase):
             self.assertEqual(util.guess_encoding(fp), "utf-8")
 
         del fp
-            
+
 
 if __name__ == "__main__":
     unittest.main()

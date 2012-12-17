@@ -79,7 +79,7 @@ class TestFunctions (unittest.TestCase):
                     if self._namespace_packages is None:
                         raise ValueError("no file")
 
-                    return self._namespace_packages 
+                    return self._namespace_packages
 
                 raise ValueError("invalid lookup key")
 
@@ -205,7 +205,7 @@ class TestFunctions (unittest.TestCase):
                 if sys.platform == 'win32':
                     ext = '.pyd'
                 else:
-                    # This is a ly, but is good enough for now  
+                    # This is a ly, but is good enough for now
                     ext = '.so'
 
                 self.assertEqual(fp, None)
@@ -244,7 +244,7 @@ class TestFunctions (unittest.TestCase):
                 saved_replace = modulegraph.replacePackage
                 try:
                     called = []
-                    
+
                     def log_add(*args, **kwds):
                         called.append(('add', args, kwds))
                     def log_replace(*args, **kwds):
@@ -363,8 +363,8 @@ class TestNode (unittest.TestCase):
         self.assertEqual(d[n2], 'n2')
 
     def test_infoTuple(self):
-         n = modulegraph.Node('n1')
-         self.assertEqual(n.infoTuple(), ('n1',))
+        n = modulegraph.Node('n1')
+        self.assertEqual(n.infoTuple(), ('n1',))
 
     def assertNoMethods(self, klass):
         d = dict(klass.__dict__)
@@ -478,7 +478,7 @@ class TestModuleGraph (unittest.TestCase):
 
         g = Graph.Graph()
         o = modulegraph.ModuleGraph(['a', 'b', 'c'], ['modA'], [
-                ('fromA', 'toB'), ('fromC', 'toD')], 
+                ('fromA', 'toB'), ('fromC', 'toD')],
                 {
                     'modA': ['modB', 'modC'],
                     'modC': ['modE', 'modF'],
@@ -572,7 +572,7 @@ class TestModuleGraph (unittest.TestCase):
         graph.import_hook('os.path', None)
         graph.import_hook('idlelib', None)
         graph.import_hook('xml.dom', None)
-        
+
         for node in graph.nodes():
             if isinstance(node, modulegraph.Package):
                 break
@@ -650,7 +650,7 @@ class TestModuleGraph (unittest.TestCase):
                 ('sub1', 'root.sub.sub1', node),
                 ('sub2', 'root.sub.sub1.sub2', node2),
             ])
-        
+
         self.assertRaises(ImportError, graph.load_tail, root, 'raises')
         self.assertRaises(ImportError, graph.load_tail, root, 'sub.raises')
         self.assertRaises(ImportError, graph.load_tail, root, 'sub.raises.sub')
@@ -661,7 +661,7 @@ class TestModuleGraph (unittest.TestCase):
     def test_ensure_fromlist(self):
         # 1. basic 'from module import name, name'
         # 2. 'from module import *'
-        # 3. from module import os 
+        # 3. from module import os
         #    (where 'os' is not a name in 'module',
         #     should create MissingModule node, and
         #     should *not* refer to the global os)
@@ -712,7 +712,7 @@ class TestModuleGraph (unittest.TestCase):
         code = compile(textwrap.dedent('''\
             import sys
             import os.path
-            
+
             def testfunc():
                 import shutil
             '''), '<test>', 'exec', 0, False)
@@ -725,7 +725,7 @@ class TestModuleGraph (unittest.TestCase):
         # from module import *
         #  both:
         #   -> with/without globals
-        #   -> with/without modules in globals (e.g, 
+        #   -> with/without modules in globals (e.g,
         #       from os import * adds dependency to os.path)
         # from .module import a
         # from ..module import a
@@ -792,7 +792,7 @@ class TestModuleGraph (unittest.TestCase):
             record[:] = []
             m = graph.find_module('sax', xml.packagepath, xml)
             self.assertEqual(m,
-                    (None, os.path.join(os.path.dirname(xml.filename), 'sax'), 
+                    (None, os.path.join(os.path.dirname(xml.filename), 'sax'),
                     ('', '', imp.PKG_DIRECTORY)))
             self.assertEqual(record, [
                 ('sax', xml.packagepath),
@@ -842,7 +842,7 @@ class TestModuleGraph (unittest.TestCase):
                     expected.append([type(n).__name__, n.identifier, n.filename])
                 else:
                     expected.append([type(n).__name__, n.identifier])
-                    
+
             expected.sort()
             actual = [item.split() for item in lines[3:]]
             actual.sort()
@@ -989,7 +989,7 @@ class TestModuleGraph (unittest.TestCase):
 class CompatTests (unittest.TestCase):
     def test_Bchr(self):
         v = modulegraph._Bchr(ord('A'))
-        if sys.version_info[0] == 2: 
+        if sys.version_info[0] == 2:
             self.assertTrue(isinstance(v, bytes))
             self.assertEqual(v, b'A')
         else:

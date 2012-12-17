@@ -45,7 +45,7 @@ if sys.version_info[:2] >= (3,3):
                     print (%s.__name__)
                 """) %(test_dir1, test_dir2, name, name)
 
-            p = subprocess.Popen([sys.executable, '-c', script], 
+            p = subprocess.Popen([sys.executable, '-c', script],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     cwd=os.path.join(
@@ -157,7 +157,7 @@ else:
                     print (%s.__name__)
                 """) %(test_dir1, test_dir2, name, name)
 
-            p = subprocess.Popen([sys.executable, '-c', script], 
+            p = subprocess.Popen([sys.executable, '-c', script],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     cwd=os.path.join(
