@@ -15,7 +15,7 @@ import imp
 import warnings
 
 import modulegraph.modulegraph as modulegraph
-from modulegraph.modulegraph import Alias
+from modulegraph.modulegraph import Alias, Script
 from modulegraph.util import imp_find_module
 
 __all__ = [
@@ -86,7 +86,10 @@ def parse_mf_results(mf):
         if src:
             suffix = os.path.splitext(src)[1]
 
-            if suffix in PY_SUFFIXES:
+            if isinstance(item, Script):
+                # Scripts are python files
+                py_files.append(item)
+            elif suffix in PY_SUFFIXES:
                 py_files.append(item)
             elif suffix in C_SUFFIXES:
                 extensions.append(item)
