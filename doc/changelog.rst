@@ -19,7 +19,8 @@ This is a bugfix release
 Bugfixes
 ........
 
-* ...
+* ``modulegraph.find.modules.parse_mf_results`` failed when the main script of
+  a py2app module didn't have a file name ending in '.py'.
 
 0.10.2
 ------
