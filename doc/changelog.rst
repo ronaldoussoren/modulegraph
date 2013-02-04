@@ -11,6 +11,11 @@ Features
 
 * ...
 
+0.10.4
+------
+
+This is a bugfix release
+
 0.10.3
 ------
 
