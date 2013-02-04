@@ -37,6 +37,17 @@ def get_implies():
         "cStringIO":    ["copy_reg"],
         "_sre":         ["copy", "string", "sre"],
         "zipimport":    ["zlib"],
+
+        # Python 3.2:
+        "_datetime":    ["time", "_strptime"],
+        "_json":        ["json.decoder"],
+        "_pickle":      ["codecs", "copyreg", "_compat_pickle"],
+        "_posixsubprocess": ["gc"],
+        "_ssl":         ["socket"],
+
+        # Python 3.3:
+        "_elementtree": ["copy", "xml.etree.ElementPath" ],
+
         # mactoolboxglue can do a bunch more of these
         # that are far harder to predict, these should be tracked
         # manually for now.
@@ -45,7 +56,32 @@ def get_implies():
         "anydbm":       ["dbhash", "gdbm", "dbm", "dumbdbm", "whichdb"],
         # package aliases
         "wxPython.wx":  Alias('wx'),
+
     }
+
+    if sys.version_info[0] == 2 and sys.version_info[1] >= 5:
+        result.update({
+            "email.base64mime":         Alias("email.base64MIME"),
+            "email.charset":            Alias("email.Charset"),
+            "email.encoders":           Alias("email.Encoders"),
+            "email.errors":             Alias("email.Errors"),
+            "email.feedparser":         Alias("email.FeedParser"),
+            "email.generator":          Alias("email.Generator"),
+            "email.header":             Alias("email.Header"),
+            "email.iterators":          Alias("email.Iterators"),
+            "email.message":            Alias("email.Message"),
+            "email.parser":             Alias("email.Parser"),
+            "email.quoprimime":         Alias("email.quopriMIME"),
+            "email.utils":              Alias("email.Utils"),
+            "email.mime.audio":         Alias("email.MIMEAudio"),
+            "email.mime.base":          Alias("email.MIMEBase"),
+            "email.mime.image":         Alias("email.MIMEImage"),
+            "email.mime.message":       Alias("email.MIMEMessage"),
+            "email.mime.multipart":     Alias("email.MIMEMultipart"),
+            "email.mime.nonmultipart":  Alias("email.MIMENonMultipart"),
+            "email.mime.text":          Alias("email.MIMEText"),
+        })
+
 
     if sys.version_info[:2] >= (2, 5):
         result["_elementtree"] = ["pyexpat"]

@@ -16,6 +16,9 @@ Features
 
 This is a bugfix release
 
+* There were no 'classifiers' in the package metadata due to a bug
+  in setup.py.
+
 0.10.3
 ------
 
