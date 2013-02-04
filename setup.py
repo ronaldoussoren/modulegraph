@@ -108,7 +108,7 @@ def _as_list(value):
 def _as_lines(value):
     result = []
     for v in value.splitlines():
-        if ';' in value:
+        if ';' in v:
             v, marker = v.rsplit(';', 1)
             if not eval_marker(marker):
                 continue
@@ -116,6 +116,8 @@ def _as_lines(value):
             v = v.strip()
             if v:
                 result.append(v)
+        else:
+            result.append(v)
     return result
             
 def _map_requirement(value):
