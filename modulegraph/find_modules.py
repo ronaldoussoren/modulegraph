@@ -15,7 +15,7 @@ import imp
 import warnings
 
 import modulegraph.modulegraph as modulegraph
-from modulegraph.modulegraph import Alias, Script
+from modulegraph.modulegraph import Alias, Script, Extension
 from modulegraph.util import imp_find_module
 
 __all__ = [
@@ -95,18 +95,16 @@ def parse_mf_results(mf):
         if item.identifier == "__main__":
             continue
         src = item.filename
-        if src:
-            suffix = os.path.splitext(src)[1]
-
+        if src and src != '-':
             if isinstance(item, Script):
                 # Scripts are python files
                 py_files.append(item)
-            elif suffix in PY_SUFFIXES:
-                py_files.append(item)
-            elif suffix in C_SUFFIXES:
+
+            elif isinstance(item, Extension):
                 extensions.append(item)
+
             else:
-                raise TypeError("Don't know how to handle '%s'" % repr(src))
+                py_files.append(item)
 
     # sort on the file names, the output is nicer to read
     py_files.sort(key=lambda v: v.filename)

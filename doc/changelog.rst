@@ -1,6 +1,15 @@
 Release history
 ===============
 
+0.10.5
+------
+
+This is a bugfix release
+
+* Don't look at the file extension to determine the file type
+  in modulegraph.find_modules.parse_mf_results, but use the
+  class of the item.
+
 0.10.4
 ------
 
@@ -42,7 +51,7 @@ This is a bugfix release
 Bugfixes
 ........
 
-* Issue #11: creating xrefs and dotty graphs from modulegraphs (the --xref 
+* Issue #11: creating xrefs and dotty graphs from modulegraphs (the --xref
   and --graph options of py2app) didn't work with python 3 due to use of
   APIs that aren't available in that version of python.
 
@@ -61,13 +70,13 @@ Features
   include subpackages for the "packages" argument as well, but that code
   didn't work at all.
 
-* Issue #9: The modulegraph script is deprecated, use 
+* Issue #9: The modulegraph script is deprecated, use
   "python -mmodulegraph" instead.
 
 * Issue #10: Ensure that the result of "zipio.open" can be used
   in a with statement (that is, ``with zipio.open(...) as fp``.
 
-* No longer use "2to3" to support Python 3. 
+* No longer use "2to3" to support Python 3.
 
   Because of this modulegraph now supports Python 2.6
   and later.
@@ -83,7 +92,7 @@ Features
 * Implement support for PEP 420 ("Implicit namespace packages")
   in Python 3.3.
 
-* ``modulegraph.util.imp_walk`` is deprecated and will be 
+* ``modulegraph.util.imp_walk`` is deprecated and will be
   removed in the next release of this package.
 
 Bugfixes
@@ -135,7 +144,7 @@ Bug fixes
   of "pkg" contains "import sub.nomod" we now create a MissingModule node
   for "pkg.sub.nomod" instead of "sub.nomod".
 
-  This fixes an issue with including the crcmod package in application 
+  This fixes an issue with including the crcmod package in application
   bundles, first reported on the pythonmac-sig mailinglist by
   Brendan Simon.
 
@@ -153,7 +162,7 @@ Features:
   The documention is very rough at this moment and in need of reorganisation and
   language cleanup. I've basiclly writting the current version by reading the code
   and documenting what it does, the order in which classes and methods are document
-  is therefore not necessarily the most useful. 
+  is therefore not necessarily the most useful.
 
 - The repository has moved to bitbucket
 
@@ -168,7 +177,7 @@ Features:
 - Added a simple commandline tool (``modulegraph``) that will print information
   about the dependency graph of a script.
 
-- Added a module (``zipio``) for dealing with paths that may refer to entries 
+- Added a module (``zipio``) for dealing with paths that may refer to entries
   inside zipfiles (such as source paths referring to modules in zipped eggfiles).
 
   With this addition ``modulegraph.modulegraph.os_listdir`` is deprecated and
