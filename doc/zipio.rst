@@ -5,7 +5,7 @@
    :synopsis: Read-only filesystem access with ZIP support
 
 This module contains a number of functions that mirror functions found
-in :mod:`os` and :mod:`os.path`, but have support for data inside 
+in :mod:`os` and :mod:`os.path`, but have support for data inside
 zipfiles as well as regular filesystem objects.
 
 The *path* argument of all functions below can refer to an object
@@ -61,3 +61,8 @@ will refer to ``somefile.txt`` inside the zipfile.
 
    Returns the last modifiction time of a file or directory, like
    :func:`os.path.getmtime`.
+
+.. function:: getmode(path)
+
+   Returns the UNIX file mode for a file or directory, like the
+   *st_mode* attribute in the result of :func:`os.stat`.

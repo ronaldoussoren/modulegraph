@@ -14,6 +14,9 @@ Features
 
   This makes it possible to remove a heavy-handed recipe from py2app.
 
+* Added :func:`modegraph.zipio.getmode` to fetch the Unix file mode
+  for a file.
+
 0.10.5
 ------
 

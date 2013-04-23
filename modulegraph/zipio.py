@@ -12,6 +12,23 @@ import zipfile as _zipfile
 import errno as _errno
 import time as _time
 import sys as _sys
+import stat as _stat
+
+_DFLT_DIR_MODE = (
+      _stat.S_IFDIR
+    | _stat.S_IXOTH
+    | _stat.S_IXGRP
+    | _stat.S_IXUSR
+    | _stat.S_IROTH
+    | _stat.S_IRGRP
+    | _stat.S_IRUSR)
+
+_DFLT_FILE_MODE = (
+      _stat.S_IFREG
+    | _stat.S_IROTH
+    | _stat.S_IRGRP
+    | _stat.S_IRUSR)
+
 
 if _sys.version_info[0] == 2:
     from  StringIO import StringIO as _BaseStringIO
@@ -312,6 +329,55 @@ def readlink(path):
             "No such file or directory")
 
     return _os.readlink(path)
+
+def getmode(path):
+    full_path = path
+    path, rest = _locate(path)
+    if not rest:
+        return _os.stat(path).st_mode
+
+    zf = None
+    try:
+        zf = _zipfile.ZipFile(path)
+        info = None
+
+        try:
+            info = zf.getinfo(rest)
+        except KeyError:
+            pass
+
+        if info is None:
+            try:
+                info = zf.getinfo(rest + '/')
+            except KeyError:
+                pass
+
+        if info is None:
+            rest = rest + '/'
+            for nm in zf.namelist():
+                if nm.startswith(rest):
+                    break
+            else:
+                raise IOError(
+                    _errno.ENOENT, full_path,
+                    "No such file or directory")
+
+            # Directory exists, but has no entry of its own.
+            return _DFLT_DIR_MODE
+
+        # The mode is stored without file-type in external_attr.
+        if (info.external_attr >> 16) != 0:
+            return _stat.S_IFREG | (info.external_attr >> 16)
+        else:
+            return _DFLT_FILE_MODE
+
+
+    except KeyError:
+        if zf is not None:
+            zf.close()
+        raise IOError(
+            _errno.ENOENT, full_path,
+            "No such file or directory")
 
 def getmtime(path):
     full_path = path
