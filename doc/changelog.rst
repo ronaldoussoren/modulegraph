@@ -26,6 +26,10 @@ This is a bugfix release
   in modulegraph.find_modules.parse_mf_results, but use the
   class of the item.
 
+* Issue #13: Improved handing of bad relative imports
+  ("from .foo import bar"), these tended to raise confusing errors and
+  are now handled like any other failed import.
+
 0.10.4
 ------
 

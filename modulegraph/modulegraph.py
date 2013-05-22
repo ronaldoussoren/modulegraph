@@ -741,12 +741,22 @@ class ModuleGraph(ObjectGraph):
             parent = None
 
         else:
+            if parent is None:
+                self.msg(2, "Relative import outside of package")
+                raise ImportError("Relative import outside of package (name=%r, parent=%r, level=%r)"%(name, parent, level))
+
             for i in range(level-1):
+                if '.' not in parent.identifier:
+                    self.msg(2, "Relative import outside of package")
+                    raise ImportError("Relative import outside of package (name=%r, parent=%r, level=%r)"%(name, parent, level))
+
                 p_fqdn = parent.identifier.rsplit('.', 1)[0]
                 new_parent = self.findNode(p_fqdn)
                 if new_parent is None:
-                    self.msg(2, "Relative import outside package")
-                assert new_parent is not parent
+                    self.msg(2, "Relative import outside of package")
+                    raise ImportError("Relative import outside of package (name=%r, parent=%r, level=%r)"%(name, parent, level))
+
+                assert new_parent is not parent, (new_parent, parent)
                 parent = new_parent
 
             if head:
