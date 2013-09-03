@@ -68,16 +68,16 @@ _SETUPTOOLS_NAMESPACEPKG_PTHs=(
 )
 
 
-def _namespace_package_path(fqname, pathnames):
+def _namespace_package_path(fqname, pathnames, path=None):
     """
     Return the __path__ for the python package in *fqname*.
 
     This function uses setuptools metadata to extract information
     about namespace packages from installed eggs.
     """
-    path = list(pathnames)
+    working_set = pkg_resources.WorkingSet(path)
 
-    working_set = pkg_resources.working_set
+    path = list(pathnames)
 
     for dist in working_set:
         if dist.has_metadata('namespace_packages.txt'):
@@ -636,7 +636,7 @@ class ModuleGraph(ObjectGraph):
             # works, it is not clear yet why that is. Setting to None would be
             # cleaner.
             m.filename = '-'
-            m.packagepath = _namespace_package_path(name, pathnames)
+            m.packagepath = _namespace_package_path(name, pathnames, self.path)
 
             # As per comment at top of file, simulate runtime packagepath additions.
             m.packagepath = m.packagepath + _packagePathMap.get(name, [])
@@ -1084,7 +1084,7 @@ class ModuleGraph(ObjectGraph):
         if newname:
             fqname = newname
 
-        ns_pkgpath = _namespace_package_path(fqname, pkgpath or [])
+        ns_pkgpath = _namespace_package_path(fqname, pkgpath or [], self.path)
         if ns_pkgpath or pkgpath:
             # this is a namespace package
             m = self.createNode(NamespacePackage, fqname)
