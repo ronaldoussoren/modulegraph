@@ -90,7 +90,8 @@ def _namespace_package_path(fqname, pathnames):
 
     return path
 
-_strs = re.compile(r'''^\s*["']([A-Za-z0-9_]+)["'],?\s*''')
+_strs = re.compile(r'''^\s*["']([A-Za-z0-9_]+)["'],?\s*''') # "<- emacs happy
+
 def _eval_str_tuple(value):
     """
     Input is the repr of a tuple of strings, output
@@ -443,6 +444,9 @@ class CompiledModule(BaseModule):
 class Package(BaseModule):
     pass
 
+class NamespacePackage(Package):
+    pass
+
 class Extension(BaseModule):
     pass
 
@@ -626,7 +630,7 @@ class ModuleGraph(ObjectGraph):
             # name is a --single-version-externally-managed
             # namespace package (setuptools/distribute)
             pathnames = self.nspackages.pop(name)
-            m = self.createNode(Package, name)
+            m = self.createNode(NamespacePackage, name)
 
             # FIXME: The filename must be set to a string to ensure that py2app
             # works, it is not clear yet why that is. Setting to None would be
@@ -1079,13 +1083,17 @@ class ModuleGraph(ObjectGraph):
         newname = _replacePackageMap.get(fqname)
         if newname:
             fqname = newname
-        m = self.createNode(Package, fqname)
-        m.filename = pathname
-        m.packagepath = _namespace_package_path(fqname, [pathname])
 
-        if pkgpath:
+        ns_pkgpath = _namespace_package_path(fqname, pkgpath or [pathname])
+        if ns_pkgpath or pkgpath:
+            # this is a namespace package
+            m = self.createNode(NamespacePackage, fqname)
             m.filename = '-'
-            m.packagepath = _namespace_package_path(fqname, pkgpath)
+            m.packagepath = ns_pkgpath
+        else:
+            m = self.createNode(Package, fqname)
+            m.filename = pathname
+            m.packagepath = [pathname] + ns_pkgpath
 
         # As per comment at top of file, simulate runtime packagepath additions.
         m.packagepath = m.packagepath + _packagePathMap.get(fqname, [])
