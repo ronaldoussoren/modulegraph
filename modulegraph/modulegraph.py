@@ -1084,7 +1084,7 @@ class ModuleGraph(ObjectGraph):
         if newname:
             fqname = newname
 
-        ns_pkgpath = _namespace_package_path(fqname, pkgpath or [pathname])
+        ns_pkgpath = _namespace_package_path(fqname, pkgpath or [])
         if ns_pkgpath or pkgpath:
             # this is a namespace package
             m = self.createNode(NamespacePackage, fqname)
