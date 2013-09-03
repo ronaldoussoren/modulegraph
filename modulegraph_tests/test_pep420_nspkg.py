@@ -98,7 +98,7 @@ if sys.version_info[:2] >= (3,3):
             self.mf.import_hook('package')
 
             node = self.mf.findNode('package')
-            self.assertIsInstance(node, modulegraph.Package)
+            self.assertIsInstance(node, modulegraph.NamespacePackage)
             self.assertEqual(node.identifier, 'package')
             self.assertEqual(node.filename, '-')
 
@@ -122,7 +122,7 @@ if sys.version_info[:2] >= (3,3):
             self.assertEqual(node.identifier, 'package.subpackage.sub')
 
             node = self.mf.findNode('package')
-            self.assertIsInstance(node, modulegraph.Package)
+            self.assertIsInstance(node, modulegraph.NamespacePackage)
 
             self.mf.import_hook('package.nspkg.mod')
             node = self.mf.findNode('package.nspkg.mod')

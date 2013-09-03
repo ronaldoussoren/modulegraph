@@ -122,7 +122,7 @@ class TestModuleGraphImport (unittest.TestCase):
         self.mf.import_hook('nspkg')
 
         node = self.mf.findNode('nspkg')
-        self.assertIsInstance(node, modulegraph.Package)
+        self.assertIsInstance(node, modulegraph.NamespacePackage)
         self.assertEqual(node.identifier, 'nspkg')
         self.assertEqual(node.filename, '-')
 
@@ -142,7 +142,7 @@ class TestModuleGraphImport (unittest.TestCase):
 
 
         node = self.mf.findNode('nspkg')
-        self.assertIsInstance(node, modulegraph.Package)
+        self.assertIsInstance(node, modulegraph.NamespacePackage)
 
 
 if __name__ == "__main__":
