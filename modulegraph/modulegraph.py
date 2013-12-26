@@ -585,6 +585,62 @@ class ModuleGraph(ObjectGraph):
             for other in others:
                 self.createReference(node, other)
 
+    def getReferences(self, fromnode):
+        """
+        Yield all nodes that 'fromnode' dependes on (that is,
+        all modules that 'fromnode' imports.
+        """
+        node = self.findNode(fromNode)
+        out_edges, _ = self.get_edges(node)
+        return out_edges
+
+
+    def hasEdge(self, fromnode, tonode):
+        """ Return True iff there is an edge from 'fromnode' to 'tonode' """
+        fromnode = self.findNode(fromnode)
+        tonode = self.findNode(tonode)
+
+        return self.graph.edge_by_node(fromnode, tonode) is not None
+
+
+    def foldReferences(self, packagenode):
+        """
+        Create edges to/from 'packagenode' based on the
+        edges to/from modules in package. The module nodes
+        are then hidden.
+        """
+        pkg = self.findNode(packagenode)
+
+        for n in self.nodes():
+            if not n.identifier.startswith(pkg.identifier + '.'):
+                continue
+
+            iter_out, iter_inc = n.get_edges()
+            for other in iter_out:
+                if other.identifier.startswith(pkg.identifier + '.'):
+                    continue
+
+                if not self.hasEdge(pkg, other):
+                    # Ignore circular dependencies
+                    self.createReference(pkg, other, 'pkg-internal-import')
+
+            for other in iter_in:
+                if other.identifier.startswith(pkg.identifier + '.'):
+                    # Ignore circular dependencies
+                    continue
+
+                if not self.hasEdge(other, pkg):
+                    self.createReference(other, pkg, 'pkg-import')
+
+            self.graph.hide_node(n)
+
+    # TODO: unfoldReferences(pkg) that restore the submodule nodes and
+    #       removes 'pkg-import' and 'pkg-internal-import' edges. Care should
+    #       be taken to ensure that references are correct if multiple packages
+    #       are folded and then one of them in unfolded
+
+
+
 
     def createReference(self, fromnode, tonode, edge_data='direct'):
         """
@@ -1315,6 +1371,7 @@ class ModuleGraph(ObjectGraph):
             yield s
 
         yield '}\n'
+
 
     def graphreport(self, fileobj=None, flatpackages=()):
         if fileobj is None:

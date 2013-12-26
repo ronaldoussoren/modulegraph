@@ -30,14 +30,14 @@ The actual graph
      of modules it depends on. Use this to tell modulegraph about dependencies that cannot
      be found by code inspection (such as imports from C code or using the :func:`__import__`
      function).
-   :param graph: A precreated :class:`Graph <altgraph.Graph.Graph>` object to use, the 
+   :param graph: A precreated :class:`Graph <altgraph.Graph.Graph>` object to use, the
      default is to create a new one.
    :param debug: The :class:`ObjectGraph <altgraph.ObjectGraph.ObjectGraph>` debug level.
 
 
 .. method:: run_script(pathname[, caller])
 
-   Create, and return,  a node by path (not module name). The *pathname* should 
+   Create, and return,  a node by path (not module name). The *pathname* should
    refer to a Python source file and will be scanned for dependencies.
 
    The optional argument *caller* is the the node that calls this script,
@@ -70,13 +70,28 @@ The actual graph
 
    The default for *edge_data* is ``"direct"``.
 
+.. method:: getReferences(fromnode)
 
+   Yield all nodes that *fromnode* refers to. That is, all modules imported
+   by *fromnode*.
+
+   .. versionadded: 0.11
+
+.. method:: foldReferences(pkgnode)
+
+   Hide all submodule nodes for package *pkgnode* and add ingoing and outgoing
+   edges to *pkgnode* based on the edges from the submodule nodes.
+
+   This can be used to simplify a module graph: after folding 'email' all
+   references to modules in the 'email' package are references to the package.
+
+   .. versionadded: 0.11
 
 .. method:: findNode(name)
 
    Find a node by identifier.  If a node by that identifier exists, it will be returned.
 
-   If a lazy node exists by that identifier with no dependencies (excluded), it will be 
+   If a lazy node exists by that identifier with no dependencies (excluded), it will be
    instantiated and returned.
 
    If a lazy node exists by that identifier with dependencies, it and its
@@ -129,7 +144,7 @@ made private methods before the 1.0 release.
 .. method:: load_tail(mod, tail)
 
    This method is called to load the rest of a dotted name after loading the root
-   of a package. This will import all intermediate modules as well (using 
+   of a package. This will import all intermediate modules as well (using
    :meth:`import_module`), and returns the module :class:`node <Node>` for the
    requested node.
 
@@ -157,10 +172,10 @@ made private methods before the 1.0 release.
 
 .. method:: import_module(partname, fqname, parent)
 
-   Perform import of the module with basename *partname* (``path``) and 
+   Perform import of the module with basename *partname* (``path``) and
    full name *fqname* (``os.path``). Import is performed by *parent*.
 
-   This will create a reference from the parent node to the 
+   This will create a reference from the parent node to the
    module node and will load the module node when it is not already
    loaded.
 
@@ -171,12 +186,12 @@ made private methods before the 1.0 release.
    Load the module named *fqname* from the given *pathame*. The
    argument *fp* is either :data:`None`, or a stream where the
    code for the Python module can be loaded (either byte-code or
-   the source code). The *(suffix, mode, type)* tuple are the 
+   the source code). The *(suffix, mode, type)* tuple are the
    suffix of the source file, the open mode for the file and the
    type of module.
 
    Creates a node of the right class and processes the dependencies
-   of the :class:`node <Node>` by scanning the byte-code for the node. 
+   of the :class:`node <Node>` by scanning the byte-code for the node.
 
    Returns the resulting :class:`node <Node>`.
 
@@ -185,8 +200,8 @@ made private methods before the 1.0 release.
 .. method:: scan_code(code, m)
 
    Scan the *code* object for module *m* and update the dependencies of
-   *m* using the import statemets found in the code. 
-   
+   *m* using the import statemets found in the code.
+
    This will automaticly scan the code for nested functions, generator
    expressions and list comprehensions as well.
 
@@ -206,7 +221,7 @@ made private methods before the 1.0 release.
    of the graph. The *name* can not be a dotted name.
 
    The *path* is the search path used, or :data:`None` to
-   use the default path. 
+   use the default path.
 
    When the *parent* is specified *name* refers to a
    subpackage of *parent*, and *path* should be the
@@ -236,8 +251,8 @@ made private methods before the 1.0 release.
 
    This method is used to be able to find those packages: these use
    a magic ``.pth`` file to ensure that the package is added to :data:`sys.path`,
-   as they do not contain an ``___init__.py`` file. 
-   
+   as they do not contain an ``___init__.py`` file.
+
    Packages in this form are used by system packages and the "pip"
    installer.
 
@@ -307,8 +322,8 @@ The :class:`ModuleGraph` contains nodes that represent the various types of modu
 
 .. method:: __setitem__(name, value)
 
-   Set the value of *name* to *value*. 
-   
+   Set the value of *name* to *value*.
+
    This method is usually accessed as ``aNode[name] = value``.
 
 .. method:: __getitem__(name)
@@ -325,7 +340,7 @@ The :class:`ModuleGraph` contains nodes that represent the various types of modu
 
 .. method:: infoTuple()
 
-   Returns a tuple with information used in the :func:`repr` 
+   Returns a tuple with information used in the :func:`repr`
    output for the node. Subclasses can add additional informations
    to the result.
 
