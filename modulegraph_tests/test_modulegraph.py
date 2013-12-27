@@ -217,7 +217,10 @@ class TestFunctions (unittest.TestCase):
 
         info = modulegraph.moduleInfoForPath("/somewhere/else/file.py")
         self.assertEqual(info[0], "file")
-        self.assertEqual(info[1], "U")
+        if sys.version_info[:2] >= (3,4):
+            self.assertEqual(info[1], "r")
+        else:
+            self.assertEqual(info[1], "U")
         self.assertEqual(info[2], imp.PY_SOURCE)
 
         info = modulegraph.moduleInfoForPath("/somewhere/else/file.pyc")
