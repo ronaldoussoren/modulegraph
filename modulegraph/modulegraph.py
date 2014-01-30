@@ -237,7 +237,12 @@ def find_module(name, path=None):
             for _sfx, _mode, _type in imp.get_suffixes():
                 if _type == imp.C_EXTENSION:
                     p = loader.prefix + zn + _sfx
-                    if p in loader._files:
+                    if loader._files is None:
+                        loader_files = zipimport._zip_directory_cache[loader.archive]
+                    else:
+                        loader_files = loader._files
+
+                    if p in loader_files:
                         description = (_sfx, 'rb', imp.C_EXTENSION)
                         return (None, pathname + _sfx, description)
 

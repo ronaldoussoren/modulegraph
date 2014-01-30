@@ -208,9 +208,9 @@ class TestFunctions (unittest.TestCase):
                     # This is a ly, but is good enough for now
                     ext = '.so'
 
-                self.assertEqual(fp, None)
                 self.assertEqual(filename, os.path.join(path, 'myext' + ext))
                 self.assertEqual(description, (ext, 'rb', imp.C_EXTENSION))
+                self.assertEqual(fp, None)
 
     def test_moduleInfoForPath(self):
         self.assertEqual(modulegraph.moduleInfoForPath("/somewhere/else/file.txt"), None)
