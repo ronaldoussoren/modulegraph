@@ -17,7 +17,7 @@ Features
 * Added :func:`modegraph.zipio.getmode` to fetch the Unix file mode
   for a file.
 
-* Added some handy method to :class:`modulegraph.modulegraph.ModuleGraph`.
+* Added some handy methods to :class:`modulegraph.modulegraph.ModuleGraph`.
 
 0.10.5
 ------
