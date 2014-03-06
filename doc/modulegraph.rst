@@ -407,6 +407,8 @@ The :class:`ModuleGraph` contains nodes that represent the various types of modu
    A module for which the python source code is available, but where
    that source code cannot be compiled (due to syntax errors).
 
+   This is a subclass of :class:`SourceModule`.
+
    .. versionadded:: 0.12
 
 .. class:: CompiledModule(name)
@@ -416,6 +418,12 @@ The :class:`ModuleGraph` contains nodes that represent the various types of modu
 .. class:: Package(name)
 
    Represents a python package
+
+.. class:: NamespacePackage(name)
+
+   Represents a python namespace package.
+
+   This is a subclass of :class:`Package`.
 
 .. class:: Extension(name)
 

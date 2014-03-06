@@ -12,6 +12,10 @@ Release history
   that have python 2.x or python 3.x compatibility in separate modules that
   contain code that isn't valid in the "other" python version.
 
+* Added 'modulegraph.modulegraph.NamespacePackage'.
+
+  Patch by bitbucket user htgoebel.
+
 0.11.1
 ------
 
