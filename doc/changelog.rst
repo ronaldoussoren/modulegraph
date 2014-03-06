@@ -16,6 +16,10 @@ Release history
 
   Patch by bitbucket user htgoebel.
 
+* No longer add a MissingModule node to the graph for 'collections.defaultdict'
+  when using 'from collections import defaultdict' ('collections.defaultdict'
+  is an attribute of 'collections', not a submodule).
+
 0.11.1
 ------
 

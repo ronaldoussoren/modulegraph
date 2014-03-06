@@ -117,6 +117,14 @@ def _eval_str_tuple(value):
 
     return tuple(result)
 
+def _path_from_importerror(exc, default):
+    # This is a hack, but sadly enough the necessary information
+    # isn't available otherwise.
+    m = re.match('^No module named (\S+)$', str(exc))
+    if m is not None:
+        return m.group(1)
+
+    return default
 
 def os_listdir(path):
     """
@@ -871,6 +879,11 @@ class ModuleGraph(ObjectGraph):
         for sub in fromlist:
             submod = m.get(sub)
             if submod is None:
+                if hasattr(m, 'code') and m.code is not None and \
+                        sub in m.code.co_names:
+                    # Name is a global in the module
+                    continue
+
                 fullname = m.identifier + '.' + sub
                 submod = self.import_module(sub, fullname, m)
                 if submod is None:
@@ -1001,14 +1014,7 @@ class ModuleGraph(ObjectGraph):
             mods = self.import_hook(name, caller, level=level)
         except ImportError as msg:
             self.msg(2, "ImportError:", str(msg))
-
-            # This is a hack, but sadly enough the necessary information
-            # isn't available otherwise.
-            m = re.match('^No module named (\S+)$', str(msg))
-            if m is not None:
-                m = self.createNode(MissingModule, m.group(1))
-            else:
-                m = self.createNode(MissingModule, name)
+            m = self.createNode(MissingModule, _path_from_importerror(msg, name))
             self.createReference(caller, m)
         else:
             assert len(mods) == 1
@@ -1033,6 +1039,7 @@ class ModuleGraph(ObjectGraph):
                     sm = self.import_hook(name, caller, [sub], level=level)
                 except ImportError as msg:
                     self.msg(2, "ImportError:", str(msg))
+                    #sm = self.createNode(MissingModule, _path_from_importerror(msg, fullname))
                     sm = self.createNode(MissingModule, fullname)
                 else:
                     sm = self.findNode(fullname)
