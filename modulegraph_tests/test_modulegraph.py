@@ -376,6 +376,9 @@ class TestNode (unittest.TestCase):
         if '__qualname__' in d:
             # New in Python 3.3
             del d['__qualname__']
+        if '__dict__' in d:
+            # New in Python 3.4
+            del d['__dict__']
         self.assertEqual(d, {})
 
     def assertHasExactMethods(self, klass, *methods):
@@ -385,6 +388,9 @@ class TestNode (unittest.TestCase):
         if '__qualname__' in d:
             # New in Python 3.3
             del d['__qualname__']
+        if '__dict__' in d:
+            # New in Python 3.4
+            del d['__dict__']
 
         for nm in methods:
             self.assertTrue(nm in d, "%s doesn't have attribute %r"%(klass, nm))

@@ -402,6 +402,13 @@ The :class:`ModuleGraph` contains nodes that represent the various types of modu
 
    A module for which the python source code is available.
 
+.. class:: InvalidSourceModule(name)
+
+   A module for which the python source code is available, but where
+   that source code cannot be compiled (due to syntax errors).
+
+   .. versionadded:: 0.12
+
 .. class:: CompiledModule(name)
 
    A module for which only byte-code is available.

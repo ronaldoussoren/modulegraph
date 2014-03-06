@@ -442,6 +442,9 @@ class BuiltinModule(BaseModule):
 class SourceModule(BaseModule):
     pass
 
+class InvalidSourceModule(SourceModule):
+    pass
+
 class CompiledModule(BaseModule):
     pass
 
@@ -951,8 +954,14 @@ class ModuleGraph(ObjectGraph):
                 contents += '\n'
 
 
-            co = compile(contents, pathname, 'exec', 0, True)
-            cls = SourceModule
+            try:
+                co = compile(contents, pathname, 'exec', 0, True)
+            except SyntaxError:
+                co = None
+                cls = InvalidSourceModule
+
+            else:
+                cls = SourceModule
 
         elif typ == imp.PY_COMPILED:
             if fp.read(4) != imp.get_magic():

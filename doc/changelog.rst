@@ -4,7 +4,13 @@ Release history
 0.12
 ----
 
-* ?
+* Added 'modulegraph.modulegraph.InvalidSourceModule'. This graph node is
+  used for Python source modules that cannot be compiled (for example because
+  they contain syntax errors).
+
+  This is primarily useful for being able to create a graph for packages
+  that have python 2.x or python 3.x compatibility in separate modules that
+  contain code that isn't valid in the "other" python version.
 
 0.11.1
 ------
