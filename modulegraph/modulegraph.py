@@ -614,10 +614,23 @@ class ModuleGraph(ObjectGraph):
         out_edges, _ = self.get_edges(node)
         return out_edges
 
-    def getReferers(self, tonode):
+    def getReferers(self, tonode, include_missing=False):
         node = self.findNode(tonode)
         _, in_edges = self.get_edges(node)
-        return in_edges
+
+        if include_missing:
+            return in_edges
+
+        else:
+            for n in in_edges:
+                if isinstance(n, MissingModule):
+                    for n in self.getReferers(n, False):
+                        yield n
+
+                else:
+                    yield n
+
+
 
 
     def hasEdge(self, fromnode, tonode):
@@ -884,10 +897,13 @@ class ModuleGraph(ObjectGraph):
         for sub in fromlist:
             submod = m.get(sub)
             if submod is None:
-                if hasattr(m, 'code') and m.code is not None and \
-                        sub in m.code.co_names:
+                #if hasattr(m, 'code') and m.code is not None and \
+                #        sub in m.code.co_names:
+                if sub in m.globalnames:
                     # Name is a global in the module
                     continue
+                # XXX: ^^^ need something simular for names imported
+                #      by 'm'.
 
                 fullname = m.identifier + '.' + sub
                 submod = self.import_module(sub, fullname, m)
@@ -1008,6 +1024,7 @@ class ModuleGraph(ObjectGraph):
                 co = self.replace_paths_in_code(co)
 
             m.code = co
+            m.globalnames.update(co.co_names)
             self.scan_code(co, m)
 
         self.msgout(2, "load_module ->", m)
@@ -1051,7 +1068,7 @@ class ModuleGraph(ObjectGraph):
 
             m[sub] = sm
             if sm is not None:
-                self.createReference(sm, m)
+                self.createReference(m, sm)
                 if sm not in subs:
                     subs.append(sm)
         return subs

@@ -59,6 +59,9 @@ def get_implies():
 
     }
 
+    if sys.version_info[0] == 3:
+        result['_sre'] = ["copy", "re"]
+
     if sys.version_info[0] == 2 and sys.version_info[1] >= 5:
         result.update({
             "email.base64MIME":         Alias("email.base64mime"),
