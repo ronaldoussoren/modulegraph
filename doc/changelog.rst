@@ -20,6 +20,8 @@ Release history
   when using 'from collections import defaultdict' ('collections.defaultdict'
   is an attribute of 'collections', not a submodule).
 
+* Fixed typo in ModuleGraph.getReferences()
+
 0.11.1
 ------
 

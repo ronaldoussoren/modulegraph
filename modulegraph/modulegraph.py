@@ -610,7 +610,7 @@ class ModuleGraph(ObjectGraph):
         Yield all nodes that 'fromnode' dependes on (that is,
         all modules that 'fromnode' imports.
         """
-        node = self.findNode(fromNode)
+        node = self.findNode(fromnode)
         out_edges, _ = self.get_edges(node)
         return out_edges
 
