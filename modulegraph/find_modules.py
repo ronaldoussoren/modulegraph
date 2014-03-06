@@ -63,6 +63,9 @@ def get_implies():
         result["_sre"] = ["copy", "re"]
         result["parser"] = ["copyreg"]
 
+        # _frozen_importlib is part of the interpreter itself
+        result["_frozen_importlib"] = None
+
     if sys.version_info[0] == 2 and sys.version_info[1] >= 5:
         result.update({
             "email.base64MIME":         Alias("email.base64mime"),
@@ -98,24 +101,10 @@ def get_implies():
     if sys.version_info[:2] >= (2, 6):
         result['future_builtins'] = ['itertools']
 
-    if sys.platform != 'win32':
-        result['winreg'] = None
-        result['msvcrt'] = None
-
-    if sys.platform != 'darwin':
-        result['_scproxy'] = None
-
-    # VMS only:
-    result['vms_lib'] = None
-
     # os.path is an alias for a platform specific submodule,
     # ensure that the graph shows this.
     result['os.path'] = Alias(os.path.__name__)
 
-    if os.uname()[0] != 'java':
-        # Jython specific imports in the stdlib:
-        result['java.lang'] = None
-        result['org.python.core'] = None
 
     return result
 
@@ -162,10 +151,18 @@ def plat_prepare(includes, packages, excludes):
     # used by Python itself
     includes.update(["warnings", "unicodedata", "weakref"])
 
+    if os.uname()[0] != 'java':
+        # Jython specific imports in the stdlib:
+        excludes.update([
+            'java.lang',
+            'org.python.core',
+        ])
+
     if not sys.platform.startswith('irix'):
         excludes.update([
             'AL',
             'sgi',
+            'vms_lib',
         ])
 
     if not sys.platform in ('mac', 'darwin'):
@@ -180,6 +177,7 @@ def plat_prepare(includes, packages, excludes):
             'macfs',
             'macostools',
             'macpath',
+            '_scproxy',
         ])
 
     if not sys.platform == 'win32':
@@ -201,6 +199,9 @@ def plat_prepare(includes, packages, excludes):
             'winsound',
             'win32',
             '_winreg',
+            '_winapi',
+            'msvcrt',
+            'winreg',
          ])
 
     if not sys.platform == 'riscos':
