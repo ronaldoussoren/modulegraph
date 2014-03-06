@@ -1027,7 +1027,7 @@ class ModuleGraph(ObjectGraph):
                 co = self.replace_paths_in_code(co)
 
             m.code = co
-            m.globalnames.update(co.co_names)
+            #m.globalnames.update(co.co_names)
             self.scan_code(co, m)
 
         self.msgout(2, "load_module ->", m)
@@ -1057,7 +1057,10 @@ class ModuleGraph(ObjectGraph):
                 continue
 
             # See if we can load it
-            fullname = name + '.' + sub
+            #    fullname = name + '.' + sub
+            fullname = m.identifier + '.' + sub
+            #else:
+            #    print("XXX", repr(name), repr(sub), repr(caller), repr(m))
             sm = self.findNode(fullname)
             if sm is None:
                 try:
