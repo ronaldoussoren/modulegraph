@@ -60,7 +60,8 @@ def get_implies():
     }
 
     if sys.version_info[0] == 3:
-        result['_sre'] = ["copy", "re"]
+        result["_sre"] = ["copy", "re"]
+        result["parser"] = ["copyreg"]
 
     if sys.version_info[0] == 2 and sys.version_info[1] >= 5:
         result.update({
@@ -96,6 +97,25 @@ def get_implies():
 
     if sys.version_info[:2] >= (2, 6):
         result['future_builtins'] = ['itertools']
+
+    if sys.platform != 'win32':
+        result['winreg'] = None
+        result['msvcrt'] = None
+
+    if sys.platform != 'darwin':
+        result['_scproxy'] = None
+
+    # VMS only:
+    result['vms_lib'] = None
+
+    # os.path is an alias for a platform specific submodule,
+    # ensure that the graph shows this.
+    result['os.path'] = Alias(os.path.__name__)
+
+    if os.uname()[0] != 'java':
+        # Jython specific imports in the stdlib:
+        result['java.lang'] = None
+        result['org.python.core'] = None
 
     return result
 
