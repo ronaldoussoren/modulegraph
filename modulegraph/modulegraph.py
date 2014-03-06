@@ -614,6 +614,11 @@ class ModuleGraph(ObjectGraph):
         out_edges, _ = self.get_edges(node)
         return out_edges
 
+    def getReferers(self, tonode):
+        node = self.findNode(tonode)
+        _, in_edges = self.get_edges(node)
+        return in_edges
+
 
     def hasEdge(self, fromnode, tonode):
         """ Return True iff there is an edge from 'fromnode' to 'tonode' """

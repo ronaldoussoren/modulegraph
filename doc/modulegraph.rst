@@ -75,7 +75,14 @@ The actual graph
    Yield all nodes that *fromnode* refers to. That is, all modules imported
    by *fromnode*.
 
-   .. versionadded: 0.11
+   .. versionadded:: 0.11
+
+.. method:: getReferers(tonode)
+
+   Yield all nodes that refer to *tonode*. That is, all modules that import
+   *tonode*.
+
+   .. versionadded:: 0.12
 
 .. method:: foldReferences(pkgnode)
 

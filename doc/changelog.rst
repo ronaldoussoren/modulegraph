@@ -22,6 +22,9 @@ Release history
 
 * Fixed typo in ModuleGraph.getReferences()
 
+* Added ModuleGraph.getReferers(tonode). This methods yields the
+  nodes that are referencing *tonode* (the reverse of getReferences)
+
 0.11.1
 ------
 
