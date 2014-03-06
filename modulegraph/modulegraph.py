@@ -44,7 +44,10 @@ else:
 
 
 # File open mode for reading (univeral newlines)
-_READ_MODE = "rU"
+if sys.version_info[0] == 2:
+    _READ_MODE = "rU"
+else:
+    _READ_MODE = "r"
 
 
 
