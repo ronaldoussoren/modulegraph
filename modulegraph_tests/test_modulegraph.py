@@ -84,22 +84,25 @@ class TestFunctions (unittest.TestCase):
                 raise ValueError("invalid lookup key")
 
         class WS (object):
+            def __init__(self, path=None):
+                pass
+
             def __iter__(self):
                 yield DS("/pkg/pkg1")
                 yield DS("/pkg/pkg2", "foo\n")
                 yield DS("/pkg/pkg3", "bar.baz\n")
                 yield DS("/pkg/pkg4", "foobar\nfoo\n")
 
-        saved_ws = pkg_resources.working_set
+        saved_ws = pkg_resources.WorkingSet
         try:
-            pkg_resources.working_set = WS()
+            pkg_resources.WorkingSet = WS
 
             self.assertEqual(modulegraph._namespace_package_path("sys", ["appdir/pkg"]), ["appdir/pkg"])
             self.assertEqual(modulegraph._namespace_package_path("foo", ["appdir/pkg"]), ["appdir/pkg", "/pkg/pkg2/foo", "/pkg/pkg4/foo"])
             self.assertEqual(modulegraph._namespace_package_path("bar.baz", ["appdir/pkg"]), ["appdir/pkg", "/pkg/pkg3/bar/baz"])
 
         finally:
-            pkg_resources.working_set = saved_ws
+            pkg_resources.WorkingSet = saved_ws
 
     def test_os_listdir(self):
         root = os.path.join(
