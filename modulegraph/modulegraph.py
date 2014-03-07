@@ -622,7 +622,8 @@ class ModuleGraph(ObjectGraph):
         _, in_edges = self.get_edges(node)
 
         if include_missing:
-            return in_edges
+            for n in in_edges:
+                yield n
 
         else:
             for n in in_edges:
