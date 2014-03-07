@@ -617,15 +617,11 @@ class ModuleGraph(ObjectGraph):
         out_edges, _ = self.get_edges(node)
         return out_edges
 
-    def getReferers(self, tonode, include_missing=False):
+    def getReferers(self, tonode, collapse_missing_modules=True):
         node = self.findNode(tonode)
         _, in_edges = self.get_edges(node)
 
-        if include_missing:
-            for n in in_edges:
-                yield n
-
-        else:
+        if collapse_missing_modules:
             for n in in_edges:
                 if isinstance(n, MissingModule):
                     for n in self.getReferers(n, False):
@@ -634,8 +630,9 @@ class ModuleGraph(ObjectGraph):
                 else:
                     yield n
 
-
-
+        else:
+            for n in in_edges:
+                yield n
 
     def hasEdge(self, fromnode, tonode):
         """ Return True iff there is an edge from 'fromnode' to 'tonode' """
