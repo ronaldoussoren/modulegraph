@@ -202,6 +202,7 @@ def plat_prepare(includes, packages, excludes):
             '_winapi',
             'msvcrt',
             'winreg',
+            '_subprocess',
          ])
 
     if not sys.platform == 'riscos':
@@ -218,10 +219,16 @@ def plat_prepare(includes, packages, excludes):
 
     if not sys.platform == 'os2emx':
         excludes.update([
-            'os2emxpath'
+            'os2emxpath',
+            '_emx_link',
         ])
 
     excludes.update(set(['posix', 'nt', 'os2', 'mac', 'ce', 'riscos']) - set(sys.builtin_module_names))
+
+    # Carbon.Res depends on this, but the module hasn't been present
+    # for a while...
+    excludes.add('OverrideFrom23')
+    excludes.add('OverrideFrom23._Res')
 
     try:
         imp_find_module('poll')

@@ -77,12 +77,12 @@ The actual graph
 
    .. versionadded:: 0.11
 
-.. method:: getReferers(tonode, include_missing=False)
+.. method:: getReferers(tonode, collapse_missing_modules=True)
 
    Yield all nodes that refer to *tonode*. That is, all modules that import
    *tonode*.
 
-   If *include_missing* is true this includes refererences from
+   If *collapse_missing_modules* is false this includes refererences from
    :class:`MissingModule` nodes, otherwise :class:`MissingModule` nodes
    are replaced by the "real" nodes that reference this missing node.
 
