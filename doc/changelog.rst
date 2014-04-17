@@ -4,7 +4,7 @@ Release history
 0.11.1
 ------
 
-* ?
+* Issue #145: Don't exclude the platform specific 'path' modules (like ntpath)
 
 0.11
 ----

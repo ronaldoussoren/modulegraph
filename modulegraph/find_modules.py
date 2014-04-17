@@ -156,13 +156,13 @@ def plat_prepare(includes, packages, excludes):
             'MacOS',
             'macfs',
             'macostools',
-            'macpath',
+            #'macpath',
         ])
 
     if not sys.platform == 'win32':
         # only win32
         excludes.update([
-            'ntpath',
+            #'ntpath',
             'nturl2path',
             'win32api',
             'win32con',
@@ -183,7 +183,7 @@ def plat_prepare(includes, packages, excludes):
     if not sys.platform == 'riscos':
         excludes.update([
              'riscosenviron',
-             'riscospath',
+             #'riscospath',
              'rourl2path',
           ])
 
@@ -194,7 +194,7 @@ def plat_prepare(includes, packages, excludes):
 
     if not sys.platform == 'os2emx':
         excludes.update([
-            'os2emxpath'
+            #'os2emxpath'
         ])
 
     excludes.update(set(['posix', 'nt', 'os2', 'mac', 'ce', 'riscos']) - set(sys.builtin_module_names))
