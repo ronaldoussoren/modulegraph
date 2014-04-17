@@ -176,14 +176,14 @@ def plat_prepare(includes, packages, excludes):
             'MacOS',
             'macfs',
             'macostools',
-            'macpath',
+            #'macpath',
             '_scproxy',
         ])
 
     if not sys.platform == 'win32':
         # only win32
         excludes.update([
-            'ntpath',
+            #'ntpath',
             'nturl2path',
             'win32api',
             'win32con',
@@ -208,7 +208,7 @@ def plat_prepare(includes, packages, excludes):
     if not sys.platform == 'riscos':
         excludes.update([
              'riscosenviron',
-             'riscospath',
+             #'riscospath',
              'rourl2path',
           ])
 
@@ -219,7 +219,7 @@ def plat_prepare(includes, packages, excludes):
 
     if not sys.platform == 'os2emx':
         excludes.update([
-            'os2emxpath',
+            #'os2emxpath',
             '_emx_link',
         ])
 
