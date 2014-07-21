@@ -102,7 +102,164 @@ class TestModuleGraphImport (unittest.TestCase):
                 'testpkg-relimport')
         self.mf = modulegraph.ModuleGraph(path=[ root ] + sys.path)
         #self.mf.debug = 999
-        self.mf.run_script(os.path.join(root, 'script.py'))
+        self.script_name = os.path.join(root, 'script.py')
+        self.mf.run_script(self.script_name)
+
+    def testGraphStructure(self):
+
+        # 1. Script to imported modules
+        n = self.mf.findNode(self.script_name)
+        self.assertIsInstance(n, modulegraph.Script)
+
+        imported = ('mod', 'pkg', 'pkg.mod', 'pkg.oldstyle',
+            'pkg.relative', 'pkg.toplevel', 'pkg.subpkg.relative',
+            'pkg.subpkg.relative2', 'pkg.subpkg.mod2')
+
+        for nm in imported:
+            n2 = self.mf.findNode(nm)
+            ed = self.mf.edgeData(n, n2)
+            self.assertIsInstance(ed, modulegraph.DependencyInfo)
+            self.assertEqual(ed, modulegraph.DependencyInfo(
+                fromlist=False, conditional=False, function=False, tryexcept=False))
+
+        refs = self.mf.getReferences(n)
+        self.assertEqual(set(refs), set(self.mf.findNode(nm) for nm in imported))
+
+        refs = list(self.mf.getReferers(n))
+        # The script is a toplevel item and is therefore referred to from the graph root (aka 'None')
+        self.assertEqual(refs, [None])
+
+
+        # 2. 'mod'
+        n = self.mf.findNode('mod')
+        self.assertIsInstance(n, modulegraph.SourceModule)
+        refs = list(self.mf.getReferences(n))
+        self.assertEqual(refs, [])
+
+        #refs = list(self.mf.getReferers(n))
+        #self.assertEquals(refs, [])
+
+        # 3. 'pkg'
+        n = self.mf.findNode('pkg')
+        self.assertIsInstance(n, modulegraph.Package)
+        refs = list(self.mf.getReferences(n))
+        self.maxDiff = None
+        self.assertEqual(refs, [n])
+
+        #refs = list(self.mf.getReferers(n))
+        #self.assertEquals(refs, [])
+
+        # 4. pkg.mod
+        n = self.mf.findNode('pkg.mod')
+        self.assertIsInstance(n, modulegraph.SourceModule)
+        refs = set(self.mf.getReferences(n))
+        self.assertEqual(refs, set([self.mf.findNode('pkg')]))
+        ed = self.mf.edgeData(n, self.mf.findNode('pkg'))
+        self.assertIsInstance(ed, modulegraph.DependencyInfo)
+        self.assertEqual(ed, modulegraph.DependencyInfo(
+            fromlist=False, conditional=False, function=False, tryexcept=False))
+
+
+        # 5. pkg.oldstyle
+        n = self.mf.findNode('pkg.oldstyle')
+        self.assertIsInstance(n, modulegraph.SourceModule)
+        refs = set(self.mf.getReferences(n))
+        if sys.version_info[0] == 2:
+            n2 = self.mf.findNode('pkg.mod')
+        else:
+            n2 = self.mf.findNode('mod')
+        self.assertEqual(refs, set([self.mf.findNode('pkg'), n2]))
+        ed = self.mf.edgeData(n, n2)
+        self.assertIsInstance(ed, modulegraph.DependencyInfo)
+        self.assertEqual(ed, modulegraph.DependencyInfo(
+            fromlist=False, conditional=False, function=False, tryexcept=False))
+
+
+        # 6. pkg.relative
+        n = self.mf.findNode('pkg.relative')
+        self.assertIsInstance(n, modulegraph.SourceModule)
+        refs = set(self.mf.getReferences(n))
+        self.assertEqual(refs, set([self.mf.findNode('__future__'), self.mf.findNode('pkg'), self.mf.findNode('pkg.mod')]))
+
+        ed = self.mf.edgeData(n, self.mf.findNode('pkg.mod'))
+        self.assertIsInstance(ed, modulegraph.DependencyInfo)
+        self.assertEqual(ed, modulegraph.DependencyInfo(
+            fromlist=True, conditional=False, function=False, tryexcept=False))
+
+        ed = self.mf.edgeData(n, self.mf.findNode('__future__'))
+        self.assertIsInstance(ed, modulegraph.DependencyInfo)
+        self.assertEqual(ed, modulegraph.DependencyInfo(
+            fromlist=False, conditional=False, function=False, tryexcept=False))
+
+        #ed = self.mf.edgeData(n, self.mf.findNode('__future__.absolute_import'))
+        #self.assertIsInstance(ed, modulegraph.DependencyInfo)
+        #self.assertEqual(ed, modulegraph.DependencyInfo(
+            #fromlist=True, conditional=False, function=False, tryexcept=False))
+
+        # 7. pkg.toplevel
+        n = self.mf.findNode('pkg.toplevel')
+        self.assertIsInstance(n, modulegraph.SourceModule)
+        refs = set(self.mf.getReferences(n))
+        self.assertEqual(refs, set([self.mf.findNode('__future__'), self.mf.findNode('pkg'), self.mf.findNode('mod')]))
+
+        ed = self.mf.edgeData(n, self.mf.findNode('mod'))
+        self.assertIsInstance(ed, modulegraph.DependencyInfo)
+        self.assertEqual(ed, modulegraph.DependencyInfo(
+            fromlist=False, conditional=False, function=False, tryexcept=False))
+
+        ed = self.mf.edgeData(n, self.mf.findNode('__future__'))
+        self.assertIsInstance(ed, modulegraph.DependencyInfo)
+        self.assertEqual(ed, modulegraph.DependencyInfo(
+            fromlist=False, conditional=False, function=False, tryexcept=False))
+
+        #ed = self.mf.edgeData(n, self.mf.findNode('__future__.absolute_import'))
+        #self.assertIsInstance(ed, modulegraph.DependencyInfo)
+        #self.assertEqual(ed, modulegraph.DependencyInfo(
+            #fromlist=True, conditional=False, function=False, tryexcept=False))
+
+        # 8. pkg.subpkg
+        n = self.mf.findNode('pkg.subpkg')
+        self.assertIsInstance(n, modulegraph.Package)
+        refs = set(self.mf.getReferences(n))
+        self.assertEqual(refs, set([self.mf.findNode('pkg')]))
+
+        ed = self.mf.edgeData(n, self.mf.findNode('pkg'))
+        self.assertIsInstance(ed, modulegraph.DependencyInfo)
+        self.assertEqual(ed, modulegraph.DependencyInfo(
+            fromlist=False, conditional=False, function=False, tryexcept=False))
+
+        # 9. pkg.subpkg.relative
+        n = self.mf.findNode('pkg.subpkg.relative')
+        self.assertIsInstance(n, modulegraph.SourceModule)
+        refs = set(self.mf.getReferences(n))
+        self.assertEqual(refs, set([self.mf.findNode('__future__'), self.mf.findNode('pkg'), self.mf.findNode('pkg.subpkg'), self.mf.findNode('pkg.mod')]))
+
+        ed = self.mf.edgeData(n, self.mf.findNode('pkg.subpkg'))
+        self.assertIsInstance(ed, modulegraph.DependencyInfo)
+        self.assertEqual(ed, modulegraph.DependencyInfo(
+            fromlist=False, conditional=False, function=False, tryexcept=False))
+
+        ed = self.mf.edgeData(n, self.mf.findNode('pkg.mod'))
+        self.assertIsInstance(ed, modulegraph.DependencyInfo)
+        self.assertEqual(ed, modulegraph.DependencyInfo(
+            fromlist=True, conditional=False, function=False, tryexcept=False))
+
+        # 10. pkg.subpkg.relative2
+        n = self.mf.findNode('pkg.subpkg.relative2')
+        self.assertIsInstance(n, modulegraph.SourceModule)
+        refs = set(self.mf.getReferences(n))
+        self.assertEqual(refs, set([self.mf.findNode('pkg.subpkg'), self.mf.findNode('pkg.relimport'), self.mf.findNode('__future__')]))
+
+        # 10. pkg.subpkg.mod2
+        n = self.mf.findNode('pkg.subpkg.mod2')
+        self.assertIsInstance(n, modulegraph.SourceModule)
+        refs = set(self.mf.getReferences(n))
+        self.assertEqual(refs, set([
+            self.mf.findNode('__future__'),
+            self.mf.findNode('pkg.subpkg'),
+            self.mf.findNode('pkg.sub2.mod'),
+            self.mf.findNode('pkg.sub2'),
+        ]))
 
 
     def testRootModule(self):
@@ -140,28 +297,28 @@ class TestModuleGraphImport (unittest.TestCase):
         node = self.mf.findNode('pkg.toplevel')
         self.assertIsInstance(node, modulegraph.SourceModule)
         self.assertEqual(node.identifier, 'pkg.toplevel')
-        sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
+        sub = [ n for n in self.mf.get_edges(node)[0] if not n.identifier.startswith('__future__')][0]
         self.assertEqual(sub.identifier, 'mod')
 
     def testRelativeImport(self):
         node = self.mf.findNode('pkg.relative')
         self.assertIsInstance(node, modulegraph.SourceModule)
         self.assertEqual(node.identifier, 'pkg.relative')
-        sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
+        sub = [ n for n in self.mf.get_edges(node)[0] if not n.identifier.startswith('__future__') ][0]
         self.assertIsInstance(sub, modulegraph.Package)
         self.assertEqual(sub.identifier, 'pkg')
 
         node = self.mf.findNode('pkg.subpkg.relative')
         self.assertIsInstance(node, modulegraph.SourceModule)
         self.assertEqual(node.identifier, 'pkg.subpkg.relative')
-        sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
+        sub = [ n for n in self.mf.get_edges(node)[0] if not n.identifier.startswith('__future__') ][0]
         self.assertIsInstance(sub, modulegraph.Package)
         self.assertEqual(sub.identifier, 'pkg')
 
         node = self.mf.findNode('pkg.subpkg.mod2')
         self.assertIsInstance(node, modulegraph.SourceModule)
         self.assertEqual(node.identifier, 'pkg.subpkg.mod2')
-        sub = [ n for n in self.mf.get_edges(node)[0] if n.identifier != '__future__' ][0]
+        sub = [ n for n in self.mf.get_edges(node)[0] if not n.identifier.startswith('__future__') ][0]
         self.assertIsInstance(sub, modulegraph.SourceModule)
         self.assertEqual(sub.identifier, 'pkg.sub2.mod')
 
@@ -226,6 +383,10 @@ class TestRegressions3 (unittest.TestCase):
             if not isinstance(value, types):
                 self.fail("%r is not an instance of %r"%(value, types))
 
+    def assertStartswith(self, value, test):
+        if not value.startswith(test):
+            self.fail("%r does not start with %r"%(value, test))
+
     def setUp(self):
         root = os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
@@ -238,7 +399,7 @@ class TestRegressions3 (unittest.TestCase):
         self.assertIsInstance(node, modulegraph.Package)
         node = self.mf.findNode('mypkg.distutils.ccompiler')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertTrue(node.filename.startswith(os.path.dirname(__file__)))
+        self.assertStartswith(node.filename, os.path.dirname(__file__))
 
         import distutils.sysconfig, distutils.ccompiler
         node = self.mf.findNode('distutils.ccompiler')

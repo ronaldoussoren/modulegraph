@@ -12,6 +12,9 @@ Release history
   that have python 2.x or python 3.x compatibility in separate modules that
   contain code that isn't valid in the "other" python version.
 
+* Added 'modulegraph.modulegraph.InvalidCompiledModule'. This graph node
+  is used for Python bytecode modules that cannot be loaded.
+
 * Added 'modulegraph.modulegraph.NamespacePackage'.
 
   Patch by bitbucket user htgoebel.
@@ -24,6 +27,15 @@ Release history
 
 * Added ModuleGraph.getReferers(tonode). This methods yields the
   nodes that are referencing *tonode* (the reverse of getReferences)
+
+* The graph will no longer contain MissingModule nodes when using 'from ... import name' to
+  import a global variable in a python module.
+
+  There will still be MissingModule nodes for global variables in C extentions, and
+  for 'from missing import name' when 'missing' is itself a MissingModule.
+
+* Issue #18: Don't assume that a PEP 302 loader object has a ``path`` attribute. That
+  attribute is not documented and is not always present.
 
 0.11.2
 ------

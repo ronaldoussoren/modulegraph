@@ -43,7 +43,7 @@ The actual graph
    The optional argument *caller* is the the node that calls this script,
    and is used to add a reference in the graph.
 
-.. method:: import_hook(name[, caller[, fromlist[, level]]])
+.. method:: import_hook(name[[, caller[, fromlist[, level, [, attr]]]])
 
    Import a module and analyse its dependencies
 
@@ -51,17 +51,17 @@ The actual graph
    :arg caller:   The node that caused the import to happen
    :arg fromlist: The list of names to import, this is an empty list for
       ``import name`` and a list of names for ``from name import a, b, c``.
-   :arg level:    The import level. The value should be ``0`` for classical Python 2
-     imports, ``-1`` for absolute imports and a positive number for relative imports (
+   :arg level:    The import level. The value should be ``-1`` for classical Python 2
+     imports, ``0`` for absolute imports and a positive number for relative imports (
      where the value is the number of leading dots in the imported name).
+   :arg attr:     Attributes for the graph edge.
 
 
-.. method:: implyNodeReference(node, other)
+.. method:: implyNodeReference(node, other, edgeData=None)
 
    Explictly mark that *node* depends on *other*. Other is either
    a :class:`node <Node>` or the name of a module that will be
    searched for as if it were an absolute import.
-
 
 
 .. method:: createReference(fromnode, tonode[, edge_data])
@@ -74,6 +74,10 @@ The actual graph
 
    Yield all nodes that *fromnode* refers to. That is, all modules imported
    by *fromnode*.
+
+   Node :data:`None` is the root of the graph, and refers to all notes that were
+   explicitly imported by :meth:`run_script` or :meth:`import_hook`, unless you use
+   an explicit parent with those methods.
 
    .. versionadded:: 0.11
 
@@ -268,7 +272,6 @@ made private methods before the 1.0 release.
    installer.
 
 
-
 Graph nodes
 -----------
 
@@ -445,6 +448,62 @@ The :class:`ModuleGraph` contains nodes that represent the various types of modu
    used by modulegraph and will be removed in a future version.
 
 
+Edge data
+---------
+
+The edges in a module graph by default contain information about the edge, represented
+by an instance of :class:`DependencyInfo`.
+
+.. class:: DependencyInfo(conditional, function, tryexcept, fromlist)
+
+   This class is a :func:`namedtuple <collections.namedtuple>` for representing
+   the information on a dependency between two modules.
+
+   All attributes can be used to deduce if a dependency is essential or not, and
+   are particularly useful when reporting on missing modules (dependencies on
+   :class:`MissingModule`).
+
+   .. data:: fromlist
+
+      A boolean that is true iff the target of the edge is named in the "import"
+      list of a "from" import ("from package import module").
+
+      When the target module is imported multiple times this attribute is false
+      unless all imports are in "import" list of a "from" import.
+
+   .. data:: function
+
+      A boolean that is true iff the import is done inside a function definition,
+      and is false for imports in module scope (or class scope for classes that
+      aren't definined in a function).
+
+   .. data:: tryexcept
+
+      A boolean that is true iff the import that is done in the "try" or "except"
+      block of a try statement (but not in the "else" block).
+
+   .. data:: conditional
+
+      A boolean that is true iff the import is done in either block of an "if"
+      statement.
+
+   When the target of the edge is imported multiple times the :data:`function`,
+   :data:`tryexcept` and :data:`conditional` attributes of all imports are
+   merged: when there is an import where all these attributes are false the
+   attributes are false, otherwise each attribute is set to true if it is
+   true for at least one of the imports.
+
+   For example, when a module is imported both in a try-except statement and
+   furthermore is imported in a function (in two separate statements),
+   both :data:`tryexcept` and :data:`function` will be true.  But if there
+   is a third unconditional toplevel import for that module as well all
+   three attributes are false.
+
+   .. warning::
+
+      All attributes but :data:`fromlist` will be false when the source of
+      a dependency is scanned from a byte-compiled module instead of a python
+      source file. The :data:`fromlist` attribute will stil be set correctly.
 
 Utility functions
 -----------------

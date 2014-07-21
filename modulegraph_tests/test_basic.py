@@ -15,7 +15,7 @@ class FindAllSubmodulesTestCase(unittest.TestCase):
         # empty packagepath
         m = DummyModule(None)
         sub_ms = []
-        for sm in mg.find_all_submodules(m):
+        for sm in mg._find_all_submodules(m):
             sub_ms.append(sm)
         self.assertEqual(sub_ms, [])
 
@@ -25,7 +25,7 @@ class FindAllSubmodulesTestCase(unittest.TestCase):
         # BUG: "/hi/there" will read "/"
         m = DummyModule("xyz")
         sub_ms = []
-        for sm in mg.find_all_submodules(m):
+        for sm in mg._find_all_submodules(m):
             sub_ms.append(sm)
         self.assertEqual(sub_ms, [])
 
@@ -35,7 +35,7 @@ class FindAllSubmodulesTestCase(unittest.TestCase):
         mg = modulegraph.ModuleGraph()
         m = DummyModule("/xyz")
         sub_ms = []
-        for sm in mg.find_all_submodules(m):
+        for sm in mg._find_all_submodules(m):
             sub_ms.append(sm)
         self.assertEqual(sub_ms, [])
 
