@@ -60,10 +60,10 @@ Features
 
   This makes it possible to remove a heavy-handed recipe from py2app.
 
-* Added :func:`modegraph.zipio.getmode` to fetch the Unix file mode
+* Added ``modegraph.zipio.getmode`` to fetch the Unix file mode
   for a file.
 
-* Added some handy methods to :class:`modulegraph.modulegraph.ModuleGraph`.
+* Added some handy methods to ``modulegraph.modulegraph.ModuleGraph``.
 
 0.10.5
 ------

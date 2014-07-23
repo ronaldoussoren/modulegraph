@@ -193,6 +193,7 @@ def parse_setup_cfg():
     _opt_value(cfg, metadata, 'metadata', 'classifiers', _as_lines)
     _opt_value(cfg, metadata, 'metadata', 'platforms', _as_list)
     _opt_value(cfg, metadata, 'metadata', 'packages', _as_list)
+    _opt_value(cfg, metadata, 'metadata', 'keywords', _as_list)
 
     try:
         v = cfg.get('metadata', 'requires-dist')
