@@ -70,6 +70,7 @@ _packagePathMap = {}
 _SETUPTOOLS_NAMESPACEPKG_PTHs=(
     "import sys,types,os; p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('",
     "import sys,new,os; p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('",
+    "import sys, types, os;p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('",
 )
 
 

@@ -116,8 +116,6 @@ class TestModuleGraphImport (unittest.TestCase):
         if os.path.exists(test_dir):
             shutil.rmtree(test_dir)
 
-
-
     def testRootPkg(self):
         self.mf.import_hook('nspkg')
 
