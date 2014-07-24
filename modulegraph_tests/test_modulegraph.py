@@ -649,6 +649,7 @@ class TestModuleGraph (unittest.TestCase):
         self.fail("find_head_package")
 
     def test_load_tail(self):
+        # XXX: This test is dodgy!
         graph = modulegraph.ModuleGraph()
 
         record = []
@@ -699,15 +700,15 @@ class TestModuleGraph (unittest.TestCase):
 
         n = graph._load_tail(root, 'raises')
         self.assertIsInstance(n, modulegraph.MissingModule)
-        self.assertEqual(n.identifier, 'root.raises' if sys.version_info[0] == 2 else 'raises')
+        self.assertEqual(n.identifier, 'root.raises')
 
         n = graph._load_tail(root, 'sub.raises')
         self.assertIsInstance(n, modulegraph.MissingModule)
-        self.assertEqual(n.identifier, 'root.sub.raises' if sys.version_info[0] == 2 else 'sub.raises')
+        self.assertEqual(n.identifier, 'root.sub.raises')
 
         n = graph._load_tail(root, 'sub.raises.sub')
         self.assertIsInstance(n, modulegraph.MissingModule)
-        self.assertEqual(n.identifier, 'root.sub.raises.sub' if sys.version_info[0] == 2 else 'sub.raises.sub')
+        self.assertEqual(n.identifier, 'root.sub.raises.sub')
 
 
 
