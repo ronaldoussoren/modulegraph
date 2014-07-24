@@ -1,4 +1,5 @@
 include *.txt MANIFEST.in *.py
+recursive-include scripts *.py
 graft doc
 graft doc/_static
 graft doc/_templates
