@@ -178,9 +178,14 @@ class TestFunctions (unittest.TestCase):
             self.assertTrue(hasattr(fp, 'read'))
 
             if path.endswith('.zip') or path.endswith('.egg'):
-                # Zip importers will precompile
-                self.assertEqual(filename, os.path.join(path, 'mymodule.pyc'))
-                self.assertEqual(description, ('.pyc', 'rb', imp.PY_COMPILED))
+                # Zip importers may precompile
+                if filename.endswith('.py'):
+                    self.assertEqual(filename, os.path.join(path, 'mymodule.py'))
+                    self.assertEqual(description, ('.py', 'rU', imp.PY_SOURCE))
+
+                else:
+                    self.assertEqual(filename, os.path.join(path, 'mymodule.pyc'))
+                    self.assertEqual(description, ('.pyc', 'rb', imp.PY_COMPILED))
 
             else:
                 self.assertEqual(filename, os.path.join(path, 'mymodule.py'))

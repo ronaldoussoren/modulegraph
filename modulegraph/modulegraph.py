@@ -226,7 +226,7 @@ def find_module(name, path=None):
                 return (fp, loader.path, description)
 
 
-        if hasattr(loader, 'path') and hasattr(loader, 'get_source'):
+        if hasattr(loader, 'get_source'):
             source = loader.get_source(name)
             fp = StringIO(source)
             co = None
@@ -265,12 +265,22 @@ def find_module(name, path=None):
             return (None, pathname, ('', '', imp.PKG_DIRECTORY))
 
         if co is None:
-            if hasattr(loader, 'path') and (loader.path.endswith('.py') or loader.path.endswith('.pyw')):
-                return (fp, loader.path, ('.py', 'rU', imp.PY_SOURCE))
+            if hasattr(loader, 'path'):
+                filename = loader.path
+            elif hasattr(loader, 'get_filename'):
+                filename = loader.get_filename(name)
+                if source is not None:
+                    if filename.endswith(".pyc") or filename.endswith(".pyo"):
+                        filename = filename[:-1]
+            else:
+                filename = None
+
+            if filename is not None and (filename.endswith('.py') or filename.endswith('.pyw')):
+                return (fp, filename, ('.py', 'rU', imp.PY_SOURCE))
             else:
                 if fp is not None:
                     fp.close()
-                return (None, loader.path, (os.path.splitext(loader.path)[-1], 'rb', imp.C_EXTENSION))
+                return (None, filename, (os.path.splitext(filename)[-1], 'rb', imp.C_EXTENSION))
 
         else:
             if hasattr(loader, 'path'):
