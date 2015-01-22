@@ -35,103 +35,103 @@ The actual graph
    :param debug: The :class:`ObjectGraph <altgraph.ObjectGraph.ObjectGraph>` debug level.
 
 
-.. method:: run_script(pathname[, caller])
+   .. method:: run_script(pathname[, caller])
 
-   Create, and return,  a node by path (not module name). The *pathname* should
-   refer to a Python source file and will be scanned for dependencies.
+      Create, and return,  a node by path (not module name). The *pathname* should
+      refer to a Python source file and will be scanned for dependencies.
 
-   The optional argument *caller* is the the node that calls this script,
-   and is used to add a reference in the graph.
+      The optional argument *caller* is the the node that calls this script,
+      and is used to add a reference in the graph.
 
-.. method:: import_hook(name[[, caller[, fromlist[, level, [, attr]]]])
+   .. method:: import_hook(name[[, caller[, fromlist[, level, [, attr]]]])
 
-   Import a module and analyse its dependencies
+      Import a module and analyse its dependencies
 
-   :arg name:     The module name
-   :arg caller:   The node that caused the import to happen
-   :arg fromlist: The list of names to import, this is an empty list for
-      ``import name`` and a list of names for ``from name import a, b, c``.
-   :arg level:    The import level. The value should be ``-1`` for classical Python 2
-     imports, ``0`` for absolute imports and a positive number for relative imports (
-     where the value is the number of leading dots in the imported name).
-   :arg attr:     Attributes for the graph edge.
-
-
-.. method:: implyNodeReference(node, other, edgeData=None)
-
-   Explictly mark that *node* depends on *other*. Other is either
-   a :class:`node <Node>` or the name of a module that will be
-   searched for as if it were an absolute import.
+      :arg name:     The module name
+      :arg caller:   The node that caused the import to happen
+      :arg fromlist: The list of names to import, this is an empty list for
+         ``import name`` and a list of names for ``from name import a, b, c``.
+      :arg level:    The import level. The value should be ``-1`` for classical Python 2
+        imports, ``0`` for absolute imports and a positive number for relative imports (
+        where the value is the number of leading dots in the imported name).
+      :arg attr:     Attributes for the graph edge.
 
 
-.. method:: createReference(fromnode, tonode[, edge_data])
+   .. method:: implyNodeReference(node, other, edgeData=None)
 
-   Create a reference from *fromnode* to *tonode*, with optional edge data.
-
-   The default for *edge_data* is ``"direct"``.
-
-.. method:: getReferences(fromnode)
-
-   Yield all nodes that *fromnode* refers to. That is, all modules imported
-   by *fromnode*.
-
-   Node :data:`None` is the root of the graph, and refers to all notes that were
-   explicitly imported by :meth:`run_script` or :meth:`import_hook`, unless you use
-   an explicit parent with those methods.
-
-   .. versionadded:: 0.11
-
-.. method:: getReferers(tonode, collapse_missing_modules=True)
-
-   Yield all nodes that refer to *tonode*. That is, all modules that import
-   *tonode*.
-
-   If *collapse_missing_modules* is false this includes refererences from
-   :class:`MissingModule` nodes, otherwise :class:`MissingModule` nodes
-   are replaced by the "real" nodes that reference this missing node.
-
-   .. versionadded:: 0.12
-
-.. method:: foldReferences(pkgnode)
-
-   Hide all submodule nodes for package *pkgnode* and add ingoing and outgoing
-   edges to *pkgnode* based on the edges from the submodule nodes.
-
-   This can be used to simplify a module graph: after folding 'email' all
-   references to modules in the 'email' package are references to the package.
-
-   .. versionadded: 0.11
-
-.. method:: findNode(name)
-
-   Find a node by identifier.  If a node by that identifier exists, it will be returned.
-
-   If a lazy node exists by that identifier with no dependencies (excluded), it will be
-   instantiated and returned.
-
-   If a lazy node exists by that identifier with dependencies, it and its
-   dependencies will be instantiated and scanned for additional depende
+      Explictly mark that *node* depends on *other*. Other is either
+      a :class:`node <Node>` or the name of a module that will be
+      searched for as if it were an absolute import.
 
 
+   .. method:: createReference(fromnode, tonode[, edge_data])
 
-.. method:: create_xref([out])
+      Create a reference from *fromnode* to *tonode*, with optional edge data.
 
-   Write an HTML file to the *out* stream (defaulting to :data:`sys.stdout`).
+      The default for *edge_data* is ``"direct"``.
 
-   The HTML file contains a textual description of the dependency graph.
+   .. method:: getReferences(fromnode)
+
+      Yield all nodes that *fromnode* refers to. That is, all modules imported
+      by *fromnode*.
+
+      Node :data:`None` is the root of the graph, and refers to all notes that were
+      explicitly imported by :meth:`run_script` or :meth:`import_hook`, unless you use
+      an explicit parent with those methods.
+
+      .. versionadded:: 0.11
+
+   .. method:: getReferers(tonode, collapse_missing_modules=True)
+
+      Yield all nodes that refer to *tonode*. That is, all modules that import
+      *tonode*.
+
+      If *collapse_missing_modules* is false this includes refererences from
+      :class:`MissingModule` nodes, otherwise :class:`MissingModule` nodes
+      are replaced by the "real" nodes that reference this missing node.
+
+      .. versionadded:: 0.12
+
+   .. method:: foldReferences(pkgnode)
+
+      Hide all submodule nodes for package *pkgnode* and add ingoing and outgoing
+      edges to *pkgnode* based on the edges from the submodule nodes.
+
+      This can be used to simplify a module graph: after folding 'email' all
+      references to modules in the 'email' package are references to the package.
+
+      .. versionadded: 0.11
+
+   .. method:: findNode(name)
+
+      Find a node by identifier.  If a node by that identifier exists, it will be returned.
+
+      If a lazy node exists by that identifier with no dependencies (excluded), it will be
+      instantiated and returned.
+
+      If a lazy node exists by that identifier with dependencies, it and its
+      dependencies will be instantiated and scanned for additional depende
 
 
 
-.. method:: graphreport([fileobj[, flatpackages]])
+   .. method:: create_xref([out])
 
-   .. todo:: To be documented
+      Write an HTML file to the *out* stream (defaulting to :data:`sys.stdout`).
+
+      The HTML file contains a textual description of the dependency graph.
 
 
 
-.. method:: report()
+   .. method:: graphreport([fileobj[, flatpackages]])
 
-   Print a report to stdout, listing the found modules with their
-   paths, as well as modules that are missing, or seem to be missing.
+      .. todo:: To be documented
+
+
+
+   .. method:: report()
+
+      Print a report to stdout, listing the found modules with their
+      paths, as well as modules that are missing, or seem to be missing.
 
 
 Mostly internal methods
@@ -144,132 +144,133 @@ made private methods before the 1.0 release.
 .. warning:: The methods in this section will be refactored in a future release,
    the current architecture makes it unnecessarily hard to write proper tests.
 
-.. method:: determine_parent(caller)
+.. class:: ModuleGraph
 
-   Returns the node of the package root voor *caller*. If *caller* is a package
-   this is the node itself, if the node is a module in a package this is the
-   node of for the package and otherwise the *caller* is not a package and
-   the result is :data:`None`.
+   .. method:: _determine_parent(caller)
 
-.. method:: find_head_package(parent, name[, level])
+      Returns the node of the package root voor *caller*. If *caller* is a package
+      this is the node itself, if the node is a module in a package this is the
+      node of for the package and otherwise the *caller* is not a package and
+      the result is :data:`None`.
 
-   .. todo:: To be documented
+   .. method:: _find_head_package(parent, name[, level])
 
-
-.. method:: load_tail(mod, tail)
-
-   This method is called to load the rest of a dotted name after loading the root
-   of a package. This will import all intermediate modules as well (using
-   :meth:`import_module`), and returns the module :class:`node <Node>` for the
-   requested node.
-
-   .. note:: When *tail* is empty this will just return *mod*.
-
-   :arg mod:   A start module (instance of :class:`Node`)
-   :arg tail:  The rest of a dotted name, can be empty
-   :raise ImportError: When the requested (or one of its parents) module cannot be found
-   :returns: the requested module
+      .. todo:: To be documented
 
 
+   .. method:: _load_tail(mod, tail)
 
-.. method:: ensure_fromlist(m, fromlist)
+      This method is called to load the rest of a dotted name after loading the root
+      of a package. This will import all intermediate modules as well (using
+      :meth:`import_module`), and returns the module :class:`node <Node>` for the
+      requested node.
 
-   Yield all submodules that would be imported when importing *fromlist*
-   from *m* (using ``from m import fromlist...``).
+      .. note:: When *tail* is empty this will just return *mod*.
 
-   *m* must be a package and not a regular module.
-
-.. method:: find_all_submodules(m)
-
-   Yield the filenames for submodules of in the same package as *m*.
+      :arg mod:   A start module (instance of :class:`Node`)
+      :arg tail:  The rest of a dotted name, can be empty
+      :raise ImportError: When the requested (or one of its parents) module cannot be found
+      :returns: the requested module
 
 
 
-.. method:: import_module(partname, fqname, parent)
+   .. method:: _ensure_fromlist(m, fromlist)
 
-   Perform import of the module with basename *partname* (``path``) and
-   full name *fqname* (``os.path``). Import is performed by *parent*.
+      Yield all submodules that would be imported when importing *fromlist*
+      from *m* (using ``from m import fromlist...``).
 
-   This will create a reference from the parent node to the
-   module node and will load the module node when it is not already
-   loaded.
+      *m* must be a package and not a regular module.
+
+   .. method:: _find_all_submodules(m)
+
+      Yield the filenames for submodules of in the same package as *m*.
 
 
+   .. method:: _import_module(partname, fqname, parent)
 
-.. method:: load_module(fqname, fp, pathname, (suffix, mode, type))
+      Perform import of the module with basename *partname* (``path``) and
+      full name *fqname* (``os.path``). Import is performed by *parent*.
 
-   Load the module named *fqname* from the given *pathame*. The
-   argument *fp* is either :data:`None`, or a stream where the
-   code for the Python module can be loaded (either byte-code or
-   the source code). The *(suffix, mode, type)* tuple are the
-   suffix of the source file, the open mode for the file and the
-   type of module.
-
-   Creates a node of the right class and processes the dependencies
-   of the :class:`node <Node>` by scanning the byte-code for the node.
-
-   Returns the resulting :class:`node <Node>`.
+      This will create a reference from the parent node to the
+      module node and will load the module node when it is not already
+      loaded.
 
 
 
-.. method:: scan_code(code, m)
+   .. method:: _load_module(fqname, fp, pathname, (suffix, mode, type))
 
-   Scan the *code* object for module *m* and update the dependencies of
-   *m* using the import statemets found in the code.
+      Load the module named *fqname* from the given *pathame*. The
+      argument *fp* is either :data:`None`, or a stream where the
+      code for the Python module can be loaded (either byte-code or
+      the source code). The *(suffix, mode, type)* tuple are the
+      suffix of the source file, the open mode for the file and the
+      type of module.
 
-   This will automaticly scan the code for nested functions, generator
-   expressions and list comprehensions as well.
+      Creates a node of the right class and processes the dependencies
+      of the :class:`node <Node>` by scanning the byte-code for the node.
 
-
-
-.. method:: load_package(fqname, pathname)
-
-   Load a package directory.
-
-
-
-.. method:: find_module(name, path[, parent])
-
-   Locates a module named *name* that is not yet part of the
-   graph. This method will raise :exc:`ImportError` when
-   the module cannot be found or when it is already part
-   of the graph. The *name* can not be a dotted name.
-
-   The *path* is the search path used, or :data:`None` to
-   use the default path.
-
-   When the *parent* is specified *name* refers to a
-   subpackage of *parent*, and *path* should be the
-   search path of the parent.
-
-   Returns the result of the global function
-   :func:`find_module <modulegraph.modulegraph.find_module>`.
-
-
-.. method:: itergraphreport([name[, flatpackages]])
-
-   .. todo:: To be documented
+      Returns the resulting :class:`node <Node>`.
 
 
 
-.. method:: replace_paths_in_code(co)
+   .. method:: _scan_code(code, m)
 
-   Replace the filenames in code object *co* using the *replace_paths* value that
-   was passed to the contructor. Returns the rewritten code object.
+      Scan the *code* object for module *m* and update the dependencies of
+      *m* using the import statemets found in the code.
+
+      This will automaticly scan the code for nested functions, generator
+      expressions and list comprehensions as well.
 
 
 
-.. method:: calc_setuptools_nspackages()
+   .. method:: _load_package(fqname, pathname)
 
-   Returns a mapping from package name to a list of paths where that package
-   can be found in ``--single-version-externally-managed`` form.
+      Load a package directory.
 
-   This method is used to be able to find those packages: these use
-   a magic ``.pth`` file to ensure that the package is added to :data:`sys.path`,
-   as they do not contain an ``___init__.py`` file.
 
-   Packages in this form are used by system packages and the "pip"
-   installer.
+
+   .. method:: _find_module(name, path[, parent])
+
+      Locates a module named *name* that is not yet part of the
+      graph. This method will raise :exc:`ImportError` when
+      the module cannot be found or when it is already part
+      of the graph. The *name* can not be a dotted name.
+
+      The *path* is the search path used, or :data:`None` to
+      use the default path.
+
+      When the *parent* is specified *name* refers to a
+      subpackage of *parent*, and *path* should be the
+      search path of the parent.
+
+      Returns the result of the global function
+      :func:`find_module <modulegraph.modulegraph.find_module>`.
+
+
+   .. method:: itergraphreport([name[, flatpackages]])
+
+      .. todo:: To be documented
+
+
+
+   .. method:: _replace_paths_in_code(co)
+
+      Replace the filenames in code object *co* using the *replace_paths* value that
+      was passed to the contructor. Returns the rewritten code object.
+
+
+
+   .. method:: _calc_setuptools_nspackages()
+
+      Returns a mapping from package name to a list of paths where that package
+      can be found in ``--single-version-externally-managed`` form.
+
+      This method is used to be able to find those packages: these use
+      a magic ``.pth`` file to ensure that the package is added to :data:`sys.path`,
+      as they do not contain an ``___init__.py`` file.
+
+      Packages in this form are used by system packages and the "pip"
+      installer.
 
 
 Graph nodes
@@ -291,72 +292,72 @@ The :class:`ModuleGraph` contains nodes that represent the various types of modu
 
    Nodes are compared by comparing their *identifier*.
 
-.. data:: debug
+   .. attribute:: debug
 
-   Debug level (integer)
+      Debug level (integer)
 
-.. data:: graphident
+   .. attribute:: graphident
 
-   The node identifier, this is the value of the *identifier* argument
-   to the constructor.
+      The node identifier, this is the value of the *identifier* argument
+      to the constructor.
 
-.. data:: identifier
+   .. attribute:: identifier
 
-   The node identifier, this is the value of the *identifier* argument
-   to the constructor.
+      The node identifier, this is the value of the *identifier* argument
+      to the constructor.
 
-.. data:: filename
+   .. attribute:: filename
 
-   The filename associated with this node.
+      The filename associated with this node.
 
-.. data:: packagepath
+   .. attribute:: packagepath
 
-   The value of ``__path__`` for this node.
+      The value of ``__path__`` for this node.
 
-.. data:: code
+   .. attribute:: code
 
-   The :class:`code object <types.CodeObject>` associated with this node
+      The :class:`code object <types.CodeObject>` associated with this node
 
-.. data:: globalnames
+   .. attribute:: globalnames
 
-   The set of global names that are assigned to in this module. This
-   includes those names imported through startimports of Python modules.
+      The set of global names that are assigned to in this module. This
+      includes those names imported through startimports of Python modules.
 
-.. data:: startimports
+   .. attribute:: startimports
 
-   The set of startimports this module did that could not be resolved,
-   ie. a startimport from a non-Python module.
+      The set of startimports this module did that could not be resolved,
+      ie. a startimport from a non-Python module.
 
 
-.. method:: __contains__(name)
+   .. method:: __contains__(name)
 
-   Return if there is a value associated with *name*.
+      Return if there is a value associated with *name*.
 
-   This method is usually accessed as ``name in aNode``.
+      This method is usually accessed as ``name in aNode``.
 
-.. method:: __setitem__(name, value)
+   .. method:: __setitem__(name, value)
 
-   Set the value of *name* to *value*.
+      Set the value of *name* to *value*.
 
-   This method is usually accessed as ``aNode[name] = value``.
+      This method is usually accessed as ``aNode[name] = value``.
 
-.. method:: __getitem__(name)
+   .. method:: __getitem__(name)
 
-   Returns the value of *name*, raises :exc:`KeyError` when
-   it cannot be found.
+      Returns the value of *name*, raises :exc:`KeyError` when
+      it cannot be found.
 
-   This method is usually accessed as ``value = aNode[name]``.
+      This method is usually accessed as ``value = aNode[name]``.
 
-.. method:: get(name[, default])
+   .. method:: get(name[, default])
 
-   Returns the value of *name*, or the default value when it
-   cannot be found. The *default* is :data:`None` when not specified.
+      Returns the value of *name*, or the default value when it
+      cannot be found. The *default* is :data:`None` when not specified.
 
-.. method:: infoTuple()
+   .. method:: infoTuple()
 
-   Returns a tuple with information used in the :func:`repr`
-   output for the node. Subclasses can add additional informations
-   to the result.
+      Returns a tuple with information used in the :func:`repr`
+      output for the node. Subclasses can add additional informations
+      to the result.
 
 
 .. class:: AliasNode (name, node)
@@ -385,28 +386,28 @@ The :class:`ModuleGraph` contains nodes that represent the various types of modu
 
    A python script.
 
-   .. data:: filename
+   .. attribute:: filename
 
       The filename for the script
 
 .. class:: BaseModule(name[, filename[, path]])
 
-    The base class for actual modules. The *name* is
-    the possibly dotted module name, *filename* is the
-    filesystem path to the module and *path* is the
-    value of ``__path__`` for the module.
+   The base class for actual modules. The *name* is
+   the possibly dotted module name, *filename* is the
+   filesystem path to the module and *path* is the
+   value of ``__path__`` for the module.
 
-.. data:: graphident
+   .. attribute:: graphident
 
-   The name of the module
+      The name of the module
 
-.. data:: filename
+   .. attribute:: filename
 
-   The filesystem path to the module.
+      The filesystem path to the module.
 
-.. data:: path
+   .. attribute:: path
 
-   The value of ``__path__`` for this module.
+      The value of ``__path__`` for this module.
 
 .. class:: BuiltinModule(name)
 
@@ -463,7 +464,7 @@ by an instance of :class:`DependencyInfo`.
    are particularly useful when reporting on missing modules (dependencies on
    :class:`MissingModule`).
 
-   .. data:: fromlist
+   .. attribute:: fromlist
 
       A boolean that is true iff the target of the edge is named in the "import"
       list of a "from" import ("from package import module").
@@ -471,18 +472,18 @@ by an instance of :class:`DependencyInfo`.
       When the target module is imported multiple times this attribute is false
       unless all imports are in "import" list of a "from" import.
 
-   .. data:: function
+   .. attribute:: function
 
       A boolean that is true iff the import is done inside a function definition,
       and is false for imports in module scope (or class scope for classes that
       aren't definined in a function).
 
-   .. data:: tryexcept
+   .. attribute:: tryexcept
 
       A boolean that is true iff the import that is done in the "try" or "except"
       block of a try statement (but not in the "else" block).
 
-   .. data:: conditional
+   .. attribute:: conditional
 
       A boolean that is true iff the import is done in either block of an "if"
       statement.
