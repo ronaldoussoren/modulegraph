@@ -411,7 +411,7 @@ The :class:`ModuleGraph` contains nodes that represent the various types of modu
 
 .. class:: BuiltinModule(name)
 
-   A built-in module (on in :data:`sys.builtin_module_names`).
+   A built-in module (one in :data:`sys.builtin_module_names`).
 
 .. class:: SourceModule(name)
 
