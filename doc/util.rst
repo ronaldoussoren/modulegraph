@@ -1,4 +1,4 @@
-:mod:`modulegraph.util` --- Utilies functions
+:mod:`modulegraph.util` --- Utility functions
 =============================================
 
 .. module:: modulegraph.util
