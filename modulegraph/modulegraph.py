@@ -644,6 +644,31 @@ class _Visitor (ast.NodeVisitor):
         self.generic_visit(node)
         self._in_tryexcept.pop()
 
+    def visit_Expression(self, node):
+        # Expression node's cannot contain import statements or
+        # other nodes that are relevant for us.
+        pass
+
+    # Expression isn't actually used as such in AST trees,
+    # therefore define visitors for all kinds of expression nodes.
+    visit_BoolOp = visit_Expression
+    visit_BinOp = visit_Expression
+    visit_UnaryOp = visit_Expression
+    visit_Lambda = visit_Expression
+    visit_IfExp = visit_Expression
+    visit_Dict = visit_Expression
+    visit_Set = visit_Expression
+    visit_ListComp = visit_Expression
+    visit_SetComp = visit_Expression
+    visit_ListComp = visit_Expression
+    visit_GeneratorExp = visit_Expression
+    visit_Compare = visit_Expression
+    visit_Yield = visit_Expression
+    visit_YieldFrom = visit_Expression
+    visit_Await = visit_Expression
+    visit_Call = visit_Expression
+
+
 
 class ModuleGraph(ObjectGraph):
     def __init__(self, path=None, excludes=(), replace_paths=(), implies=(), graph=None, debug=0):
