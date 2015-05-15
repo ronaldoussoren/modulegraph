@@ -1,11 +1,15 @@
 Release history
 ===============
 
-
 0.13
 ----
 
 * Various documentation fixes by Thomas Kluyver.
+
+0.12.2
+------
+
+* ?
 
 0.12.1
 ------
