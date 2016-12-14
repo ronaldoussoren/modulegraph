@@ -6,6 +6,10 @@ Release history
 
 * Various documentation fixes by Thomas Kluyver.
 
+* Fix incompatibility with recent versions of setuptools
+
+  See `issue #206 in py2apps tracker <https://bitbucket.org/ronaldoussoren/py2app/issues/206/py2app-doesnt-work-with-release-433-of>`_ for more information.
+
 0.12.2
 ------
 
