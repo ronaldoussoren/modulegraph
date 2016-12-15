@@ -52,6 +52,8 @@ else:
     _READ_MODE = "r"
 
 
+import codecs
+BOM=codecs.BOM_UTF8.decode('utf-8')
 
 
 # Modulegraph does a good job at simulating Python's, but it can not
@@ -995,6 +997,10 @@ class ModuleGraph(ObjectGraph):
 
             with open(pathname, _READ_MODE, encoding=encoding) as fp:
                 contents = fp.read() + '\n'
+
+            if contents.startswith(BOM):
+                # Ignore BOM at start of input
+                contents = contents[1:]
 
         else:
             with open(pathname, _READ_MODE) as fp:
