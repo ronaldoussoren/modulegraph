@@ -16,11 +16,6 @@ Release history
   See also `issue #178 in the py2app tracker <https://bitbucket.org/ronaldoussoren/py2app/issues/178/python-3-syntaxerror-invalid-character-in>`_
 
 
-0.12.2
-------
-
-* ?
-
 0.12.1
 ------
 
