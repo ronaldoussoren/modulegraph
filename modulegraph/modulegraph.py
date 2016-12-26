@@ -1546,106 +1546,173 @@ class ModuleGraph(ObjectGraph):
         visitor = _Visitor(self, m)
         visitor.visit(co)
 
-    def _scan_bytecode_stores(self, co, m,
-            STORE_NAME=_Bchr(dis.opname.index('STORE_NAME')),
-            STORE_GLOBAL=_Bchr(dis.opname.index('STORE_GLOBAL')),
-            HAVE_ARGUMENT=_Bchr(dis.HAVE_ARGUMENT),
-            unpack=struct.unpack):
+    if sys.version_info[:2] >= (3,4):
+        # On Python 3.4 or later the dis module has a much nicer interface
+        # for working with bytecode, use that instead of peeking into the
+        # raw bytecode.
+        # Note: This nicely sidesteps any issues caused by moving from bytecode
+        # to wordcode in python 3.6.
 
-        extended_import = bool(sys.version_info[:2] >= (2,5))
+        def _scan_bytecode_stores(self, co, m):
+            constants = co.co_consts
+            for inst in dis.get_instructions(co):
+                if inst.opname in ('STORE_NAME', 'STORE_GLOBAL'):
+                    name = co.co_names[inst.arg]
+                    m.globalnames.add(name)
 
-        code = co.co_code
-        constants = co.co_consts
-        n = len(code)
-        i = 0
+            cotype = type(co)
+            for c in constants:
+                if isinstance(c, cotype):
+                    self._scan_bytecode_stores(c, m)
 
-        while i < n:
-            c = code[i]
-            i += 1
-            if c >= HAVE_ARGUMENT:
-                i = i+2
+        def _scan_bytecode(self, co, m):
+            constants = co.co_consts
+            n = len(code)
+            i = 0
 
-            if c == STORE_NAME or c == STORE_GLOBAL:
-                # keep track of all global names that are assigned to
-                oparg = unpack('<H', code[i - 2:i])[0]
-                name = co.co_names[oparg]
-                m.globalnames.add(name)
+            level = None
+            fromlist = None
 
-        cotype = type(co)
-        for c in constants:
-            if isinstance(c, cotype):
-                self._scan_bytecode_stores(c, m)
+            all_instructions = dis.get_instructions(co)
 
-    def _scan_bytecode(self, co, m,
-            HAVE_ARGUMENT=_Bchr(dis.HAVE_ARGUMENT),
-            LOAD_CONST=_Bchr(dis.opname.index('LOAD_CONST')),
-            IMPORT_NAME=_Bchr(dis.opname.index('IMPORT_NAME')),
-            IMPORT_FROM=_Bchr(dis.opname.index('IMPORT_FROM')),
-            STORE_NAME=_Bchr(dis.opname.index('STORE_NAME')),
-            STORE_GLOBAL=_Bchr(dis.opname.index('STORE_GLOBAL')),
-            unpack=struct.unpack):
+            for inst_idx, inst in enumerate(all_instructions):
+                if inst.opname == 'IMPORT_NAME':
+                    assert all_instructions[idx-2].opname == 'LOAD_CONST'
+                    assert all_instructions[idx-1].opname == 'LOAD_CONST'
 
-        # Python >=2.5: LOAD_CONST flags, LOAD_CONST names, IMPORT_NAME name
-        # Python < 2.5: LOAD_CONST names, IMPORT_NAME name
-        extended_import = bool(sys.version_info[:2] >= (2,5))
+                    level = co.co_consts[all_instructions[idx-2].arg]
+                    fromlist = co.co_consts[all_instructions[idx-1].arg]
 
-        code = co.co_code
-        constants = co.co_consts
-        n = len(code)
-        i = 0
+                    assert fromlist is None or type(fromlist) is tuple
+                    name = co.co_names[inst.arg]
+                    have_star = False
+                    if fromlist is not None:
+                        fromlist = set(fromlist)
+                        if '*' in fromlist:
+                            fromlist.remove('*')
+                            have_star = True
 
-        level = None
-        fromlist = None
+                    imported_module = self._safe_import_hook(name, m, fromlist, level)[0]
 
-        while i < n:
-            c = code[i]
-            i += 1
-            if c >= HAVE_ARGUMENT:
-                i = i+2
+                    if have_star:
+                        m.globalnames.update(imported_module.globalnames)
+                        m.starimports.update(imported_module.starimports)
+                        if imported_module.code is None:
+                            m.starimports.add(name)
 
-            if c == IMPORT_NAME:
-                if extended_import:
-                    assert code[i-9] == LOAD_CONST
-                    assert code[i-6] == LOAD_CONST
-                    arg1, arg2 = unpack('<xHxH', code[i-9:i-3])
-                    level = co.co_consts[arg1]
-                    fromlist = co.co_consts[arg2]
-                else:
-                    assert code[-6] == LOAD_CONST
-                    arg1, = unpack('<xH', code[i-6:i-3])
-                    level = -1
-                    fromlist = co.co_consts[arg1]
+                elif inst.opname in ('STORE_NAME', 'STORE_GLOBAL'):
+                    # keep track of all global names that are assigned to
+                    name = co.co_names[inst.arg]
+                    m.globalnames.add(name)
 
-                assert fromlist is None or type(fromlist) is tuple
-                oparg, = unpack('<H', code[i - 2:i])
-                name = co.co_names[oparg]
-                have_star = False
-                if fromlist is not None:
-                    fromlist = set(fromlist)
-                    if '*' in fromlist:
-                        fromlist.remove('*')
-                        have_star = True
+            cotype = type(co)
+            for c in constants:
+                if isinstance(c, cotype):
+                    self._scan_bytecode(c, m)
 
-                #self.msgin(2, "Before import hook", repr(name), repr(m), repr(fromlist), repr(level))
+    else:
+        # Before 3.4: Peek into raw bytecode.
 
-                imported_module = self._safe_import_hook(name, m, fromlist, level)[0]
+        def _scan_bytecode_stores(self, co, m,
+                STORE_NAME=_Bchr(dis.opname.index('STORE_NAME')),
+                STORE_GLOBAL=_Bchr(dis.opname.index('STORE_GLOBAL')),
+                HAVE_ARGUMENT=_Bchr(dis.HAVE_ARGUMENT),
+                unpack=struct.unpack):
 
-                if have_star:
-                    m.globalnames.update(imported_module.globalnames)
-                    m.starimports.update(imported_module.starimports)
-                    if imported_module.code is None:
-                        m.starimports.add(name)
+            extended_import = bool(sys.version_info[:2] >= (2,5))
 
-            elif c == STORE_NAME or c == STORE_GLOBAL:
-                # keep track of all global names that are assigned to
-                oparg = unpack('<H', code[i - 2:i])[0]
-                name = co.co_names[oparg]
-                m.globalnames.add(name)
+            code = co.co_code
+            constants = co.co_consts
+            n = len(code)
+            i = 0
 
-        cotype = type(co)
-        for c in constants:
-            if isinstance(c, cotype):
-                self._scan_bytecode(c, m)
+            while i < n:
+                c = code[i]
+                i += 1
+                if c >= HAVE_ARGUMENT:
+                    i = i+2
+
+                if c == STORE_NAME or c == STORE_GLOBAL:
+                    # keep track of all global names that are assigned to
+                    oparg = unpack('<H', code[i - 2:i])[0]
+                    name = co.co_names[oparg]
+                    m.globalnames.add(name)
+
+            cotype = type(co)
+            for c in constants:
+                if isinstance(c, cotype):
+                    self._scan_bytecode_stores(c, m)
+
+        def _scan_bytecode(self, co, m,
+                HAVE_ARGUMENT=_Bchr(dis.HAVE_ARGUMENT),
+                LOAD_CONST=_Bchr(dis.opname.index('LOAD_CONST')),
+                IMPORT_NAME=_Bchr(dis.opname.index('IMPORT_NAME')),
+                IMPORT_FROM=_Bchr(dis.opname.index('IMPORT_FROM')),
+                STORE_NAME=_Bchr(dis.opname.index('STORE_NAME')),
+                STORE_GLOBAL=_Bchr(dis.opname.index('STORE_GLOBAL')),
+                unpack=struct.unpack):
+
+            # Python >=2.5: LOAD_CONST flags, LOAD_CONST names, IMPORT_NAME name
+            # Python < 2.5: LOAD_CONST names, IMPORT_NAME name
+            extended_import = bool(sys.version_info[:2] >= (2,5))
+
+            code = co.co_code
+            constants = co.co_consts
+            n = len(code)
+            i = 0
+
+            level = None
+            fromlist = None
+
+            while i < n:
+                c = code[i]
+                i += 1
+                if c >= HAVE_ARGUMENT:
+                    i = i+2
+
+                if c == IMPORT_NAME:
+                    if extended_import:
+                        assert code[i-9] == LOAD_CONST
+                        assert code[i-6] == LOAD_CONST
+                        arg1, arg2 = unpack('<xHxH', code[i-9:i-3])
+                        level = co.co_consts[arg1]
+                        fromlist = co.co_consts[arg2]
+                    else:
+                        assert code[-6] == LOAD_CONST
+                        arg1, = unpack('<xH', code[i-6:i-3])
+                        level = -1
+                        fromlist = co.co_consts[arg1]
+
+                    assert fromlist is None or type(fromlist) is tuple
+                    oparg, = unpack('<H', code[i - 2:i])
+                    name = co.co_names[oparg]
+                    have_star = False
+                    if fromlist is not None:
+                        fromlist = set(fromlist)
+                        if '*' in fromlist:
+                            fromlist.remove('*')
+                            have_star = True
+
+                    #self.msgin(2, "Before import hook", repr(name), repr(m), repr(fromlist), repr(level))
+
+                    imported_module = self._safe_import_hook(name, m, fromlist, level)[0]
+
+                    if have_star:
+                        m.globalnames.update(imported_module.globalnames)
+                        m.starimports.update(imported_module.starimports)
+                        if imported_module.code is None:
+                            m.starimports.add(name)
+
+                elif c == STORE_NAME or c == STORE_GLOBAL:
+                    # keep track of all global names that are assigned to
+                    oparg = unpack('<H', code[i - 2:i])[0]
+                    name = co.co_names[oparg]
+                    m.globalnames.add(name)
+
+            cotype = type(co)
+            for c in constants:
+                if isinstance(c, cotype):
+                    self._scan_bytecode(c, m)
 
     def _load_package(self, fqname, pathname, pkgpath):
         """

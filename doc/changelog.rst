@@ -15,6 +15,9 @@ Release history
   This matches the behavior of CPython, and avoids hard to diagnose problems.
   See also `issue #178 in the py2app tracker <https://bitbucket.org/ronaldoussoren/py2app/issues/178/python-3-syntaxerror-invalid-character-in>`_
 
+* Python 3.6 introduced a new bytecode format (wordcode), adjust the
+  bytecode scanner for that.
+
 
 0.12.1
 ------
