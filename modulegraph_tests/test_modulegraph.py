@@ -377,7 +377,7 @@ class TestNode (unittest.TestCase):
         self.assertEqual(n.get('foo', 'a'), 'a')
         n['foo'] = 42
         self.assertEqual(n['foo'], 42)
-        self.assertTrue('foo' in n)
+        self.assertIn('foo', n)
         self.assertEqual(n._namespace, {'foo':42})
 
     def testOrder(self):
@@ -840,7 +840,7 @@ class TestModuleGraph (unittest.TestCase):
             srcfn = shutil.__file__
             if srcfn.endswith('.pyc'):
                 srcfn = srcfn[:-1]
-            self.assertEqual(m[1], srcfn)
+            self.assertEqual(os.path.realpath(m[1]), os.path.realpath(srcfn))
             self.assertEqual(m[2], ('.py', 'rU', imp.PY_SOURCE))
             m[0].close()
 

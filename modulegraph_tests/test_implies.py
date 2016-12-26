@@ -37,8 +37,8 @@ class ImpliesTestCase(unittest.TestCase):
         self.assertIsInstance(node, modulegraph.Extension)
 
         # Check that the edges are correct:
-        self.assertTrue(mg.findNode('mod') in mg.get_edges(node)[1])
-        self.assertTrue(node in mg.get_edges(mg.findNode('mod'))[0])
+        self.assertIn(mg.findNode('mod'), mg.get_edges(node)[1])
+        self.assertIn(node, mg.get_edges(mg.findNode('mod'))[0])
 
     def testPackagedImplies(self):
         root = os.path.join(
@@ -70,8 +70,8 @@ class ImpliesTestCase(unittest.TestCase):
         self.assertIsInstance(node, modulegraph.Extension)
 
         # Check that the edges are correct:
-        self.assertTrue(mg.findNode('pkg.relative') in mg.get_edges(node)[1])
-        self.assertTrue(node in mg.get_edges(mg.findNode('pkg.relative'))[0])
+        self.assertIn(mg.findNode('pkg.relative'), mg.get_edges(node)[1])
+        self.assertIn(node, mg.get_edges(mg.findNode('pkg.relative'))[0])
 
 
 if __name__ == '__main__':

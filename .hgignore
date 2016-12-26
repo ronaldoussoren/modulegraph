@@ -6,6 +6,7 @@ build
 htmlcov
 .coverage
 .DS_Store
+.tox
 
 syntax: glob
 dist

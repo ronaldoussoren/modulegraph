@@ -394,6 +394,7 @@ class TestRegressions3 (unittest.TestCase):
         self.mf = modulegraph.ModuleGraph(path=[ root ] + sys.path)
         self.mf.run_script(os.path.join(root, 'script.py'))
 
+    @unittest.skipUnless(not hasattr(sys, 'real_prefix'), "Test doesn't work in virtualenv")
     def testRegr1(self):
         node = self.mf.findNode('mypkg.distutils')
         self.assertIsInstance(node, modulegraph.Package)
@@ -466,7 +467,7 @@ class TestDeeplyNested (unittest.TestCase):
 
     def testRegr(self):
         node = self.mf.findNode('os')
-        self.assertTrue(node is not None)
+        self.assertIsNot(node, None)
 
 
 if __name__ == "__main__":
