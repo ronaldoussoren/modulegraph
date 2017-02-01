@@ -1573,7 +1573,7 @@ class ModuleGraph(ObjectGraph):
             level = None
             fromlist = None
 
-            all_instructions = dis.get_instructions(co)
+            all_instructions = list(dis.get_instructions(co))
 
             for inst_idx, inst in enumerate(all_instructions):
                 if inst.opname == 'IMPORT_NAME':
