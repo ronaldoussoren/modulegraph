@@ -777,7 +777,7 @@ class ModuleGraph(ObjectGraph):
 
                 for fn in ldir:
                     if fn.endswith('-nspkg.pth'):
-                        fp = open(os.path.join(entry, fn), 'rU')
+                        fp = open(os.path.join(entry, fn))
                         try:
                             for ln in fp:
                                 for pfx in _SETUPTOOLS_NAMESPACEPKG_PTHs:
@@ -1343,19 +1343,28 @@ class ModuleGraph(ObjectGraph):
                 cls = SourceModule
 
         elif typ == imp.PY_COMPILED:
-            if fp.read(4) != imp.get_magic():
+            data = fp.read(4)
+            magic = imp.get_magic()
+
+            if data != magic:
                 self.msgout(2, "raise ImportError: Bad magic number", pathname)
                 co = None
                 cls = InvalidCompiledModule
+                print("InvalidCompiledModule", pathname, data, magic)
 
             else:
                 fp.read(4)
+                if sys.version_info[:2] >= (3, 4):
+                    fp.read(4)
                 try:
                     co = marshal.loads(fp.read())
                     cls = CompiledModule
-                except Exception:
+                except Exception as exc:
+                    self.msgout(2, "raise ImportError: Cannot load code", pathname, exc)
                     co = None
                     cls = InvalidCompiledModule
+                    print("Cannot load code", pathname, exc)
+
 
         elif typ == imp.C_BUILTIN:
             cls = BuiltinModule
@@ -1567,21 +1576,19 @@ class ModuleGraph(ObjectGraph):
 
         def _scan_bytecode(self, co, m):
             constants = co.co_consts
-            n = len(code)
-            i = 0
 
             level = None
             fromlist = None
 
-            all_instructions = list(dis.get_instructions(co))
+            prev_insts = []
 
-            for inst_idx, inst in enumerate(all_instructions):
+            for inst in dis.get_instructions(co):
                 if inst.opname == 'IMPORT_NAME':
-                    assert all_instructions[idx-2].opname == 'LOAD_CONST'
-                    assert all_instructions[idx-1].opname == 'LOAD_CONST'
+                    assert prev_insts[-2].opname == 'LOAD_CONST'
+                    assert prev_insts[-1].opname == 'LOAD_CONST'
 
-                    level = co.co_consts[all_instructions[idx-2].arg]
-                    fromlist = co.co_consts[all_instructions[idx-1].arg]
+                    level = co.co_consts[prev_insts[-2].arg]
+                    fromlist = co.co_consts[prev_insts[-1].arg]
 
                     assert fromlist is None or type(fromlist) is tuple
                     name = co.co_names[inst.arg]
@@ -1604,6 +1611,9 @@ class ModuleGraph(ObjectGraph):
                     # keep track of all global names that are assigned to
                     name = co.co_names[inst.arg]
                     m.globalnames.add(name)
+
+                prev_insts.append(inst)
+                del prev_insts[:-2]
 
             cotype = type(co)
             for c in constants:

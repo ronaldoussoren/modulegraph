@@ -10,7 +10,11 @@ Features:
 
 Bugfixes:
 
-* (none yet)
+* #33: Error scanning bytecode on python 3.4 or later
+
+  The code using ``dis.get_instructions`` to scan the bytecode
+  on Python 3.4 or later didn't work properly causing problems
+  when trying to scan bytecode.
 
 0.13
 ----
