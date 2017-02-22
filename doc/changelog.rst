@@ -1,12 +1,19 @@
 Release history
 ===============
 
-0.14
+0.15
 ----
 
 Features:
 
 * (none yet)
+
+Bugfixes:
+
+* (none yet)
+
+0.14
+----
 
 Bugfixes:
 
