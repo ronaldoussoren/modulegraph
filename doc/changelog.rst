@@ -10,7 +10,9 @@ Features:
 
 Bugfixes:
 
-* (none yet)
+* Issue 36: Make sure test suite works on systems other than macOS
+
+  Patch by Hartmut Goebel
 
 0.14
 ----

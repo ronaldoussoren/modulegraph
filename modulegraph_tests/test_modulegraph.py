@@ -1034,7 +1034,9 @@ class TestModuleGraph (unittest.TestCase):
         graph.import_hook('os')
         graph.import_hook('xml.etree')
         graph.import_hook('unittest')
-        graph.import_hook('distutils.command.build')
+        # Don't use "distutils.command.build" here, causes problems on
+        # Travis.
+        graph.import_hook('lib2to3.fixes.fix_apply')
 
         fp = StringIO()
         list(graph.itergraphreport())
