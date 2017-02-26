@@ -14,6 +14,9 @@ Bugfixes:
 
   Patch by Hartmut Goebel
 
+* Add support for "async def" to the AST scanner, needed to
+  properly recognize imports in async function definitions.
+
 0.14
 ----
 
