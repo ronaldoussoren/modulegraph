@@ -380,6 +380,10 @@ The :class:`ModuleGraph` contains nodes that represent the various types of modu
 
    A module that is imported but cannot be located.
 
+.. class:: InvalidRelativeImport(relative_path, from_name)
+
+   A module that was imported using a relative import statement
+   that references a file outside of a toplevel package.
 
 
 .. class:: Script(filename)

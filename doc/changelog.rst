@@ -6,7 +6,9 @@ Release history
 
 Features:
 
-* (none yet)
+* Issue #40: The graph now contains nodes of type "InvalidRelativeImport" for
+  attempts to use relative imports that walk outside of a toplevel
+  package.
 
 Bugfixes:
 
