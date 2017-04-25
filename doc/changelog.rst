@@ -12,6 +12,10 @@ Features:
 
 Bugfixes:
 
+* Issue 38: Dot output broken in Python 3
+
+  Patch by user elnuno on bitbucket.
+
 * Issue 36: Make sure test suite works on systems other than macOS
 
   Patch by Hartmut Goebel
