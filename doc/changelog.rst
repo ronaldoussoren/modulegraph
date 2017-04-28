@@ -6,6 +6,11 @@ Release history
 
 Features:
 
+* Issue #39: Traceback with for a syntax error when compiling async function
+
+  On Python 3.5 some (invalid) async function definitions caused a modulegraph
+  traceback, instead of adding "InvalidSourceModule" nodes to the graph.
+
 * Issue #40: The graph now contains nodes of type "InvalidRelativeImport" for
   attempts to use relative imports that walk outside of a toplevel
   package.
