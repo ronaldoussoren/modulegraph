@@ -65,4 +65,5 @@ will refer to ``somefile.txt`` inside the zipfile.
 .. function:: getmode(path)
 
    Returns the UNIX file mode for a file or directory, like the
-   *st_mode* attribute in the result of :func:`os.stat`.
+   *st_mode* attribute in the result of :func:`os.stat`, but excluding
+   the file type.

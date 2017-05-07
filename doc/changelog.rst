@@ -14,6 +14,8 @@ Features:
 
 * Attempt to reduce the maximum recursion needed to create the ModuleGraph
 
+* Don't include the file type in the result from ``zipio.getmode``
+
 Bug fixes:
 
 * (None yet)
