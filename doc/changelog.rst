@@ -16,6 +16,10 @@ Features:
 
 * Don't include the file type in the result from ``zipio.getmode``
 
+* Fix mismatched indents/dedents in ModuleGraph debug output
+
+  Patch by codewarrior0
+
 Bug fixes:
 
 * (None yet)
