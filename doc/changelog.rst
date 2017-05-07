@@ -12,6 +12,8 @@ Features:
 
   Patch by htgoebel
 
+* Attempt to reduce the maximum recursion needed to create the ModuleGraph
+
 Bug fixes:
 
 * (None yet)

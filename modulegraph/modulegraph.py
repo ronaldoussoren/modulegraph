@@ -628,13 +628,14 @@ else:
     DEFAULT_IMPORT_LEVEL= 0
 
 class _Visitor (ast.NodeVisitor):
-    def __init__(self, graph, module):
-        self._graph = graph
+    def __init__(self, module):
         self._module = module
         self._level = DEFAULT_IMPORT_LEVEL
         self._in_if = [False]
         self._in_def = [False]
         self._in_tryexcept = [False]
+
+        self.imports = []
 
     @property
     def in_if(self):
@@ -661,18 +662,18 @@ class _Visitor (ast.NodeVisitor):
                 fromlist.remove('*')
                 have_star = True
 
-        imported_module = self._graph._safe_import_hook(name,
-            self._module, fromlist, level, attr=DependencyInfo(
-                conditional=self.in_if,
-                tryexcept=self.in_tryexcept,
-                function=self.in_def,
-                fromlist=False,
-            ))[0]
-        if have_star:
-            self._module.globalnames.update(imported_module.globalnames)
-            self._module.starimports.update(imported_module.starimports)
-            if imported_module.code is None:
-                self._module.starimports.add(name)
+
+        self.imports.append((
+            name, have_star, (name, self._module, fromlist, level),
+            { 'attr': DependencyInfo(
+                        conditional=self.in_if,
+                        tryexcept=self.in_tryexcept,
+                        function=self.in_def,
+                        fromlist=False,
+                      )
+            }
+        ))
+
 
 
     def visit_Import(self, node):
@@ -1585,8 +1586,16 @@ class ModuleGraph(ObjectGraph):
             self._scan_bytecode(co, m)
 
     def _scan_ast(self, co, m):
-        visitor = _Visitor(self, m)
+        visitor = _Visitor(m)
         visitor.visit(co)
+
+        for name, have_star, args, kwds in visitor.imports:
+            imported_module = self._safe_import_hook(*args, **kwds)[0]
+            if have_star:
+                m.globalnames.update(imported_module.globalnames)
+                m.starimports.update(imported_module.starimports)
+                if imported_module.code is None:
+                    m.starimports.add(name)
 
     if sys.version_info[:2] >= (3,4):
         # On Python 3.4 or later the dis module has a much nicer interface
