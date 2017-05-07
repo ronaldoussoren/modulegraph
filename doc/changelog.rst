@@ -6,7 +6,7 @@ Release history
 
 Features:
 
-* (None yet)
+* Don't rely on pkg_resources to calculate package version
 
 Bug fixes:
 
