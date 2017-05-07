@@ -8,6 +8,10 @@ Features:
 
 * Don't rely on pkg_resources to calculate package version
 
+* Replace use of ``optparse`` by ``argparse`` as the former is deprecated
+
+  Patch by htgoebel
+
 Bug fixes:
 
 * (None yet)
