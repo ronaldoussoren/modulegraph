@@ -142,7 +142,11 @@ class TestFunctions (unittest.TestCase):
         root = os.path.join(
                 os.path.dirname(os.path.abspath(__file__)), 'testdata')
 
-        self.assertEqual(modulegraph.os_listdir('/etc/'), os.listdir('/etc'))
+        if os.path.exists('/etc'):
+            self.assertEqual(modulegraph.os_listdir('/etc/'), os.listdir('/etc'))
+        else:
+            self.assertEqual(modulegraph.os_listdir('c:\\'), os.listdir('c:\\'))
+
         self.assertRaises(IOError, modulegraph.os_listdir, '/etc/hosts/foobar')
         self.assertRaises(IOError, modulegraph.os_listdir, os.path.join(root, 'test.egg', 'bar'))
 
@@ -943,20 +947,20 @@ class TestModuleGraph (unittest.TestCase):
     def test_replace_paths_in_code(self):
         graph = modulegraph.ModuleGraph(replace_paths=[
                 ('path1', 'path2'),
-                ('path3/path5', 'path4'),
+                (os.path.join('path3', 'path5'), 'path4'),
             ])
 
         co = compile(textwrap.dedent("""
         [x for x in range(4)]
-        """), "path4/index.py", 'exec', 0, 1)
+        """), os.path.join("path4", "index.py"), 'exec', 0, 1)
         co = graph._replace_paths_in_code(co)
-        self.assertEqual(co.co_filename, 'path4/index.py')
+        self.assertEqual(co.co_filename, os.path.join('path4', 'index.py'))
 
         co = compile(textwrap.dedent("""
         [x for x in range(4)]
         (x for x in range(4))
-        """), "path1/index.py", 'exec', 0, 1)
-        self.assertEqual(co.co_filename, 'path1/index.py')
+        """), os.path.join("path1", "index.py"), 'exec', 0, 1)
+        self.assertEqual(co.co_filename, os.path.join('path1', 'index.py'))
         co = graph._replace_paths_in_code(co)
         self.assertEqual(co.co_filename, os.path.join('path2', 'index.py'))
         for c in co.co_consts:
@@ -965,21 +969,21 @@ class TestModuleGraph (unittest.TestCase):
 
         co = compile(textwrap.dedent("""
         [x for x in range(4)]
-        """), "path3/path4/index.py", 'exec', 0, 1)
+        """), os.path.join("path3", "path4", "index.py"), 'exec', 0, 1)
         co = graph._replace_paths_in_code(co)
-        self.assertEqual(co.co_filename, 'path3/path4/index.py')
+        self.assertEqual(co.co_filename, os.path.join('path3', 'path4', 'index.py'))
 
         co = compile(textwrap.dedent("""
         [x for x in range(4)]
-        """), "path3/path5.py", 'exec', 0, 1)
+        """), os.path.join("path3", "path5.py"), 'exec', 0, 1)
         co = graph._replace_paths_in_code(co)
-        self.assertEqual(co.co_filename, 'path3/path5.py')
+        self.assertEqual(co.co_filename, os.path.join('path3', 'path5.py'))
 
         co = compile(textwrap.dedent("""
         [x for x in range(4)]
-        """), "path3/path5/index.py", 'exec', 0, 1)
+        """), os.path.join("path3", "path5", "index.py"), 'exec', 0, 1)
         co = graph._replace_paths_in_code(co)
-        self.assertEqual(co.co_filename, 'path4/index.py')
+        self.assertEqual(co.co_filename, os.path.join('path4', 'index.py'))
 
     def test_createReference(self):
         graph = modulegraph.ModuleGraph()
