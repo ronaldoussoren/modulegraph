@@ -22,7 +22,10 @@ Features:
 
 Bug fixes:
 
-* (None yet)
+* Testsuite now passes on Windows (testd through appveyor)
+
+  This only required changes to remove platform dependencies
+  from the test suite.
 
 0.15
 ----
