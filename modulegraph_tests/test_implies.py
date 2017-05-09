@@ -21,20 +21,20 @@ class ImpliesTestCase(unittest.TestCase):
         node = mg.findNode('mod')
         self.assertIsInstance(node, modulegraph.SourceModule)
 
-        node = mg.findNode('syslog')
+        node = mg.findNode('sqlite3')
         self.assertEqual(node, None)
 
         # Now check that adding an implied dependency actually adds
         # 'syslog' to the graph:
         mg = modulegraph.ModuleGraph(path=[root]+sys.path, implies={
-            'mod': ['syslog']})
+            'mod': ['sqlite3']})
         self.assertEqual(node, None)
         mg.run_script(os.path.join(root, 'script.py'))
         node = mg.findNode('mod')
         self.assertIsInstance(node, modulegraph.SourceModule)
 
-        node = mg.findNode('syslog')
-        self.assertIsInstance(node, modulegraph.Extension)
+        node = mg.findNode('sqlite3')
+        self.assertIsInstance(node, modulegraph.Package)
 
         # Check that the edges are correct:
         self.assertIn(mg.findNode('mod'), mg.get_edges(node)[1])

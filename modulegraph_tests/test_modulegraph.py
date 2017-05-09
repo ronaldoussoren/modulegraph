@@ -132,8 +132,8 @@ class TestFunctions (unittest.TestCase):
             pkg_resources.WorkingSet = WS
 
             self.assertEqual(modulegraph._namespace_package_path("sys", ["appdir/pkg"]), ["appdir/pkg"])
-            self.assertEqual(modulegraph._namespace_package_path("foo", ["appdir/pkg"]), ["appdir/pkg", "/pkg/pkg2/foo", "/pkg/pkg4/foo"])
-            self.assertEqual(modulegraph._namespace_package_path("bar.baz", ["appdir/pkg"]), ["appdir/pkg", "/pkg/pkg3/bar/baz"])
+            self.assertEqual(modulegraph._namespace_package_path("foo", ["appdir/pkg"]), ["appdir/pkg", os.path.join("/pkg/pkg2", "foo"), os.path.join("/pkg/pkg4", "foo")])
+            self.assertEqual(modulegraph._namespace_package_path("bar.baz", ["appdir/pkg"]), ["appdir/pkg", os.path.join("/pkg/pkg3", "bar", "baz")])
 
         finally:
             pkg_resources.WorkingSet = saved_ws
@@ -958,10 +958,10 @@ class TestModuleGraph (unittest.TestCase):
         """), "path1/index.py", 'exec', 0, 1)
         self.assertEqual(co.co_filename, 'path1/index.py')
         co = graph._replace_paths_in_code(co)
-        self.assertEqual(co.co_filename, 'path2/index.py')
+        self.assertEqual(co.co_filename, os.path.join('path2', 'index.py'))
         for c in co.co_consts:
             if isinstance(c, type(co)):
-                self.assertEqual(c.co_filename, 'path2/index.py')
+                self.assertEqual(c.co_filename, os.path.join('path2', 'index.py'))
 
         co = compile(textwrap.dedent("""
         [x for x in range(4)]
