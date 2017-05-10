@@ -41,6 +41,9 @@ Features:
   attempts to use relative imports that walk outside of a toplevel
   package.
 
+* Module ``modulegraph.find_modules`` can no longer be used a script,
+  use ``python -m modulegraph`` instead.
+
 Bugfixes:
 
 * Issue 38: Dot output broken in Python 3
