@@ -442,7 +442,7 @@ class Node(object):
         except AttributeError:
             return NotImplemented
 
-        return cmp(self.graphident, otherIdent)
+        return cmp(self.graphident, otherIdent)  # noqa: F821
 
     def __eq__(self, other):
         try:
@@ -1905,7 +1905,7 @@ class ModuleGraph(ObjectGraph):
                 buf = os.path.realpath(buf)
 
             return (fp, buf, stuff)
-        except:
+        except:  # noqa: E722
             fp.close()
             raise
 
