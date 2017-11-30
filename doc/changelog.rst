@@ -6,6 +6,8 @@ Release history
 
 Features:
 
+* Add LICENSE file to distribution
+
 * Don't rely on pkg_resources to calculate package version
 
 * Replace use of ``optparse`` by ``argparse`` as the former is deprecated
