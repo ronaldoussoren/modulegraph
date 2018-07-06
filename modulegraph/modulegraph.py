@@ -1415,13 +1415,18 @@ class ModuleGraph(ObjectGraph):
                 cls = InvalidCompiledModule
 
             else:
-                fp.read(4)
-                if sys.version_info[:2] >= (3, 4):
+                if sys.version_info[:2] >= (3, 7):
+                    fp.read(12)
+                elif sys.version_info[:2] >= (3, 4):
+                    fp.read(8)
+                else:
                     fp.read(4)
+
                 try:
                     co = marshal.loads(fp.read())
                     cls = CompiledModule
                 except Exception as exc:
+                    raise
                     self.msgout(2, "raise ImportError: Cannot load code", pathname, exc)
                     co = None
                     cls = InvalidCompiledModule

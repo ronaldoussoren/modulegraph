@@ -1,6 +1,11 @@
 Release history
 ===============
 
+0.17
+----
+
+* The .pyc format changed a little in Python 3.7
+
 0.16
 ----
 
