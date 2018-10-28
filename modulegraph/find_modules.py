@@ -252,7 +252,7 @@ def find_needed_modules(
         # we prefer to believe that (imp_find_module doesn't seem to locate
         # sub-packages)
         m = mf.findNode(f)
-        if m is not None:
+        if m is not None and m.packagepath is not None:
             path = m.packagepath[0]
         else:
             # Find path of package

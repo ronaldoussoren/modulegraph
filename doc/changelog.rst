@@ -1,6 +1,12 @@
 Release history
 ===============
 
+0.18
+----
+
+* Avoid exception when one of the items on "packages" is not a package
+  (modulegraph.find_modules.find_needed_modules)
+
 0.17
 ----
 
