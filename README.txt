@@ -8,8 +8,8 @@ knowledge of special cases, and is extensible.
 Project links
 -------------
 
-* `Documentation <https://altgraph.readthedocs.io/en/latest/>`_
+* `Documentation <https://modulegraph.readthedocs.io/en/latest/>`_
 
-* `Issue Tracker <https://bitbucket.org/ronaldoussoren/altgraph/issues?status=new&status=open>`_
+* `Issue Tracker <https://bitbucket.org/ronaldoussoren/modulegraph/issues?status=new&status=open>`_
 
-* `Repository <https://bitbucket.org/ronaldoussoren/altgraph/>`_
+* `Repository <https://bitbucket.org/ronaldoussoren/modulegraph/>`_
