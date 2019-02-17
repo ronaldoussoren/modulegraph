@@ -7,6 +7,10 @@ Release history
 * Avoid exception when one of the items on "packages" is not a package
   (modulegraph.find_modules.find_needed_modules)
 
+* #45: ``Modulegraph.foldReferences()`` called the wrong method
+
+  Reported by Anthony Foglia.
+
 0.17
 ----
 
