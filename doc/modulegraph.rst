@@ -532,5 +532,3 @@ Utility functions
    Rename *oldname* to *newname* when it is found by the module finder. This
    is used as a workaround for the hack that the ``_xmlplus`` package uses
    to inject itself in the ``xml`` namespace.
-
-

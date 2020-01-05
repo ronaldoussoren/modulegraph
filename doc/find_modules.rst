@@ -4,7 +4,7 @@
 .. module:: modulegraph.find_modules
    :synopsis: High-level module dependency finding interface
 
-This module provides a high-level interface to the functionality of 
+This module provides a high-level interface to the functionality of
 the modulegraph package.
 
 
@@ -12,7 +12,7 @@ the modulegraph package.
 
    High-level interface, takes iterables for: scripts, includes, packages, excludes
 
-   And returns a :class:`modulegraph.modulegraph.ModuleGraph` instance, 
+   And returns a :class:`modulegraph.modulegraph.ModuleGraph` instance,
    python_files, and extensions
 
    python_files is a list of pure python dependencies as modulegraph.Module objects,
@@ -24,7 +24,7 @@ the modulegraph package.
 
    Return two lists: the first one contains the python files in the graph,
    the second the C extensions.
-        
+
    :param mf: a :class:`modulegraph.modulegraph.ModuleGraph` instance
 
 

@@ -10,7 +10,7 @@ modulegraph determines a dependency graph between Python modules primarily
 by bytecode analysis for import statements.
 
 modulegraph uses similar methods to :mod:`modulefinder` from the standard library,
-but uses a more flexible internal representation, has more extensive 
+but uses a more flexible internal representation, has more extensive
 knowledge of special cases, and is extensible.
 
 Contents:
@@ -29,9 +29,9 @@ Contents:
 Online Resources
 ----------------
 
-* `Sourcecode repository on bitbucket <http://bitbucket.org/ronaldoussoren/modulegraph/>`_
+* `Sourcecode repository on GitHub <https://github.com/ronaldoussoren/modulegraph/>`_
 
-* `The issue tracker <http://bitbucket.org/ronaldoussoren/modulegraph/issues>`_
+* `The issue tracker <https://github.com/ronaldoussoren/modulegraph/issues>`_
 
 Indices and tables
 ------------------
@@ -39,4 +39,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

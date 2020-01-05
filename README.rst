@@ -10,6 +10,6 @@ Project links
 
 * `Documentation <https://modulegraph.readthedocs.io/en/latest/>`_
 
-* `Issue Tracker <https://bitbucket.org/ronaldoussoren/modulegraph/issues?status=new&status=open>`_
+* `Issue Tracker <https://github.com/ronaldoussoren/modulegraph/issues>`_
 
-* `Repository <https://bitbucket.org/ronaldoussoren/modulegraph/>`_
+* `Repository <https://github.com/ronaldoussoren/modulegraph/>`_
