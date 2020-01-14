@@ -1,3 +1,6 @@
+modulegraph
+===========
+
 modulegraph determines a dependency graph between Python modules primarily
 by bytecode analysis for import statements.
 
