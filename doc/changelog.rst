@@ -92,12 +92,12 @@ Bugfixes:
 
 * Fix incompatibility with recent versions of setuptools
 
-  See also `issue #206 in py2apps tracker <https://bitbucket.org/ronaldoussoren/py2app/issues/206/py2app-doesnt-work-with-release-433-of>`_ for more information.
+  See also `issue #206 in py2apps tracker <https://github.com/ronaldoussoren/py2app/issues/206/py2app-doesnt-work-with-release-433-of>`_ for more information.
 
 * Python 3: Ignore BOM at start of input files when compiling them.
 
   This matches the behavior of CPython, and avoids hard to diagnose problems.
-  See also `issue #178 in the py2app tracker <https://bitbucket.org/ronaldoussoren/py2app/issues/178/python-3-syntaxerror-invalid-character-in>`_
+  See also `issue #178 in the py2app tracker <https://github.com/ronaldoussoren/py2app/issues/178/python-3-syntaxerror-invalid-character-in>`_
 
 * Python 3.6 introduced a new bytecode format (wordcode), adjust the
   bytecode scanner for that.
