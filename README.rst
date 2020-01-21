@@ -8,6 +8,12 @@ modulegraph uses similar methods to modulefinder from the standard library,
 but uses a more flexible internal representation, has more extensive
 knowledge of special cases, and is extensible.
 
+CI Status
+---------
+
+.. image:: https://github.com/ronaldoussoren/modulegraph/workflows/Lint/badge.svg
+.. image:: https://github.com/ronaldoussoren/modulegraph/workflows/Test/badge.svg
+
 Project links
 -------------
 
