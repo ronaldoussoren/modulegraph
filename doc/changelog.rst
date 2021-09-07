@@ -1,6 +1,11 @@
 Release history
 ===============
 
+0.19
+----
+
+* Fix incorrect path when package ``__init__`` is an extension.
+
 0.18
 ----
 

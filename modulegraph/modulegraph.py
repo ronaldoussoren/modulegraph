@@ -231,6 +231,13 @@ def find_module(name, path=None):
         except ImportError:
             ImpImporter = pkg_resources.ImpWrapper
 
+    try:
+        from importlib.machinery import ExtensionFileLoader
+    except ImportError:
+        ExtensionFileLoader = None
+        raise
+
+
     namespace_path = []
     fp = None
     for entry in path:
@@ -250,7 +257,20 @@ def find_module(name, path=None):
         if loader is None:
             continue
 
-        if isinstance(importer, ImpImporter):
+        if ExtensionFileLoader is not None and isinstance(loader, ExtensionFileLoader):
+            filename = loader.path
+
+            for _sfx, _mode, _type in imp.get_suffixes():
+                if _type == imp.C_EXTENSION and filename.endswith(_sfx):
+                    description = (_sfx, "rb", imp.C_EXTENSION)
+                    break
+            else:
+                raise RuntimeError("Don't know how to handle %r" %(importer,))
+
+            print(filename, description)
+            return (None, filename, description)
+
+        elif isinstance(importer, ImpImporter):
             filename = loader.filename
             if filename.endswith(".pyc") or filename.endswith(".pyo"):
                 fp = open(filename, "rb")
