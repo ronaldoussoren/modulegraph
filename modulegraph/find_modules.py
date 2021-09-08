@@ -316,7 +316,10 @@ def find_modules(scripts=(), includes=(), packages=(), excludes=(), path=None, d
     excludes = set(excludes)
     plat_prepare(includes, packages, excludes)
     mf = modulegraph.ModuleGraph(
-        path=path, excludes=(excludes - includes), implies=get_implies(), debug=debug,
+        path=path,
+        excludes=(excludes - includes),
+        implies=get_implies(),
+        debug=debug,
     )
     find_needed_modules(mf, scripts, includes, packages)
     return mf

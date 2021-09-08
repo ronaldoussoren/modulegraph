@@ -20,24 +20,24 @@ import zipimport
 from collections import deque, namedtuple
 
 import pkg_resources
-
 from altgraph import GraphError
 from altgraph.ObjectGraph import ObjectGraph
 
 from . import util, zipio
 
 if sys.version_info[0] == 2:
-    from StringIO import StringIO as BytesIO
-    from StringIO import StringIO
     from urllib import pathname2url
+
+    from StringIO import StringIO
+    from StringIO import StringIO as BytesIO
 
     def _Bchr(value):
         return chr(value)
 
 
 else:
-    from urllib.request import pathname2url
     from io import BytesIO, StringIO
+    from urllib.request import pathname2url
 
     def _Bchr(value):
         return value
@@ -169,7 +169,7 @@ def os_listdir(path):
 
 
 def _code_to_file(co):
-    """ Convert code object to a .pyc pseudo-file """
+    """Convert code object to a .pyc pseudo-file"""
     return BytesIO(imp.get_magic() + b"\0\0\0\0" + marshal.dumps(co))
 
 
@@ -235,8 +235,6 @@ def find_module(name, path=None):
         from importlib.machinery import ExtensionFileLoader
     except ImportError:
         ExtensionFileLoader = None
-        raise
-
 
     namespace_path = []
     fp = None
@@ -265,9 +263,8 @@ def find_module(name, path=None):
                     description = (_sfx, "rb", imp.C_EXTENSION)
                     break
             else:
-                raise RuntimeError("Don't know how to handle %r" %(importer,))
+                raise RuntimeError("Don't know how to handle %r" % (importer,))
 
-            print(filename, description)
             return (None, filename, description)
 
         elif isinstance(importer, ImpImporter):
@@ -980,7 +977,7 @@ class ModuleGraph(ObjectGraph):
                 yield n
 
     def hasEdge(self, fromnode, tonode):
-        """ Return True iff there is an edge from 'fromnode' to 'tonode' """
+        """Return True iff there is an edge from 'fromnode' to 'tonode'"""
         fromnode = self.findNode(fromnode)
         tonode = self.findNode(tonode)
 
@@ -1991,7 +1988,7 @@ class ModuleGraph(ObjectGraph):
                 buf = os.path.realpath(buf)
 
             return (fp, buf, stuff)
-        except:  # noqa: E722
+        except:  # noqa: E722, B001
             fp.close()
             raise
 

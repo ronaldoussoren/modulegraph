@@ -26,9 +26,9 @@ from setuptools import Command, setup
 from setuptools.command import egg_info
 
 if sys.version_info[0] == 2:
-    from ConfigParser import RawConfigParser, NoOptionError, NoSectionError
+    from ConfigParser import NoOptionError, NoSectionError, RawConfigParser
 else:
-    from configparser import RawConfigParser, NoOptionError, NoSectionError
+    from configparser import NoOptionError, NoSectionError, RawConfigParser
 
 ROOTDIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -348,8 +348,12 @@ class my_test(Command):
             sys.path.remove(dirname)
 
     def add_project_to_sys_path(self):
-        from pkg_resources import normalize_path, add_activation_listener
-        from pkg_resources import working_set, require
+        from pkg_resources import (
+            add_activation_listener,
+            normalize_path,
+            require,
+            working_set,
+        )
 
         self.reinitialize_command("egg_info")
         self.run_command("egg_info")

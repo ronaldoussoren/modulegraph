@@ -22,8 +22,8 @@ _DFLT_FILE_MODE = _stat.S_IROTH | _stat.S_IRGRP | _stat.S_IRUSR
 
 
 if _sys.version_info[0] == 2:
-    from StringIO import StringIO as _BaseStringIO
     from StringIO import StringIO as _BaseBytesIO
+    from StringIO import StringIO as _BaseStringIO
 
     class _StringIO(_BaseStringIO):
         def __enter__(self):
@@ -43,8 +43,8 @@ if _sys.version_info[0] == 2:
 
 
 else:
-    from io import StringIO as _StringIO
     from io import BytesIO as _BytesIO
+    from io import StringIO as _StringIO
 
 
 def _locate(path):

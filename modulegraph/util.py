@@ -14,8 +14,8 @@ except NameError:
 
 
 if sys.version_info[0] == 2:
-    from StringIO import StringIO as BytesIO
     from StringIO import StringIO
+    from StringIO import StringIO as BytesIO
 
 else:
     from io import BytesIO, StringIO

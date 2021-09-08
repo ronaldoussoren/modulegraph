@@ -402,16 +402,20 @@ class TestRegressions3 (unittest.TestCase):
         self.assertIsInstance(node, modulegraph.SourceModule)
         self.assertStartswith(node.filename, os.path.dirname(__file__))
 
+	# The calls to os.path.realpath are needed due to way
+        # my (Ronald's) test machine is set up, sys.prefix is
+	# a symlink to make it easier to test both macOS installer 
+        # variants on python.org.
         import distutils.sysconfig, distutils.ccompiler
         node = self.mf.findNode('distutils.ccompiler')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertEqual(os.path.dirname(node.filename),
-                os.path.dirname(distutils.ccompiler.__file__))
+        self.assertEqual(os.path.realpath(os.path.dirname(node.filename)),
+                os.path.realpath(os.path.dirname(distutils.ccompiler.__file__)))
 
         node = self.mf.findNode('distutils.sysconfig')
         self.assertIsInstance(node, modulegraph.SourceModule)
-        self.assertEqual(os.path.dirname(node.filename),
-                os.path.dirname(distutils.sysconfig.__file__))
+        self.assertEqual(os.path.realpath(os.path.dirname(node.filename)),
+                os.path.realpath(os.path.dirname(distutils.sysconfig.__file__)))
 
 class TestRegression4 (unittest.TestCase):
     if not hasattr(unittest.TestCase, 'assertIsInstance'):
