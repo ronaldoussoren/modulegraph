@@ -310,16 +310,28 @@ class my_egg_info(egg_info.egg_info):
         egg_info.egg_info.run(self)
 
         path = os.path.join(self.egg_info, "PKG-INFO")
-        with open(path, "a+") as fp:
+
+        with open(path, "r") as fp:
+            contents = fp.read()
+
+        try:
+            before, after = contents.split("\n\n", 1)
+        except ValueError:
+            before = contents
+            after = ""
+
+        with open(path, "w") as fp:
+            fp.write(before)
             fp.write(
-                "Project-URL: Documentation, https://modulegraph.readthedocs.io/en/latest/\n"  # noqa: B950
+                "\nProject-URL: Documentation, https://modulegraph.readthedocs.io/en/latest/\n"  # noqa: B950
             )
             fp.write(
                 "Project-URL: Issue tracker, https://github.com/ronaldoussoren/modulegraph/issues\n"  # noqa: B950
             )
             fp.write(
-                "Project-URL: Repository, https://github.com/ronaldoussoren/modulegraph\n"  # noqa: B950
+                "Project-URL: Repository, https://github.com/ronaldoussoren/modulegraph\n\n"  # noqa: B950
             )
+            fp.write(after)
 
 
 class my_test(Command):

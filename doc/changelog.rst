@@ -1,6 +1,12 @@
 Release history
 ===============
 
+0.19.2
+------
+
+* Fix project links in PyPI sidebar
+
+
 0.19.1
 ------
 
