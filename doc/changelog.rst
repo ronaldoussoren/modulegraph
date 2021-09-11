@@ -1,6 +1,11 @@
 Release history
 ===============
 
+0.19.1
+------
+
+* Explictly mention python 3.10 support in package metadata
+
 0.19
 ----
 

@@ -1512,7 +1512,16 @@ class ModuleGraph(ObjectGraph):
             self._scan_code(co, m)
 
             if isinstance(co, ast.AST):
-                co = compile(co, pathname, "exec", 0, True)
+                try:
+                    co = compile(co, pathname, "exec", 0, True)
+                except RecursionError:
+                    self.msg(
+                        0, "Skip compiling %r due to recursion error" % (pathname,)
+                    )
+                    m.code = None
+                    self.msgout(2, "load_module ->", m)
+                    return m
+
             if self.replace_paths:
                 co = self._replace_paths_in_code(co)
             m.code = co
@@ -1706,7 +1715,12 @@ class ModuleGraph(ObjectGraph):
     def _scan_code(self, co, m):
         if isinstance(co, ast.AST):
             self._scan_ast(co, m)
-            self._scan_bytecode_stores(compile(co, "-", "exec", 0, True), m)
+            try:
+                self._scan_bytecode_stores(compile(co, "-", "exec", 0, True), m)
+            except RecursionError:
+                self.msg(
+                    0, "RecursionError while compiling code, skip scanning bytecode"
+                )
 
         else:
             self._scan_bytecode(co, m)
