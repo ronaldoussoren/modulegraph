@@ -46,13 +46,13 @@ class TestModuleGraph (unittest.TestCase):
             fp = zipio.open(os.path.join(TESTDATA, 'test.txt'), 'rb')
             data = fp.read()
             fp.close()
-            self.assertEqual(data, b'This is test.txt\n')
+            self.assertEqual(data.rstrip(), b'This is test.txt')
 
         # 2. File inside zipfile
         fp = zipio.open(os.path.join(TESTDATA, 'zipped.egg', 'test.txt'), 'r')
         data = fp.read()
         fp.close()
-        self.assertEqual(data, 'Zipped up test.txt\n')
+        self.assertEqual(data.rstrip(), 'Zipped up test.txt')
 
         if sys.version_info[0] == 3:
             fp = zipio.open(os.path.join(TESTDATA, 'zipped.egg', 'test.txt'), 'rb')
@@ -231,7 +231,7 @@ class TestModuleGraph (unittest.TestCase):
             except (ValueError, IOError):
                 pass
 
-            self.assertEqual(data, b'This is test.txt\n')
+            self.assertEqual(data.rstrip(), b'This is test.txt')
 
         # 2. File inside zipfile
         with zipio.open(os.path.join(TESTDATA, 'zipped.egg', 'test.txt'), 'r') as fp:
