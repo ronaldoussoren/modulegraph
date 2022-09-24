@@ -394,6 +394,7 @@ class TestRegressions3 (unittest.TestCase):
         self.mf = modulegraph.ModuleGraph(path=[ root ] + sys.path)
         self.mf.run_script(os.path.join(root, 'script.py'))
 
+    @unittest.skipUnless(sys.version_info[:2] < (3,11), "Doesn't work with 3.11")
     @unittest.skipUnless(not hasattr(sys, 'real_prefix'), "Test doesn't work in virtualenv")
     def testRegr1(self):
         node = self.mf.findNode('mypkg.distutils')
@@ -402,9 +403,9 @@ class TestRegressions3 (unittest.TestCase):
         self.assertIsInstance(node, modulegraph.SourceModule)
         self.assertStartswith(node.filename, os.path.dirname(__file__))
 
-	# The calls to os.path.realpath are needed due to way
+        # The calls to os.path.realpath are needed due to way
         # my (Ronald's) test machine is set up, sys.prefix is
-	# a symlink to make it easier to test both macOS installer 
+        # a symlink to make it easier to test both macOS installer 
         # variants on python.org.
         import distutils.sysconfig, distutils.ccompiler
         node = self.mf.findNode('distutils.ccompiler')

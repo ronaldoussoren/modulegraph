@@ -1,6 +1,11 @@
 Release history
 ===============
 
+0.19.3
+------
+
+* Fix incompatibility with Python 3.11
+
 0.19.2
 ------
 

@@ -2209,8 +2209,14 @@ class ModuleGraph(ObjectGraph):
             if isinstance(consts[i], type(co)):
                 consts[i] = self._replace_paths_in_code(consts[i])
 
-        code_func = type(co)
 
+        if hasattr(co, "replace"):
+            # New in 3.8
+            return co.replace(
+                co_filename=new_filename,
+                co_consts=tuple(consts))
+
+        code_func = type(co)
         if hasattr(co, "co_posonlyargcount"):
             return code_func(
                 co.co_argcount,
