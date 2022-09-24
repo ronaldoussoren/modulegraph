@@ -41,7 +41,6 @@ if _sys.version_info[0] == 2:
             self.close()
             return False
 
-
 else:
     from io import BytesIO as _BytesIO
     from io import StringIO as _StringIO
