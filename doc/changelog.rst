@@ -1,6 +1,13 @@
 Release history
 ===============
 
+0.19.4
+------
+
+* Fix broken python 2.7 support
+
+  PR by Josua Root
+
 0.19.3
 ------
 
