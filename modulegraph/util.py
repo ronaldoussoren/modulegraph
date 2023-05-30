@@ -56,7 +56,14 @@ def _check_importer_for_path(name, path_item):
             return imp.find_module(name, [path_item])
         except ImportError:
             return None
-    return importer.find_module(name)
+
+    if hasattr(importer, "find_module"):
+        return importer.find_module(name)
+    else:
+        spec = importer.find_spec(name)
+        if spec is None:
+            return None
+        return spec.loader
 
 
 def imp_walk(name):

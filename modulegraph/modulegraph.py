@@ -228,12 +228,15 @@ def find_module(name, path=None):
         try:
             from _pkgutil import ImpImporter
         except ImportError:
-            ImpImporter = pkg_resources.ImpWrapper
+            try:
+                ImpImporter = pkg_resources.ImpWrapper
+            except AttributeError:
+                ImpImporter = ()
 
     try:
         from importlib.machinery import ExtensionFileLoader
     except ImportError:
-        ExtensionFileLoader = None
+        ExtensionFileLoader = ()
 
     namespace_path = []
     fp = None
@@ -244,6 +247,13 @@ def find_module(name, path=None):
 
         if sys.version_info[:2] >= (3, 3) and hasattr(importer, "find_loader"):
             loader, portions = importer.find_loader(name)
+
+        elif sys.version_info[:2] >= (3, 12) and hasattr(importer, "find_spec"):
+            spec = importer.find_spec(name)
+            if spec is None:
+                continue
+            loader = spec.loader
+            portions = spec.submodule_search_locations or []
 
         else:
             loader = importer.find_module(name)
@@ -863,7 +873,10 @@ class ModuleGraph(ObjectGraph):
             try:
                 from _pkgutil import ImpImporter
             except ImportError:
-                ImpImporter = pkg_resources.ImpWrapper
+                try:
+                    ImpImporter = pkg_resources.ImpWrapper
+                except AttributeError:
+                    ImpImporter = ()
 
         if sys.version_info[:2] >= (3, 3):
             import importlib.machinery

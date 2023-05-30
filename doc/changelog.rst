@@ -8,6 +8,12 @@ Release history
 
   PR by Josua Root
 
+* Initial support for Python 3.12
+
+  The changes to support Python 3.12 are a bit rough,
+  tests pass but I'm not 100% convinced the changes
+  are correct.
+
 0.19.3
 ------
 
