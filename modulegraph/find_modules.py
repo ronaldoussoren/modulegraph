@@ -254,7 +254,7 @@ def find_needed_modules(
         # first trim the path (of the head package),
         # then convert directory name in package name,
         # finally push into modulegraph.
-        for (dirpath, dirnames, filenames) in os.walk(path):
+        for dirpath, dirnames, filenames in os.walk(path):
             if "__init__.py" in filenames and dirpath.startswith(path):
                 package = (
                     f

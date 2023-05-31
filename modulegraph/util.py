@@ -72,7 +72,9 @@ def imp_walk(name):
 
     raise ImportError if a name can not be found.
     """
-    warnings.warn("imp_walk will be removed in a future version", DeprecationWarning)
+    warnings.warn(
+        "imp_walk will be removed in a future version", DeprecationWarning, stacklevel=2
+    )
 
     if name in sys.builtin_module_names:
         yield name, (None, None, ("", "", imp.C_BUILTIN))
@@ -112,7 +114,7 @@ def imp_walk(name):
     raise ImportError("No module named %s" % (name,))
 
 
-cookie_re = re.compile(br"coding[:=]\s*([-\w.]+)")
+cookie_re = re.compile(rb"coding[:=]\s*([-\w.]+)")
 if sys.version_info[0] == 2:
     default_encoding = "ascii"
 else:
@@ -120,7 +122,6 @@ else:
 
 
 def guess_encoding(fp):
-
     for _i in range(2):
         ln = fp.readline()
 

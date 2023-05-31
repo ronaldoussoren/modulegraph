@@ -163,7 +163,9 @@ def os_listdir(path):
     """
     Deprecated name
     """
-    warnings.warn("Use zipio.listdir instead of os_listdir", DeprecationWarning)
+    warnings.warn(
+        "Use zipio.listdir instead of os_listdir", DeprecationWarning, stacklevel=2
+    )
     return zipio.listdir(path)
 
 
@@ -387,14 +389,16 @@ def find_module(name, path=None):
 
 
 def moduleInfoForPath(path):
-    for (ext, readmode, typ) in imp.get_suffixes():
+    for ext, readmode, typ in imp.get_suffixes():
         if path.endswith(ext):
             return os.path.basename(path)[: -len(ext)], readmode, typ
     return None
 
 
 def AddPackagePath(packagename, path):
-    warnings.warn("Use addPackagePath instead of AddPackagePath", DeprecationWarning)
+    warnings.warn(
+        "Use addPackagePath instead of AddPackagePath", DeprecationWarning, stacklevel=2
+    )
 
     addPackagePath(packagename, path)
 
@@ -413,7 +417,9 @@ _replacePackageMap = {}
 # sys.modules at runtime by calling ReplacePackage("_xmlplus", "xml")
 # before running ModuleGraph.
 def ReplacePackage(oldname, newname):
-    warnings.warn("use replacePackage instead of ReplacePackage", DeprecationWarning)
+    warnings.warn(
+        "use replacePackage instead of ReplacePackage", DeprecationWarning, stacklevel=2
+    )
     replacePackage(oldname, newname)
 
 
@@ -660,6 +666,7 @@ class FlatPackage(BaseModule):
         warnings.warn(
             "This class will be removed in a future version of modulegraph",
             DeprecationWarning,
+            stacklevel=2,
         )
         super(FlatPackage, *args, **kwds)
 
@@ -669,6 +676,7 @@ class ArchiveModule(BaseModule):
         warnings.warn(
             "This class will be removed in a future version of modulegraph",
             DeprecationWarning,
+            stacklevel=2,
         )
         super(FlatPackage, *args, **kwds)
 
@@ -742,7 +750,6 @@ class _Visitor(ast.NodeVisitor):
         return self._in_tryexcept[-1]
 
     def _process_import(self, name, fromlist, level):
-
         if sys.version_info[0] == 2:
             if name == "__future__" and "absolute_import" in (fromlist or ()):
                 self._level = 0
@@ -978,8 +985,8 @@ class ModuleGraph(ObjectGraph):
         if collapse_missing_modules:
             for n in in_edges:
                 if isinstance(n, MissingModule):
-                    for n in self.getReferers(n, False):
-                        yield n
+                    for r in self.getReferers(n, False):
+                        yield r
 
                 else:
                     yield n
@@ -1828,7 +1835,6 @@ class ModuleGraph(ObjectGraph):
             HAVE_ARGUMENT=_Bchr(dis.HAVE_ARGUMENT),  # noqa: M511,B008
             unpack=struct.unpack,
         ):
-
             code = co.co_code
             constants = co.co_consts
             n = len(code)
@@ -1863,7 +1869,6 @@ class ModuleGraph(ObjectGraph):
             STORE_GLOBAL=_Bchr(dis.opname.index("STORE_GLOBAL")),  # noqa: M511,B008
             unpack=struct.unpack,
         ):
-
             # Python >=2.5: LOAD_CONST flags, LOAD_CONST names, IMPORT_NAME name
             # Python < 2.5: LOAD_CONST names, IMPORT_NAME name
             extended_import = bool(sys.version_info[:2] >= (2, 5))
@@ -2101,7 +2106,7 @@ class ModuleGraph(ObjectGraph):
             yield "\t%s;\n" % (cpatt % item,)
 
         # find all packages (subgraphs)
-        for (node, data, _outgoing, _incoming) in nodes:
+        for node, data, _outgoing, _incoming in nodes:
             nodetoident[node] = getattr(data, "identifier", None)
             if isinstance(data, Package):
                 packageidents[data.identifier] = node
@@ -2109,7 +2114,7 @@ class ModuleGraph(ObjectGraph):
                 packagenodes.add(node)
 
         # create sets for subgraph, write out descriptions
-        for (node, data, outgoing, incoming) in nodes:
+        for node, data, outgoing, incoming in nodes:
             # update edges
             for edge in (describe_edge(e) for e in outgoing):
                 edges.append(edge)
@@ -2169,7 +2174,7 @@ class ModuleGraph(ObjectGraph):
         def do_graph(edges, tabs):
             edgestr = tabs + '"%s" -> "%s" [%s];\n'
             # describe edge
-            for (edge, data, head, tail) in edges:
+            for edge, data, head, tail in edges:
                 attribs = edgevisitor(edge, data, head, tail)
                 yield edgestr % (
                     head,
