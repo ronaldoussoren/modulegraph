@@ -1,6 +1,13 @@
 Release history
 ===============
 
+0.19.5
+------
+
+* Sigh.. Actually fix 2.7 support
+
+  (code cleanup broke the PR in 0.19.4)
+
 0.19.4
 ------
 
