@@ -2,7 +2,7 @@ import unittest
 from modulegraph import modulegraph
 import pkg_resources
 import os
-import imp
+from modulegraph import _imp as imp
 import sys
 import shutil
 import warnings

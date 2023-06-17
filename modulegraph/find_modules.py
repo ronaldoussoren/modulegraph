@@ -9,7 +9,6 @@ Originally (loosely) based on code in py2exe's build_exe.py by Thomas Heller.
 """
 from __future__ import absolute_import
 
-import imp
 import os
 import sys
 import warnings
@@ -17,6 +16,8 @@ import warnings
 from . import modulegraph
 from .modulegraph import Alias, Extension, Script
 from .util import imp_find_module
+
+from . import _imp as imp
 
 __all__ = ["find_modules", "parse_mf_results"]
 
@@ -277,9 +278,11 @@ def find_needed_modules(
 
 
 PY_SUFFIXES = [".py", ".pyw", ".pyo", ".pyc"]
+
 C_SUFFIXES = [
     _triple[0] for _triple in imp.get_suffixes() if _triple[2] == imp.C_EXTENSION
 ]
+
 
 
 #

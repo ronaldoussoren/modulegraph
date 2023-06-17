@@ -458,6 +458,8 @@ class TestRegression5 (unittest.TestCase):
         self.mf.run_script(os.path.join(root, 'script.py'))
 
     def testRegr1(self):
+        if sys.version_info[:2] >= (3, 12):
+           return
         node = self.mf.findNode('distutils')
         self.assertIsInstance(node, modulegraph.Package)
         self.assertIn(os.path.join('distutils', '__init__'), node.filename)

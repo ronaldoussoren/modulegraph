@@ -1,6 +1,15 @@
 Release history
 ===============
 
+Version 0.19.6
+--------------
+
+* Actually introduce Python 3.12 support
+
+  Previous support was tested on an installation that previously
+  had an early alpha installed without cleaning up, resulting in
+  failing to remove all use of the ``imp`` module.
+
 0.19.5
 ------
 

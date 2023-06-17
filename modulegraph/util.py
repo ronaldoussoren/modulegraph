@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-import imp
+from . import _imp as imp
 import marshal
 import os
 import re
