@@ -23,7 +23,6 @@ from altgraph import GraphError
 from altgraph.ObjectGraph import ObjectGraph
 
 from . import _imp as imp
-
 from . import util, zipio
 
 if sys.version_info[0] == 2:
@@ -174,6 +173,7 @@ def _code_to_file(co):
     """Convert code object to a .pyc pseudo-file"""
     return BytesIO(imp.get_magic() + b"\0\0\0\0" + marshal.dumps(co))
 
+
 def find_module(name, path=None):
     """
     Get a 3-tuple detailing the physical location of the Python module with
@@ -279,11 +279,11 @@ def find_module(name, path=None):
             else:
                 for sfx in importlib.machinery.EXTENSION_SUFFIXES:
                     if filename.endswith(sfx):
-                       description = (_sfx, "rb", imp.C_EXTENSION)
-                       break
+                        description = (_sfx, "rb", imp.C_EXTENSION)
+                        break
                 else:
                     raise RuntimeError("Don't know how to handle %r" % (importer,))
-                
+
             return (None, filename, description)
 
         elif isinstance(importer, ImpImporter):

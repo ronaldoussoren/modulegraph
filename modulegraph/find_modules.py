@@ -13,11 +13,10 @@ import os
 import sys
 import warnings
 
+from . import _imp as imp
 from . import modulegraph
 from .modulegraph import Alias, Extension, Script
 from .util import imp_find_module
-
-from . import _imp as imp
 
 __all__ = ["find_modules", "parse_mf_results"]
 
@@ -282,7 +281,6 @@ PY_SUFFIXES = [".py", ".pyw", ".pyo", ".pyc"]
 C_SUFFIXES = [
     _triple[0] for _triple in imp.get_suffixes() if _triple[2] == imp.C_EXTENSION
 ]
-
 
 
 #

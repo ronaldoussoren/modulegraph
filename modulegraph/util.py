@@ -1,11 +1,12 @@
 from __future__ import absolute_import
 
-from . import _imp as imp
 import marshal
 import os
 import re
 import sys
 import warnings
+
+from . import _imp as imp
 
 try:
     unicode
@@ -114,7 +115,7 @@ def imp_walk(name):
     raise ImportError("No module named %s" % (name,))
 
 
-cookie_re = re.compile(br"coding[:=]\s*([-\w.]+)")
+cookie_re = re.compile(rb"coding[:=]\s*([-\w.]+)")
 if sys.version_info[0] == 2:
     default_encoding = "ascii"
 else:
