@@ -25,7 +25,12 @@ except ImportError:
     import os
     import sys
     import tokenize
-    from importlib._bootstrap import _ERR_MSG
+    # _ERR_MSG removed in Python 3.14
+    try:
+        from importlib._bootstrap import _ERR_MSG
+    except ImportError:
+        from importlib._bootstrap import _ERR_MSG_PREFIX
+        _ERR_MSG = _ERR_MSG_PREFIX + '{!r}'
 
     from _imp import is_builtin, is_frozen
 
