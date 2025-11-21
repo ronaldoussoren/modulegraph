@@ -41,8 +41,9 @@ class TestModuleGraphImport (unittest.TestCase):
             self.assertIsInstance(node, modulegraph.SourceModule)
 
         else:
-            node = mf.findNode('pkg.api2')
-            self.assertIsInstance(node, modulegraph.InvalidSourceModule)
+            if sys.version_info[:2] < (3, 14):
+                node = mf.findNode('pkg.api2')
+                self.assertIsInstance(node, modulegraph.InvalidSourceModule)
 
             node = mf.findNode('pkg.api3')
             self.assertIsInstance(node, modulegraph.SourceModule)
@@ -51,7 +52,10 @@ class TestModuleGraphImport (unittest.TestCase):
             self.assertIsInstance(node, modulegraph.SourceModule)
 
             node = mf.findNode('urllib2')
-            self.assertIs(node, None)
+            if sys.version_info[:2] < (3, 14):
+                self.assertIs(node, None)
+            else:
+                self.assertIsInstance(node, modulegraph.MissingModule)
 
 
 

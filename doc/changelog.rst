@@ -1,6 +1,11 @@
 Release history
 ===============
 
+Version 0.19.7
+--------------
+
+* Add support for Python 3.13 and 3.14
+
 Version 0.19.6
 --------------
 

@@ -25,12 +25,14 @@ except ImportError:
     import os
     import sys
     import tokenize
+
     # _ERR_MSG removed in Python 3.14
     try:
         from importlib._bootstrap import _ERR_MSG
     except ImportError:
         from importlib._bootstrap import _ERR_MSG_PREFIX
-        _ERR_MSG = _ERR_MSG_PREFIX + '{!r}'
+
+        _ERR_MSG = _ERR_MSG_PREFIX + "{!r}"
 
     from _imp import is_builtin, is_frozen
 
@@ -76,7 +78,7 @@ except ImportError:
                 if os.path.isfile(file_path):
                     return None, package_directory, ("", "", PKG_DIRECTORY)
 
-            for suffix, mode, type_ in get_suffixes():
+            for suffix, mode, type_ in get_suffixes():  # noqa: B007
                 file_name = name + suffix
                 file_path = os.path.join(entry, file_name)
                 if os.path.isfile(file_path):

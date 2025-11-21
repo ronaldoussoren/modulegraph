@@ -4,6 +4,7 @@ Find modules used by a script, using bytecode analysis.
 Based on the stdlib modulefinder by Thomas Heller and Just van Rossum,
 but uses a graph data structure and 2.3 features
 """
+
 from __future__ import absolute_import, print_function
 
 import ast
@@ -105,9 +106,9 @@ def _namespace_package_path(fqname, pathnames, path=None):
     This function uses setuptools metadata to extract information
     about namespace packages from installed eggs.
     """
-    working_set = pkg_resources.WorkingSet(path)
-
     path = list(pathnames)
+
+    working_set = pkg_resources.WorkingSet(path)
 
     for dist in working_set:
         if dist.has_metadata("namespace_packages.txt"):
@@ -236,6 +237,7 @@ def find_module(name, path=None):
                 ImpImporter = ()
 
     try:
+        import importlib
         from importlib.machinery import ExtensionFileLoader
     except ImportError:
         ExtensionFileLoader = ()
@@ -346,7 +348,7 @@ def find_module(name, path=None):
             for _sfx, _mode, _type in imp.get_suffixes():
                 if _type == imp.C_EXTENSION:
                     p = loader.prefix + zn + _sfx
-                    if loader._files is None:
+                    if getattr(loader, "_files", None) is None:
                         loader_files = zipimport._zip_directory_cache[loader.archive]
                     else:
                         loader_files = loader._files
@@ -1793,8 +1795,11 @@ class ModuleGraph(ObjectGraph):
 
             for inst in dis.get_instructions(co):
                 if inst.opname == "IMPORT_NAME":
-                    assert prev_insts[-2].opname == "LOAD_CONST"
-                    assert prev_insts[-1].opname == "LOAD_CONST"
+                    assert prev_insts[-2].opname in (
+                        "LOAD_CONST",
+                        "LOAD_SMALL_INT",
+                    ), prev_insts[-2].opname
+                    assert prev_insts[-1].opname == "LOAD_CONST", prev_insts[-1].opname
 
                     level = co.co_consts[prev_insts[-2].arg]
                     fromlist = co.co_consts[prev_insts[-1].arg]
@@ -2032,7 +2037,6 @@ class ModuleGraph(ObjectGraph):
             raise
 
     def create_xref(self, out=None):
-        global header, footer, entry, contpl, contpl_linked, imports
         if out is None:
             out = sys.stdout
         scripts = []

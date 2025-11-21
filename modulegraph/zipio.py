@@ -2,6 +2,7 @@
 A helper module that can work with paths
 that can refer to data inside a zipfile
 """
+
 import errno as _errno
 import os as _os
 import stat as _stat

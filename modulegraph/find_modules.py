@@ -7,6 +7,7 @@ History
 
 Originally (loosely) based on code in py2exe's build_exe.py by Thomas Heller.
 """
+
 from __future__ import absolute_import
 
 import os
