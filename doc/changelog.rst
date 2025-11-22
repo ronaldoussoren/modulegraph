@@ -6,6 +6,12 @@ Version 0.19.7
 
 * Add support for Python 3.13 and 3.14
 
+* Don't use ``pkg_resources`` unless ``importlib`` is not available
+
+  Note that this requires using Python 3.8 or later, on older
+  version please ensure that a version of *setuptools* older than
+  November 2025.
+
 Version 0.19.6
 --------------
 

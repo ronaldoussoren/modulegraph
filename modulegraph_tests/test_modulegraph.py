@@ -1,6 +1,9 @@
 import unittest
 from modulegraph import modulegraph
-import pkg_resources
+try:
+    import importlib.metadata
+except ImportError:
+    import pkg_resources
 import os
 from modulegraph import _imp as imp
 import sys
@@ -97,6 +100,13 @@ class TestFunctions (unittest.TestCase):
         self.assertRaises(ValueError, modulegraph._eval_str_tuple, "('a', ('b\", 'c'))")
 
     def test_namespace_package_path(self):
+        try:
+            import importlib.metadata
+        except ImportError:
+            pass
+        else:
+            raise unittest.SkipTest("Using importlib.metadata")
+
         class DS (object):
             def __init__(self, path, namespace_packages=None):
                 self.location = path

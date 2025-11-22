@@ -19,7 +19,15 @@ import warnings
 import zipimport
 from collections import deque, namedtuple
 
-import pkg_resources
+try:
+    import importlib
+    import importlib.metadata  # noqa: F401
+    import pkgutil
+
+    pkg_resources = None
+except ImportError:
+    import pkg_resources
+
 from altgraph import GraphError
 from altgraph.ObjectGraph import ObjectGraph
 
@@ -108,15 +116,16 @@ def _namespace_package_path(fqname, pathnames, path=None):
     """
     path = list(pathnames)
 
-    working_set = pkg_resources.WorkingSet(path)
+    if pkg_resources is not None:
+        working_set = pkg_resources.WorkingSet(path)
 
-    for dist in working_set:
-        if dist.has_metadata("namespace_packages.txt"):
-            namespaces = dist.get_metadata("namespace_packages.txt").splitlines()
-            if fqname in namespaces:
-                nspath = os.path.join(dist.location, *fqname.split("."))
-                if nspath not in path:
-                    path.append(nspath)
+        for dist in working_set:
+            if dist.has_metadata("namespace_packages.txt"):
+                namespaces = dist.get_metadata("namespace_packages.txt").splitlines()
+                if fqname in namespaces:
+                    nspath = os.path.join(dist.location, *fqname.split("."))
+                    if nspath not in path:
+                        path.append(nspath)
 
     return path
 
@@ -245,7 +254,10 @@ def find_module(name, path=None):
     namespace_path = []
     fp = None
     for entry in path:
-        importer = pkg_resources.get_importer(entry)
+        if pkg_resources is not None:
+            importer = pkg_resources.get_importer(entry)
+        else:
+            importer = pkgutil.get_importer(entry)
         if importer is None:
             continue
 
@@ -901,7 +913,10 @@ class ModuleGraph(ObjectGraph):
             ImpImporter = importlib.machinery.FileFinder
 
         for entry in self.path:
-            importer = pkg_resources.get_importer(entry)
+            if pkg_resources is not None:
+                importer = pkg_resources.get_importer(entry)
+            else:
+                importer = pkgutil.get_importer(entry)
 
             if isinstance(importer, ImpImporter):
                 try:
