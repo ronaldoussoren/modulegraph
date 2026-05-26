@@ -1788,9 +1788,16 @@ class ModuleGraph(ObjectGraph):
         # Note: This nicely sidesteps any issues caused by moving from bytecode
         # to wordcode in python 3.6.
 
+        @staticmethod
+        def _get_instructions(co):
+            # Yield bytecode instructions, skipping EXTENDED_ARG. The scanner relies
+            # on LOAD_CONST/IMPORT_NAME adjacency, which EXTENDED_ARG opcodes can
+            # break on newer Python versions.
+            return (i for i in dis.get_instructions(co) if i.opname != "EXTENDED_ARG")
+
         def _scan_bytecode_stores(self, co, m):
             constants = co.co_consts
-            for inst in dis.get_instructions(co):
+            for inst in self._get_instructions(co):
                 if inst.opname in ("STORE_NAME", "STORE_GLOBAL"):
                     name = co.co_names[inst.arg]
                     m.globalnames.add(name)
@@ -1808,7 +1815,7 @@ class ModuleGraph(ObjectGraph):
 
             prev_insts = []
 
-            for inst in dis.get_instructions(co):
+            for inst in self._get_instructions(co):
                 if inst.opname == "IMPORT_NAME":
                     assert prev_insts[-2].opname in (
                         "LOAD_CONST",
