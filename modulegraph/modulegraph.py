@@ -181,7 +181,14 @@ def os_listdir(path):
 
 def _code_to_file(co):
     """Convert code object to a .pyc pseudo-file"""
-    return BytesIO(imp.get_magic() + b"\0\0\0\0" + marshal.dumps(co))
+    if sys.version_info[:2] >= (3, 7):
+        fake_meta = b"\0\0\0\0\0\0\0\0\0\0\0\0"
+    elif sys.version_info[:2] >= (3, 4):
+        fake_meta = b"\0\0\0\0\0\0\0\0"
+    else:
+        fake_meta = b"\0\0\0\0"
+
+    return BytesIO(imp.get_magic() + fake_meta + marshal.dumps(co))
 
 
 def find_module(name, path=None):
