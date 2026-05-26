@@ -1790,9 +1790,8 @@ class ModuleGraph(ObjectGraph):
 
         @staticmethod
         def _get_instructions(co):
-            # Yield bytecode instructions, skipping EXTENDED_ARG. The scanner relies
-            # on LOAD_CONST/IMPORT_NAME adjacency, which EXTENDED_ARG opcodes can
-            # break on newer Python versions.
+            # The scanner relies on LOAD_CONST/IMPORT_NAME adjacency, but EXTENDED_ARG
+            # opcodes are left in by `dis.get_instructions`, which can trip up parsing.
             return (i for i in dis.get_instructions(co) if i.opname != "EXTENDED_ARG")
 
         def _scan_bytecode_stores(self, co, m):

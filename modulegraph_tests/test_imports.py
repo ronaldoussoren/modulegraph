@@ -2,6 +2,7 @@
 Test for import machinery
 """
 import unittest
+import dis
 import sys
 import textwrap
 import subprocess
@@ -532,6 +533,30 @@ class TestRelativeReferenceToToplevel (unittest.TestCase):
 
         im = imported[4]
         self.assertIs(im, mf.findNode('pkg'))
+
+
+class TestBytecodeScanning(unittest.TestCase):
+    def test_scan_bytecode_extended_arg(self):
+        if not hasattr(dis, "get_instructions"):
+            self.skipTest("requires dis.get_instructions")
+
+        source = "".join(
+            "dummy_var{} = {}\n".format(index, index) for index in range(300)
+        ) + "import os\n"
+        code = compile(source, "<extended-arg-import>", "exec")
+        if not any(
+            inst.opname == "EXTENDED_ARG" for inst in dis.get_instructions(code)
+        ):
+            self.skipTest("compiler did not emit EXTENDED_ARG")
+
+        graph = modulegraph.ModuleGraph()
+        caller = graph.createNode(modulegraph.Node, "dummy_module")
+        graph._scan_bytecode(code, caller)
+
+        os_module = graph.findNode("os")
+        self.assertIsNotNone(os_module)
+        self.assertIn(os_module, graph.getReferences(caller))
+
 
 class TestInvalidAsyncFunction (unittest.TestCase):
     if not hasattr(unittest.TestCase, 'assertIsInstance'):
